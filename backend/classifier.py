@@ -32,8 +32,6 @@ Rules for thinking:
 Rules for search_thinking:
 - Start with "Let's search for"
 - Mention what will be searched
-- End with "Keywords: keyword1, keyword2"
-- Keywords should be short and specific
 - Empty string "" for smalltalk
 
 Rules for search_queries:
