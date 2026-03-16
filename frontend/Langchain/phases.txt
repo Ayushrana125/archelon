@@ -1,0 +1,14 @@
+Arex - Ayush Rana's Personal Agent
+A user/visito/recruiter can ask about Ayush Rana's skills and expertise and request for my Resume. 
+
+Also user can create their own agent, this shows data ingestion, transformation and embeddings pipeline. And user can ask queries from their huge document. 
+
+Phase 1 - Create a frontend/wireframe to get the feel -- Done
+
+Phase 2 - Create a backend in python with Langchain Langgraph. And test it. Create a files ingestion pipeline, chunk it, vectorise into embeddings and store in Supabase Vector DB
+
+Phase 3 - Ask Questions, questions get converted to Vectors and search in Vector. 
+
+Phase 4 - Enable Arex with front end created. And send mails as well. 
+
+Phase 5 - 

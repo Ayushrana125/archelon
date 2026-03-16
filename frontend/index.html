@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archelon - Agentic RAG Platform</title>
+  <link rel="icon" type="image/png" href="/Archelon_logo.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Satoshi', 'system-ui', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes spin-pulse {
+      0%   { transform: rotate(0deg) scale(1); }
+      25%  { transform: rotate(90deg) scale(0.75); }
+      50%  { transform: rotate(180deg) scale(1); }
+      75%  { transform: rotate(270deg) scale(0.75); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+    .animate-spin-slow {
+      animation: spin-pulse 2s ease-in-out infinite;
+    }
+    @keyframes shell-rotate {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to   { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    @keyframes bio-trail {
+      0%, 100% { opacity: 0; }
+      30%, 70% { opacity: 1; }
+    }
+    .shell-spin { animation: shell-rotate 90s linear infinite; }
+    .bio-trail  { animation: bio-trail 8s ease-in-out infinite; }
+    @keyframes drift {
+      0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.4; }
+      33% { transform: translateY(-18px) translateX(8px); opacity: 0.15; }
+      66% { transform: translateY(10px) translateX(-6px); opacity: 0.3; }
+    }
+    @keyframes drift2 {
+      0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.2; }
+      40% { transform: translateY(14px) translateX(-10px); opacity: 0.08; }
+      70% { transform: translateY(-8px) translateX(12px); opacity: 0.25; }
+    }
+    @keyframes wave-move {
+      0% { d: path('M0,40 C200,10 400,70 600,40 C800,10 1000,60 1200,40 L1200,80 L0,80 Z'); }
+      50% { d: path('M0,50 C200,20 400,60 600,50 C800,20 1000,70 1200,50 L1200,80 L0,80 Z'); }
+      100% { d: path('M0,40 C200,10 400,70 600,40 C800,10 1000,60 1200,40 L1200,80 L0,80 Z'); }
+    }
+    @keyframes ripple {
+      0% { transform: scale(1); opacity: 0.4; }
+      100% { transform: scale(2.5); opacity: 0; }
+    }
+    .particle { animation: drift var(--dur, 12s) ease-in-out infinite var(--delay, 0s); }
+    .particle2 { animation: drift2 var(--dur, 16s) ease-in-out infinite var(--delay, 0s); }
+    .ripple-ring { animation: ripple 2s ease-out infinite; }
+    .ripple-ring-2 { animation: ripple 2s ease-out infinite 0.6s; }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-left {
+      opacity: 0;
+      transform: translateX(-32px);
+      transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal-left.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .reveal-right {
+      opacity: 0;
+      transform: translateX(32px);
+      transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal-right.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .reveal-scale {
+      opacity: 0;
+      transform: scale(0.92);
+      transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal-scale.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Navbar scroll shadow */
+    .nav-scrolled {
+      box-shadow: 0 1px 24px rgba(0,0,0,0.08);
+    }
+    .dark .nav-scrolled {
+      box-shadow: 0 1px 24px rgba(0,0,0,0.4);
+    }
+
+    /* Number counter shimmer */
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    .shimmer-text {
+      background: linear-gradient(90deg, #00C9B1 0%, #1A73E8 40%, #00C9B1 80%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 3s linear infinite;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>
