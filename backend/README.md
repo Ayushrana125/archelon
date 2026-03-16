@@ -23,7 +23,7 @@ uvicorn main:app --reload
 
 ## What We Built
 
-### Prompt 1 — Project Bootstrap
+### 1 — Project Bootstrap
 **Goal:** Get a working API server running with a single chat endpoint that accepts user messages.
 
 **Files:** `main.py`, `requirements.txt`, `.env.example`
@@ -42,7 +42,7 @@ uvicorn main:app --reload
 
 ---
 
-### Prompt 2 — Query Orchestrator
+### 2 — Query Orchestrator
 **Goal:** Before doing any retrieval, understand *what* the user is asking and *how many* distinct things they're asking about. This prevents wasted retrieval calls on smalltalk and enables multi-topic queries to be handled correctly.
 
 **Files:** `orchestrator.py`, updated `main.py`
