@@ -109,7 +109,7 @@ Output: {
 async def classify_intent(user_message: str, system_instructions: str = "") -> dict:
     try:
         llm = ChatMistralAI(
-            model="mistral-small-latest",
+            model="mistral-large-latest",
             api_key=os.getenv("MISTRAL_API_KEY_1")
         )
         combined_prompt = f"{system_instructions}\n\n{SYSTEM_PROMPT}".strip() if system_instructions else SYSTEM_PROMPT
