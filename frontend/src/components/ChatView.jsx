@@ -298,6 +298,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages }) {
                     searchThinking={msg.searchThinking}
                     agentName={agentName}
                     sources={msg.sources}
+                    isHistorical={!pendingResponse[msg.id]}
                     onComplete={() => {
                       const pending = pendingResponse[msg.id];
                       if (pending) {

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
-function ThinkingSteps({ query, searchThinking, agentName, sources, onComplete }) {
-  const [currentStep, setCurrentStep] = useState(-1);
-  const [done, setDone] = useState(false);
-  const [expanded, setExpanded] = useState(true);
+function ThinkingSteps({ query, searchThinking, agentName, sources, onComplete, isHistorical }) {
+  const [currentStep, setCurrentStep] = useState(isHistorical ? 2 : -1);
+  const [done, setDone] = useState(isHistorical);
+  const [expanded, setExpanded] = useState(!isHistorical);
 
   const STEPS = [
     {
@@ -23,6 +23,7 @@ function ThinkingSteps({ query, searchThinking, agentName, sources, onComplete }
   ];
 
   useEffect(() => {
+    if (isHistorical) return;
     const timers = STEPS.map((_, i) =>
       setTimeout(() => setCurrentStep(i), i * 900)
     );
