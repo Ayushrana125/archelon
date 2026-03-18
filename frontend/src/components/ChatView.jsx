@@ -219,6 +219,13 @@ function ChatView({ agentData, onAddFile, messages, setMessages }) {
     const userMessage = { role: 'user', content: text, id: Date.now() };
     setMessages(prev => [...prev, userMessage]);
 
+    const resumeKeywords = ['resume', 'cv', 'send me your resume', 'share resume', 'share your resume', 'send resume', 'send your resume'];
+    if (!resumeFlow && isArex && resumeKeywords.some(k => text.toLowerCase().includes(k))) {
+      setResumeFlow({ step: 'askName' });
+      setTimeout(() => addAssistantMsg('Sure! What is your name?'), 400);
+      return;
+    }
+
     if (resumeFlow?.step === 'askName') {
       setResumeFlow({ step: 'askEmail', name: text });
       setTimeout(() => addAssistantMsg('What is your email?'), 400);
