@@ -32,7 +32,7 @@ async def chat(body: ChatRequest):
     )
     intent = classified.get("intent")
     if intent == "smalltalk":
-        return {"intent": intent, "thinking": "", "search_queries": [], "answer": "retrieval coming soon"}
+        return {"intent": intent, "thinking": "", "search_queries": [], "answer": "Hello, How can I help you?"}
     result = await analyze_query(body.message)
     return {
         "intent": intent,
