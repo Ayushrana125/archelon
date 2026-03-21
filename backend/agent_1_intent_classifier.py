@@ -45,7 +45,7 @@ Rules for thinking:
 Rules for search_thinking:
 - Start with "Let's search for"
 - Mention what will be searched
-- End naturally — no need to add keywords here
+- End naturally - no need to add keywords here
 - Empty string "" for smalltalk only
 
 Rules for search_queries:
