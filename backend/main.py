@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from classifier import classify_intent
-from orchestrator import analyze_query
+from agent_1_intent_classifier import classify_intent
+from agent_2_query_orchestrator import analyze_query
 
 import uvicorn
 import os
