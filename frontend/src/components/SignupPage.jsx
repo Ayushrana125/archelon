@@ -49,6 +49,7 @@ function SignupPage({ onLogin, theme }) {
 
   const [submitted, setSubmitted] = useState(false);
 
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -72,7 +73,8 @@ function SignupPage({ onLogin, theme }) {
     setError('');
     try {
       await signup({ firstName, lastName, username, email, password, companyName, website });
-      onLogin();
+      setSuccess(true);
+      setTimeout(() => onLogin(), 2000);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -283,10 +285,19 @@ function SignupPage({ onLogin, theme }) {
 
             {error && <p className="text-sm text-red-400 text-center">{error}</p>}
 
-            <button type="submit" disabled={loading} style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
-              className="w-full py-3 rounded-xl text-white text-sm font-medium hover:opacity-90 transition-opacity mt-2 disabled:opacity-60 disabled:cursor-not-allowed">
-              {loading ? 'Creating account...' : 'Create account'}
-            </button>
+            {success ? (
+              <div className="w-full py-3 rounded-xl text-sm font-medium text-center flex items-center justify-center gap-2" style={{ background: `${TEAL}20`, color: TEAL }}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Account created! Taking you in...
+              </div>
+            ) : (
+              <button type="submit" disabled={loading} style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
+                className="w-full py-3 rounded-xl text-white text-sm font-medium hover:opacity-90 transition-opacity mt-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                {loading ? 'Creating account...' : 'Create account'}
+              </button>
+            )}
           </form>
         </div>
       </div>
