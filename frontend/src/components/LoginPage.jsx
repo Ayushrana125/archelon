@@ -37,6 +37,7 @@ function LoginPage({ onLogin, theme }) {
     try {
       await login(identifier, password);
       onLogin();
+      navigate('/');
     } catch (err) {
       setError(err.message);
     } finally {

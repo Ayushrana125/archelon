@@ -16,6 +16,10 @@ function App({ externalLoggedIn, externalTheme, externalSetTheme }) {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(externalLoggedIn || false);
+
+  useEffect(() => {
+    if (externalLoggedIn) setIsLoggedIn(true);
+  }, [externalLoggedIn]);
   const [mode, setMode] = useState('arex');
   const [theme, setTheme] = useState(externalTheme || 'dark');
   const [agentData, setAgentData] = useState(null);
