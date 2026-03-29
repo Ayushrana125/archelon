@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import LoadingScreen from './components/LoadingScreen';
 import TopNav from './components/TopNav';
@@ -11,11 +12,12 @@ import EditAgentView from './components/EditAgentView';
 import DocsPanel from './components/DocsPanel';
 import LandingPage from './components/LandingPage';
 
-function App() {
+function App({ externalLoggedIn, externalTheme, externalSetTheme }) {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(externalLoggedIn || false);
   const [mode, setMode] = useState('arex');
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(externalTheme || 'dark');
   const [agentData, setAgentData] = useState(null);
   const [savedAgents, setSavedAgents] = useState(() => {
     const saved = localStorage.getItem('arex_agents');
@@ -92,7 +94,7 @@ function App() {
 
   if (!isLoggedIn) return (
     <div className={theme}>
-      <LandingPage onLogin={() => setIsLoading(true)} theme={theme} setTheme={setTheme} />
+      <LandingPage onLogin={() => setIsLoading(true)} onSignup={() => navigate('/signup')} onLoginPage={() => navigate('/login')} theme={theme} setTheme={setTheme} />
     </div>
   );
 

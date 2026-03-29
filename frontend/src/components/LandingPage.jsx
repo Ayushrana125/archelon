@@ -1,8 +1,186 @@
 import React, { useState } from 'react';
+import { signup, login } from '../services/auth_service';
 
 const WEBHOOK_URL = 'https://n8n.aranixlabs.cloud/webhook/c6f0b2d8-c320-4ab7-9028-e24932938b54';
 const TEAL = '#00C9B1';
 const BLUE = '#1A73E8';
+
+function AuthModal({ defaultTab = 'signup', onClose, onLogin }) {
+  const [tab, setTab] = useState(defaultTab);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [website, setWebsite] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    // await signup({ firstName, lastName, username, email, password, companyName, website }); — wire when backend auth is ready
+    onLogin();
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    // await login(email, password); — wire when backend auth is ready
+    onLogin();
+  };
+
+  const InputField = ({ label, icon, ...props }) => (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{label}</label>
+      <div className="relative">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={icon} />
+          </svg>
+        </div>
+        <input {...props} className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-[#00C9B1]/40 placeholder-gray-400 dark:placeholder-gray-600" />
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="bg-white dark:bg-[#141414] w-full h-full overflow-hidden relative border-0 flex">
+
+        {/* Left panel — branding */}
+        <div className="hidden md:flex flex-col justify-between w-[40%] p-12 relative overflow-hidden flex-shrink-0"
+          style={{ background: 'linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%)' }}>
+          <div className="absolute inset-0 pointer-events-none" aria-hidden>
+            <svg width="100%" height="100%" style={{ opacity: 0.04 }}>
+              <defs>
+                <pattern id="hex-auth" x="0" y="0" width="56" height="48" patternUnits="userSpaceOnUse">
+                  <polygon points="28,2 52,14 52,38 28,50 4,38 4,14" fill="none" stroke={TEAL} strokeWidth="1" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#hex-auth)" />
+            </svg>
+          </div>
+          <div className="absolute pointer-events-none" style={{
+            top: '20%', left: '50%', transform: 'translateX(-50%)',
+            width: 400, height: 300,
+            background: `radial-gradient(ellipse, ${TEAL}18 0%, transparent 70%)`,
+            filter: 'blur(40px)',
+          }} />
+          <div className="relative">
+            <div className="flex items-center gap-2.5 mb-12">
+              <img src="/Archelon_logo.png" alt="Archelon" className="h-8 w-auto object-contain" />
+              <span className="brand-name text-xl tracking-tight text-white">Archelon</span>
+            </div>
+            <h2 className="text-3xl font-bold text-white leading-tight mb-4">
+              Build AI agents that<br />
+              <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}>
+                know your documents
+              </span>
+            </h2>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              Create intelligent agents grounded in your own knowledge base, powered by a multi-step agentic RAG pipeline.
+            </p>
+          </div>
+          <div className="relative space-y-4">
+            {[
+              { icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', text: 'Upload any document — PDF, DOCX, TXT' },
+              { icon: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', text: 'Create purpose-built AI agents' },
+              { icon: 'M13 10V3L4 14h7v7l9-11h-7z', text: 'Agentic RAG pipeline for precise answers' },
+            ].map((f, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${TEAL}20` }}>
+                  <svg className="w-4 h-4" style={{ color: TEAL }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={f.icon} />
+                  </svg>
+                </div>
+                <span className="text-sm text-gray-400">{f.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right panel — form */}
+        <div className="flex-1 flex flex-col overflow-y-auto">
+          <button onClick={onClose} className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors z-10">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          <div className="flex flex-col justify-center min-h-full px-8 md:px-16 py-12 max-w-2xl mx-auto w-full">
+            {/* Tabs */}
+            <div className="flex gap-1 p-1 bg-gray-100 dark:bg-[#1e1e1e] rounded-xl mb-8 self-start">
+              {['signup', 'login'].map(t => (
+                <button key={t} onClick={() => setTab(t)}
+                  className={`px-5 py-2 text-sm font-medium rounded-lg transition-all ${
+                    tab === t
+                      ? 'bg-white dark:bg-[#2a2a2a] text-gray-900 dark:text-gray-100 shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                  }`}>
+                  {t === 'signup' ? 'Create account' : 'Log in'}
+                </button>
+              ))}
+            </div>
+
+            {tab === 'signup' && (
+              <>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">Get started</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">Create your Archelon account.</p>
+                <form onSubmit={handleSignup} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <InputField label="First name" icon="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      required value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="John" />
+                    <InputField label="Last name" icon="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      required value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Doe" />
+                  </div>
+                  <InputField label="Username" icon="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"
+                    required value={username} onChange={e => setUsername(e.target.value)} placeholder="johndoe" />
+                  <InputField label="Email" icon="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
+                  <InputField label="Password" icon="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    required type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 characters" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <InputField label="Company name" icon="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Acme Inc. (optional)" />
+                    <InputField label="Website" icon="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"
+                      value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://yoursite.com (optional)" />
+                  </div>
+                  <button type="submit" style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
+                    className="w-full py-2.5 rounded-xl text-white text-sm font-medium hover:opacity-90 transition-opacity mt-2">
+                    Create account
+                  </button>
+                </form>
+                <p className="text-xs text-gray-400 dark:text-gray-600 text-center mt-6">
+                  Already have an account?{' '}
+                  <button onClick={() => setTab('login')} className="underline hover:text-gray-600 dark:hover:text-gray-400 transition-colors">Log in</button>
+                </p>
+              </>
+            )}
+
+            {tab === 'login' && (
+              <>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">Welcome back</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">Log in to your Archelon account.</p>
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <InputField label="Email" icon="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
+                  <InputField label="Password" icon="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    required type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Your password" />
+                  <button type="submit" style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
+                    className="w-full py-2.5 rounded-xl text-white text-sm font-medium hover:opacity-90 transition-opacity mt-2">
+                    Log in
+                  </button>
+                </form>
+                <p className="text-xs text-gray-400 dark:text-gray-600 text-center mt-6">
+                  Don't have an account?{' '}
+                  <button onClick={() => setTab('signup')} className="underline hover:text-gray-600 dark:hover:text-gray-400 transition-colors">Create one</button>
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function ResumeModal({ onClose }) {
   const [step, setStep] = useState('form');
@@ -108,10 +286,13 @@ const PIPELINE = [
   { label: 'Agent Ready', sub: 'Agent is ready to answer questions', done: false },
 ];
 
-function LandingPage({ onLogin, theme, setTheme }) {
+function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
   const [showResume, setShowResume] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const dark = theme === 'dark';
+
+  const openSignup = () => onSignup?.();
+  const openLogin = () => onLoginPage?.();
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0d0d0d] text-gray-900 dark:text-gray-100 transition-colors duration-300">
@@ -143,10 +324,10 @@ function LandingPage({ onLogin, theme, setTheme }) {
                   </svg>
                 )}
               </button>
-              <button onClick={onLogin} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+              <button onClick={openLogin} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
                 Log in
               </button>
-              <button onClick={onLogin} style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
+              <button onClick={openSignup} style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
                 className="px-4 py-2 text-sm font-medium text-white rounded-lg hover:opacity-90 transition-opacity">
                 Create account
               </button>
@@ -165,8 +346,8 @@ function LandingPage({ onLogin, theme, setTheme }) {
               <a href="#how-it-works" onClick={() => setMobileMenu(false)} className="block text-gray-600 dark:text-gray-400">How it works</a>
               <button onClick={() => setTheme(p => p === 'dark' ? 'light' : 'dark')} className="block text-gray-600 dark:text-gray-400">{dark ? 'Light mode' : 'Dark mode'}</button>
               <div className="pt-2 flex flex-col gap-2">
-                <button onClick={onLogin} className="w-full py-2 text-sm font-medium border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300">Log in</button>
-                <button onClick={onLogin} style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
+                <button onClick={openLogin} className="w-full py-2 text-sm font-medium border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300">Log in</button>
+                <button onClick={openSignup} style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
                   className="w-full py-2 text-sm font-medium text-white rounded-lg">Create account</button>
               </div>
             </div>
@@ -262,7 +443,7 @@ function LandingPage({ onLogin, theme, setTheme }) {
             <div className="relative inline-block">
               <div className="ripple-ring absolute inset-0 rounded-xl pointer-events-none" style={{ border: `1.5px solid ${TEAL}`, opacity: 0 }} />
               <div className="ripple-ring-2 absolute inset-0 rounded-xl pointer-events-none" style={{ border: `1.5px solid ${TEAL}`, opacity: 0 }} />
-              <button onClick={onLogin} style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
+              <button onClick={openSignup} style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
                 className="relative px-7 py-3 text-white rounded-xl font-medium hover:opacity-90 transition-opacity text-sm shadow-lg">
                 Get started
               </button>
@@ -405,11 +586,11 @@ function LandingPage({ onLogin, theme, setTheme }) {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-gray-900 dark:text-gray-100">Ready to get started?</h2>
             <p className="text-gray-500 dark:text-gray-400 mb-8">Create your first agent in minutes. No setup required.</p>
             <div className="flex items-center justify-center gap-3 flex-wrap">
-              <button onClick={onLogin} style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
+              <button onClick={openSignup} style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
                 className="px-6 py-3 text-white rounded-xl font-medium hover:opacity-90 transition-opacity text-sm shadow-lg shadow-teal-500/20">
                 Create account
               </button>
-              <button onClick={onLogin} className="px-6 py-3 border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-sm text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-[#1a1a1a] transition-colors">
+              <button onClick={openLogin} className="px-6 py-3 border border-gray-200 dark:border-gray-700 rounded-xl font-medium text-sm text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-[#1a1a1a] transition-colors">
                 Log in
               </button>
             </div>
