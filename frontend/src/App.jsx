@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
 import TopNav from './components/TopNav';
 import Sidebar from './components/Sidebar';
 import ChatView from './components/ChatView';
@@ -9,15 +8,9 @@ import SettingsView from './components/SettingsView';
 import AgentsLibrary from './components/AgentsLibrary';
 import EditAgentView from './components/EditAgentView';
 import DocsPanel from './components/DocsPanel';
-import LandingPage from './components/LandingPage';
 
-function App({ externalLoggedIn, externalTheme, externalSetTheme }) {
+function App({ externalTheme, externalSetTheme }) {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(externalLoggedIn || false);
-
-  useEffect(() => {
-    if (externalLoggedIn) setIsLoggedIn(true);
-  }, [externalLoggedIn]);
   const [mode, setMode] = useState('arex');
   const [theme, setTheme] = useState(externalTheme || 'dark');
   const [agentData, setAgentData] = useState(null);
@@ -87,12 +80,6 @@ function App({ externalLoggedIn, externalTheme, externalSetTheme }) {
     ));
     setAgentData(prev => prev ? { ...prev, files: prev.files.filter((_, i) => i !== idx) } : prev);
   };
-
-  if (!isLoggedIn) return (
-    <div className={theme}>
-      <LandingPage onLogin={() => setIsLoading(true)} onSignup={() => navigate('/signup')} onLoginPage={() => navigate('/login')} theme={theme} setTheme={setTheme} />
-    </div>
-  );
 
   return (
     <div className={theme}>
