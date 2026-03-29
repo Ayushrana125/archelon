@@ -3,5 +3,7 @@ uvicorn
 langchain
 langchain-mistralai
 python-dotenv
-pydantic
+pydantic[email]
+supabase
+bcrypt
 

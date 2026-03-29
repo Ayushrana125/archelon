@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from agent_1_intent_classifier import classify_intent
 from agent_2_query_orchestrator import analyze_query
+from routers import auth
 
 import uvicorn
 import os
@@ -15,6 +16,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth.router, prefix="/api")
 
 
 class ChatRequest(BaseModel):
