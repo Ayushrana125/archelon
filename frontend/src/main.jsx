@@ -39,7 +39,7 @@ function RootInner() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<LandingPage onLogin={handleLogin} onSignup={() => navigate('/signup')} onLoginPage={() => navigate('/login')} theme={theme} setTheme={setTheme} />} />
+        <Route path="/" element={<div className={theme}><LandingPage onLogin={handleLogin} onSignup={() => navigate('/signup')} onLoginPage={() => navigate('/login')} theme={theme} setTheme={setTheme} /></div>} />
         <Route path="/signup" element={<SignupPage onLogin={handleLogin} theme={theme} />} />
         <Route path="/login" element={<LoginPage onLogin={handleLogin} theme={theme} />} />
         <Route path="/chat/*" element={isLoggedIn ? <App externalTheme={theme} externalSetTheme={setTheme} onLogout={handleLogout} user={user} /> : <Navigate to="/login" replace />} />
