@@ -24,13 +24,19 @@ function RootInner() {
     navigate('/chat');
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    setIsLoggedIn(false);
+    navigate('/');
+  };
+
   return (
     <>
       <Routes>
         <Route path="/" element={<LandingPage onLogin={handleLogin} onSignup={() => navigate('/signup')} onLoginPage={() => navigate('/login')} theme={theme} setTheme={setTheme} />} />
         <Route path="/signup" element={<SignupPage onLogin={handleLogin} theme={theme} />} />
         <Route path="/login" element={<LoginPage onLogin={handleLogin} theme={theme} />} />
-        <Route path="/chat/*" element={isLoggedIn ? <App externalTheme={theme} externalSetTheme={setTheme} /> : <Navigate to="/login" replace />} />
+        <Route path="/chat/*" element={isLoggedIn ? <App externalTheme={theme} externalSetTheme={setTheme} onLogout={handleLogout} /> : <Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <AnimatePresence>

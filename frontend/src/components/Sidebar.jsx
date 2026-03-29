@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onSelectArex, collapsed, setCollapsed }) {
+function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onSelectArex, collapsed, setCollapsed, onLogout }) {
   const isArexActive = mode === 'arex' && !activeAgentId;
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const menuRef = useRef(null);
@@ -143,9 +143,8 @@ function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onS
                 Settings
               </button>
               <button
-                onClick={() => { console.log('Logout'); setShowProfileMenu(false); }}
-                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-[#333] transition-colors"
-              >
+                onClick={() => { onLogout(); setShowProfileMenu(false); }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-[#333] transition-colors text-red-500">
                 Log out
               </button>
             </div>
