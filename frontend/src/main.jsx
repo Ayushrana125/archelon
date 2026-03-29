@@ -15,21 +15,19 @@ function Root() {
 
   const handleLogin = () => setIsLoading(true);
 
-  if (isLoading) return (
-    <BrowserRouter>
-      <AnimatePresence>
-        <LoadingScreen key="loading" onDone={() => { setIsLoading(false); setIsLoggedIn(true); }} />
-      </AnimatePresence>
-    </BrowserRouter>
-  );
-
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/signup" element={<SignupPage onLogin={handleLogin} theme={theme} />} />
-        <Route path="/login" element={<LoginPage onLogin={handleLogin} theme={theme} />} />
-        <Route path="/*" element={<App externalLoggedIn={isLoggedIn} externalTheme={theme} externalSetTheme={setTheme} />} />
-      </Routes>
+      {isLoading ? (
+        <AnimatePresence>
+          <LoadingScreen key="loading" onDone={() => { setIsLoading(false); setIsLoggedIn(true); }} />
+        </AnimatePresence>
+      ) : (
+        <Routes>
+          <Route path="/signup" element={<SignupPage onLogin={handleLogin} theme={theme} />} />
+          <Route path="/login" element={<LoginPage onLogin={handleLogin} theme={theme} />} />
+          <Route path="/*" element={<App externalLoggedIn={isLoggedIn} externalTheme={theme} externalSetTheme={setTheme} />} />
+        </Routes>
+      )}
     </BrowserRouter>
   );
 }
