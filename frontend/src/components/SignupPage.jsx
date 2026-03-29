@@ -74,7 +74,7 @@ function SignupPage({ onLogin, theme }) {
     try {
       await signup({ firstName, lastName, username, email, password, companyName, website });
       setSuccess(true);
-      setTimeout(() => { onLogin(); navigate('/'); }, 2000);
+      setTimeout(() => { onLogin(); }, 2000);
     } catch (err) {
       setError(err.message);
     } finally {
