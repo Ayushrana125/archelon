@@ -9,7 +9,7 @@ import AgentsLibrary from './components/AgentsLibrary';
 import EditAgentView from './components/EditAgentView';
 import DocsPanel from './components/DocsPanel';
 
-function App({ externalTheme, externalSetTheme, onLogout }) {
+function App({ externalTheme, externalSetTheme, onLogout, user }) {
   const navigate = useNavigate();
   const [mode, setMode] = useState('arex');
   const [theme, setTheme] = useState(externalTheme || 'dark');
@@ -103,6 +103,7 @@ function App({ externalTheme, externalSetTheme, onLogout }) {
             collapsed={sidebarCollapsed}
             setCollapsed={setSidebarCollapsed}
             onLogout={onLogout}
+            user={user}
           />
           <main className="flex-1 pt-[57px]">
             {mode === 'arex' && <ChatView key={agentData?.id ?? 'arex'} agentData={agentData} onAddFile={handleAddFileToAgent} messages={currentMessages} setMessages={setCurrentMessages} />}

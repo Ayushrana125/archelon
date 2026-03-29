@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onSelectArex, collapsed, setCollapsed, onLogout }) {
+function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onSelectArex, collapsed, setCollapsed, onLogout, user }) {
+  const displayName = user ? `${user.first_name} ${user.last_name}` : 'Account';
+  const displayEmail = user?.email ?? '';
   const isArexActive = mode === 'arex' && !activeAgentId;
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const menuRef = useRef(null);
@@ -132,8 +134,8 @@ function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onS
         {showProfileMenu && (
           <div className="absolute bottom-full left-0 right-0 mb-2 mx-3 bg-white dark:bg-[#2a2a2a] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden z-50">
             <div className="px-4 py-3 border-b-2 border-gray-200 dark:border-gray-600">
-              <div className="font-medium text-sm">Ayush Rana</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">ayushrana193@gmail.com</div>
+              <div className="font-medium text-sm">{displayName}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{displayEmail}</div>
             </div>
             <div className="py-1">
               <button
@@ -161,8 +163,8 @@ function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onS
           </div>
           {!collapsed && (
             <div className="min-w-0 text-left">
-              <div className="text-sm font-medium truncate">Ayush Rana</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 truncate">ayushrana193@gmail.com</div>
+              <div className="text-sm font-medium truncate">{displayName}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{displayEmail}</div>
             </div>
           )}
         </button>

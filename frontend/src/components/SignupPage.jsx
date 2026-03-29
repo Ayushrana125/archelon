@@ -72,9 +72,9 @@ function SignupPage({ onLogin, theme }) {
     setLoading(true);
     setError('');
     try {
-      await signup({ firstName, lastName, username, email, password, companyName, website });
+      const userData = await signup({ firstName, lastName, username, email, password, companyName, website });
       setSuccess(true);
-      setTimeout(() => { onLogin(); }, 2000);
+      setTimeout(() => { onLogin(userData); }, 2000);
     } catch (err) {
       setError(err.message);
     } finally {
