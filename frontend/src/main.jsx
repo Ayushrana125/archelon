@@ -8,26 +8,38 @@ import LoadingScreen from './components/LoadingScreen';
 import { AnimatePresence } from 'framer-motion';
 import './index.css';
 
-function Root() {
+function RootInner() {
+  const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [theme, setTheme] = React.useState('dark');
 
   const handleLogin = () => setIsLoading(true);
 
+  const handleDone = () => {
+    setIsLoading(false);
+    setIsLoggedIn(true);
+    navigate('/');
+  };
+
+  return (
+    <>
+      <Routes>
+        <Route path="/signup" element={<SignupPage onLogin={handleLogin} theme={theme} />} />
+        <Route path="/login" element={<LoginPage onLogin={handleLogin} theme={theme} />} />
+        <Route path="/*" element={<App externalLoggedIn={isLoggedIn} externalTheme={theme} externalSetTheme={setTheme} />} />
+      </Routes>
+      <AnimatePresence>
+        {isLoading && <LoadingScreen key="loading" onDone={handleDone} />}
+      </AnimatePresence>
+    </>
+  );
+}
+
+function Root() {
   return (
     <BrowserRouter>
-      {isLoading ? (
-        <AnimatePresence>
-          <LoadingScreen key="loading" onDone={() => { setIsLoading(false); setIsLoggedIn(true); }} />
-        </AnimatePresence>
-      ) : (
-        <Routes>
-          <Route path="/signup" element={<SignupPage onLogin={handleLogin} theme={theme} />} />
-          <Route path="/login" element={<LoginPage onLogin={handleLogin} theme={theme} />} />
-          <Route path="/*" element={<App externalLoggedIn={isLoggedIn} externalTheme={theme} externalSetTheme={setTheme} />} />
-        </Routes>
-      )}
+      <RootInner />
     </BrowserRouter>
   );
 }

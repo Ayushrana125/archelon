@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import LoadingScreen from './components/LoadingScreen';
 import TopNav from './components/TopNav';
 import Sidebar from './components/Sidebar';
 import ChatView from './components/ChatView';
@@ -14,7 +13,6 @@ import LandingPage from './components/LandingPage';
 
 function App({ externalLoggedIn, externalTheme, externalSetTheme }) {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(externalLoggedIn || false);
 
   useEffect(() => {
@@ -89,12 +87,6 @@ function App({ externalLoggedIn, externalTheme, externalSetTheme }) {
     ));
     setAgentData(prev => prev ? { ...prev, files: prev.files.filter((_, i) => i !== idx) } : prev);
   };
-
-  if (isLoading) return (
-    <AnimatePresence>
-      <LoadingScreen key="loading" onDone={() => { setIsLoading(false); setIsLoggedIn(true); }} />
-    </AnimatePresence>
-  );
 
   if (!isLoggedIn) return (
     <div className={theme}>
