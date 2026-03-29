@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr
 import bcrypt
@@ -12,8 +13,8 @@ class SignupRequest(BaseModel):
     username: str
     email: EmailStr
     password: str
-    company_name: str = None
-    website: str = None
+    company_name: Optional[str] = None
+    website: Optional[str] = None
 
 
 class LoginRequest(BaseModel):
