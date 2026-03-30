@@ -1,17 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { fetchDocuments } from '../services/document_service';
+import { fetchDocuments, invalidateDocuments } from '../services/document_service';
 import { updateAgent, deleteAgent } from '../services/agent_service';
+import { uploadFiles } from '../services/ingest_service';
+import FileUpload from './FileUpload';
+import ProcessingSteps from './ProcessingSteps';
 
 function EditAgentView({ agentData, onSave, onCancel, onDelete }) {
+  const [step, setStep] = useState('edit'); // 'edit' | 'upload' | 'processing'
   const [name, setName] = useState(agentData?.name ?? '');
   const [instructions, setInstructions] = useState(agentData?.instructions ?? '');
   const [documents, setDocuments] = useState([]);
-  const [newFiles, setNewFiles] = useState([]);
+  const [files, setFiles] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState('');
-  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!agentData?.id) return;
@@ -22,14 +26,7 @@ function EditAgentView({ agentData, onSave, onCancel, onDelete }) {
 
   const isDirty =
     name !== (agentData?.name ?? '') ||
-    instructions !== (agentData?.instructions ?? '') ||
-    newFiles.length > 0;
-
-  const handleFileAdd = (e) => {
-    const selected = Array.from(e.target.files);
-    setNewFiles(prev => [...prev, ...selected]);
-    e.target.value = '';
-  };
+    instructions !== (agentData?.instructions ?? '');
 
   const handleSave = async () => {
     setSaving(true);
@@ -57,12 +54,63 @@ function EditAgentView({ agentData, onSave, onCancel, onDelete }) {
     }
   };
 
+  // Upload files for existing agent
+  const handleUpload = async () => {
+    setError('');
+    try {
+      const result = await uploadFiles(agentData.id, files);
+      const jobList = result.files.map(f => ({
+        jobId:    f.job_id,
+        filename: f.filename,
+        fileSize: files.find(fl => fl.name === f.filename)?.size ?? 0,
+        status:   'parsing',
+      }));
+      setJobs(jobList);
+      setStep('processing');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  // After processing done — refresh documents and go back to edit
+  const handleProcessingComplete = () => {
+    invalidateDocuments(agentData.id);
+    fetchDocuments(agentData.id)
+      .then(docs => setDocuments(docs))
+      .catch(() => {});
+    setFiles([]);
+    setJobs([]);
+    setStep('edit');
+  };
+
   const formatSize = (bytes) => {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
+  // Upload step
+  if (step === 'upload') {
+    return (
+      <FileUpload
+        files={files}
+        setFiles={setFiles}
+        onCreateAgent={handleUpload}
+        onBack={() => { setFiles([]); setStep('edit'); }}
+      />
+    );
+  }
+
+  // Processing step
+  if (step === 'processing') {
+    return (
+      <div className="flex justify-center h-[calc(100vh-57px)] overflow-y-auto">
+        <ProcessingSteps jobs={jobs} onComplete={handleProcessingComplete} />
+      </div>
+    );
+  }
+
+  // Edit step
   return (
     <div className="flex justify-center pt-16 px-6 pb-16">
       <div className="w-full max-w-xl">
@@ -100,45 +148,24 @@ function EditAgentView({ agentData, onSave, onCancel, onDelete }) {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Documents</label>
 
-            {/* Documents from DB */}
             {documents.length > 0 && (
               <div className="space-y-2 mb-3">
                 {documents.map((doc) => (
-                  <div key={doc.id} className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-[#2a2a2a] rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div key={doc.id} className="flex items-center gap-3 px-3 py-2 bg-gray-50 dark:bg-[#2a2a2a] rounded-lg border border-gray-200 dark:border-gray-700">
+                    <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm truncate">{doc.filename}</p>
-                      <p className="text-xs text-gray-400">{doc.status}</p>
+                      <p className="text-xs text-gray-400">{formatSize(doc.file_size)} · {doc.status}</p>
                     </div>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* New files pending save */}
-            {newFiles.length > 0 && (
-              <div className="space-y-2 mb-3">
-                {newFiles.map((file, idx) => (
-                  <div key={idx} className="flex items-center justify-between px-3 py-2 bg-teal-50 dark:bg-teal-900/20 rounded-lg border border-teal-200 dark:border-teal-800">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm truncate">{file.name}</p>
-                      <p className="text-xs text-gray-400">{formatSize(file.size)} · new</p>
-                    </div>
-                    <button
-                      onClick={() => setNewFiles(prev => prev.filter((_, i) => i !== idx))}
-                      className="ml-3 text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Add files */}
             <button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => setStep('upload')}
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,7 +173,6 @@ function EditAgentView({ agentData, onSave, onCancel, onDelete }) {
               </svg>
               Add documents
             </button>
-            <input ref={fileInputRef} type="file" multiple accept=".pdf,.docx,.txt" onChange={handleFileAdd} className="hidden" />
           </div>
 
           {error && <p className="text-sm text-red-400">{error}</p>}
