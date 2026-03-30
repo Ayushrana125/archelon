@@ -9,4 +9,5 @@ bcrypt
 pymupdf
 python-docx
 python-jose[cryptography]
+python-multipart
 
