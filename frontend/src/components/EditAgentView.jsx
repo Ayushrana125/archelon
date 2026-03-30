@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchDocuments, invalidateDocuments } from '../services/document_service';
+import { fetchDocuments, invalidateDocuments, deleteDocument } from '../services/document_service';
 import { updateAgent, deleteAgent } from '../services/agent_service';
 import { uploadFiles } from '../services/ingest_service';
 import FileUpload from './FileUpload';
@@ -26,9 +26,26 @@ function EditAgentView({ agentData, onSave, onCancel, onDelete }) {
       .catch(() => setDocuments([]));
   }, [agentData?.id]);
 
+  const [confirmDeleteDocId, setConfirmDeleteDocId] = useState(null);
+  const [deletingDocId, setDeletingDocId] = useState(null);
+
   const isDirty =
     name !== (agentData?.name ?? '') ||
     instructions !== (agentData?.instructions ?? '');
+
+  const handleDeleteDoc = async (docId) => {
+    if (confirmDeleteDocId !== docId) { setConfirmDeleteDocId(docId); return; }
+    setDeletingDocId(docId);
+    try {
+      await deleteDocument(agentData.id, docId);
+      invalidateDocuments(agentData.id);
+      setDocuments(prev => prev.filter(d => d.id !== docId));
+    } catch (err) {
+      setError(err.message);
+    }
+    setDeletingDocId(null);
+    setConfirmDeleteDocId(null);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -176,13 +193,35 @@ function EditAgentView({ agentData, onSave, onCancel, onDelete }) {
             {documents.length > 0 && (
               <div className="space-y-2 mb-3">
                 {documents.map((doc) => (
-                  <div key={doc.id} className="flex items-center gap-3 px-3 py-2 bg-gray-50 dark:bg-[#2a2a2a] rounded-lg border border-gray-200 dark:border-gray-700">
-                    <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm truncate">{doc.filename}</p>
-                      <p className="text-xs text-gray-400">{formatSize(doc.file_size)} · {doc.status}</p>
+                  <div key={doc.id} className="px-3 py-2 bg-gray-50 dark:bg-[#2a2a2a] rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-3">
+                      <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm truncate">{doc.filename}</p>
+                        <p className="text-xs text-gray-400">{formatSize(doc.file_size)} · {doc.status}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                      {confirmDeleteDocId === doc.id ? (
+                        <>
+                          <span className="text-xs text-gray-400">Sure?</span>
+                          <button onClick={() => handleDeleteDoc(doc.id)} disabled={deletingDocId === doc.id}
+                            className="text-xs px-2 py-0.5 rounded bg-red-500 text-white hover:bg-red-600 transition-colors">
+                            {deletingDocId === doc.id ? '...' : 'Delete'}
+                          </button>
+                          <button onClick={() => setConfirmDeleteDocId(null)}
+                            className="text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 transition-colors">
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <button onClick={() => handleDeleteDoc(doc.id)}
+                          className="text-xs text-red-400 hover:text-red-500 transition-colors">
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
