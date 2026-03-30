@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 
-function FileUpload({ files, setFiles, onCreateAgent }) {
+function FileUpload({ files, setFiles, onCreateAgent, onBack }) {
   const fileInputRef = useRef(null);
 
   const handleFileSelect = (e) => {
@@ -20,11 +20,16 @@ function FileUpload({ files, setFiles, onCreateAgent }) {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-12">
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold mb-2">Upload Your Documents</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Add documents to train your AI agent
-        </p>
+      <div className="flex items-center gap-3 mb-8">
+        <button onClick={onBack} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div>
+          <h1 className="text-3xl font-semibold">Upload Your Documents</h1>
+          <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Add documents to train your AI agent</p>
+        </div>
       </div>
 
       <div
