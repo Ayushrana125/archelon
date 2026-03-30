@@ -18,7 +18,7 @@ function RootInner() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [theme, setTheme] = React.useState('dark');
 
-  const handleLogin = (userData) => { setUser(userData); setIsLoading(true); };
+  const handleLogin = (userData) => { setUser(userData.user || userData); setIsLoading(true); };
 
   const handleDone = () => {
     localStorage.setItem('isLoggedIn', 'true');
