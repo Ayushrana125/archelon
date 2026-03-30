@@ -1,17 +1,23 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { fetchDocuments } from '../services/document_service';
 
 function EditAgentView({ agentData, onSave, onCancel }) {
   const [name, setName] = useState(agentData?.name ?? '');
   const [instructions, setInstructions] = useState(agentData?.instructions ?? '');
-  const [files, setFiles] = useState(agentData?.files ?? []);
+  const [documents, setDocuments] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
   const fileInputRef = useRef(null);
 
-  const originalFileCount = agentData?.files?.length ?? 0;
+  useEffect(() => {
+    if (!agentData?.id) return;
+    fetchDocuments(agentData.id)
+      .then(docs => setDocuments(docs))
+      .catch(() => setDocuments([]));
+  }, [agentData?.id]);
+
   const isDirty =
     name !== (agentData?.name ?? '') ||
     instructions !== (agentData?.instructions ?? '') ||
-    files.length !== originalFileCount ||
     newFiles.length > 0;
 
   const handleFileAdd = (e) => {
@@ -21,8 +27,7 @@ function EditAgentView({ agentData, onSave, onCancel }) {
   };
 
   const handleSave = () => {
-    const mergedFiles = [...files, ...newFiles.map(f => ({ name: f.name, size: f.size }))];
-    onSave({ ...agentData, name, instructions, files: mergedFiles });
+    onSave({ ...agentData, name, instructions });
   };
 
   const formatSize = (bytes) => {
@@ -68,23 +73,15 @@ function EditAgentView({ agentData, onSave, onCancel }) {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Documents</label>
 
-            {/* Existing files */}
-            {files.length > 0 && (
+            {/* Documents from DB */}
+            {documents.length > 0 && (
               <div className="space-y-2 mb-3">
-                {files.map((file, idx) => (
-                  <div key={idx} className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-[#2a2a2a] rounded-lg border border-gray-200 dark:border-gray-700">
+                {documents.map((doc) => (
+                  <div key={doc.id} className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-[#2a2a2a] rounded-lg border border-gray-200 dark:border-gray-700">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm truncate">{file.name}</p>
-                      {file.size && <p className="text-xs text-gray-400">{formatSize(file.size)}</p>}
+                      <p className="text-sm truncate">{doc.filename}</p>
+                      <p className="text-xs text-gray-400">{doc.status}</p>
                     </div>
-                    <button
-                      onClick={() => setFiles(prev => prev.filter((_, i) => i !== idx))}
-                      className="ml-3 text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
                   </div>
                 ))}
               </div>

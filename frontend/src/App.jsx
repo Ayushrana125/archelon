@@ -112,10 +112,9 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
             {mode === 'library' && <AgentsLibrary agents={savedAgents} setAgentData={setAgentData} setMode={setMode} />}
             {mode === 'settings' && <SettingsView theme={theme} setTheme={setTheme} />}
           </main>
-          {showDocsPanel && agentData?.files && (
+          {showDocsPanel && agentData && (
             <DocsPanel
-              files={agentData.files}
-              onDelete={handleDeleteFile}
+              agentData={agentData}
               onClose={() => setShowDocsPanel(false)}
             />
           )}
