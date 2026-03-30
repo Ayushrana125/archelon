@@ -110,7 +110,7 @@ function DocsPanel({ agentData, onClose }) {
 
   useEffect(() => {
     if (!agentData?.id) return;
-    fetchDocuments(agentData.id, true)
+    fetchDocuments(agentData.id)
       .then(docs => setDocuments(docs))
       .catch(() => setDocuments([]));
   }, [agentData?.id]);
