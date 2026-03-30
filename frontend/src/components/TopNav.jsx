@@ -13,7 +13,7 @@ function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, 
             {documents.length} doc{documents.length !== 1 ? 's' : ''}
           </button>
         )}
-        {agentData && (
+        {agentData && !agentData.is_system && (
           <button
             onClick={onEditAgent}
             title="Edit agent"
