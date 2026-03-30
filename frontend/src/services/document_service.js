@@ -39,6 +39,10 @@ export async function fetchDocumentHistory(agentId, documentId, forceRefresh = f
   return data;
 }
 
+export function getCachedDocuments(agentId) {
+  return _cache[`docs_${agentId}`] ?? null;
+}
+
 export function invalidateDocuments(agentId) {
   delete _cache[`docs_${agentId}`];
 }

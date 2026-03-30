@@ -10,7 +10,7 @@ import EditAgentView from './components/EditAgentView';
 import DocsPanel from './components/DocsPanel';
 import HomePage from './components/HomePage';
 import { fetchAgents } from './services/agent_service';
-import { fetchDocuments, invalidateDocuments } from './services/document_service';
+import { fetchDocuments, invalidateDocuments, getCachedDocuments } from './services/document_service';
 
 function App({ externalTheme, externalSetTheme, onLogout, user }) {
   const navigate = useNavigate();
@@ -27,12 +27,16 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
       .catch(() => setSavedAgents([]));
   }, []);
 
-  // Fetch documents when agent changes
+  // Fetch documents when agent changes — seed from cache instantly
   useEffect(() => {
     if (!agentData?.id) { setAgentDocuments([]); return; }
+    // Seed from cache immediately so UI shows instantly
+    const cached = getCachedDocuments(agentData.id);
+    if (cached) setAgentDocuments(cached);
+    // Still fetch to ensure fresh data on first load
     fetchDocuments(agentData.id)
       .then(docs => setAgentDocuments(docs))
-      .catch(() => setAgentDocuments([]));
+      .catch(() => {});
   }, [agentData?.id]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showDocsPanel, setShowDocsPanel] = useState(false);
