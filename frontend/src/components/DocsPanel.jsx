@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchDocuments, fetchDocumentHistory } from '../services/document_service';
+import { fetchDocumentHistory } from '../services/document_service';
 
 const TEAL = '#00C9B1';
 const STEP_ORDER = ['parsing', 'chunking', 'saving', 'done'];
@@ -99,21 +99,13 @@ function DocHistory({ agentId, doc }) {
   );
 }
 
-function DocsPanel({ agentData, onClose }) {
-  const [documents, setDocuments] = useState([]);
+function DocsPanel({ agentData, documents = [], onClose }) {
   const [visible, setVisible] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true));
   }, []);
-
-  useEffect(() => {
-    if (!agentData?.id) return;
-    fetchDocuments(agentData.id)
-      .then(docs => setDocuments(docs))
-      .catch(() => setDocuments([]));
-  }, [agentData?.id]);
 
   const handleClose = () => {
     setVisible(false);

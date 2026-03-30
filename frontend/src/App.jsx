@@ -10,6 +10,7 @@ import EditAgentView from './components/EditAgentView';
 import DocsPanel from './components/DocsPanel';
 import HomePage from './components/HomePage';
 import { fetchAgents } from './services/agent_service';
+import { fetchDocuments, invalidateDocuments } from './services/document_service';
 
 function App({ externalTheme, externalSetTheme, onLogout, user }) {
   const navigate = useNavigate();
@@ -18,12 +19,21 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
   const [agentData, setAgentData] = useState(null);
   const [savedAgents, setSavedAgents] = useState([]);
   const [activeAgentId, setActiveAgentId] = useState(null);
+  const [agentDocuments, setAgentDocuments] = useState([]);
 
   useEffect(() => {
     fetchAgents()
       .then(agents => setSavedAgents(agents))
       .catch(() => setSavedAgents([]));
   }, []);
+
+  // Fetch documents when agent changes
+  useEffect(() => {
+    if (!agentData?.id) { setAgentDocuments([]); return; }
+    fetchDocuments(agentData.id)
+      .then(docs => setAgentDocuments(docs))
+      .catch(() => setAgentDocuments([]));
+  }, [agentData?.id]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showDocsPanel, setShowDocsPanel] = useState(false);
   const [chatHistories, setChatHistories] = useState({
@@ -99,6 +109,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
         <TopNav
           agentName={agentData ? agentData.name : 'Home'}
           agentData={agentData}
+          documents={agentDocuments}
           collapsed={sidebarCollapsed}
           onDocsClick={() => setShowDocsPanel(p => !p)}
           onEditAgent={() => setMode('edit')}
@@ -129,6 +140,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
           {showDocsPanel && agentData && (
             <DocsPanel
               agentData={agentData}
+              documents={agentDocuments}
               onClose={() => setShowDocsPanel(false)}
             />
           )}
