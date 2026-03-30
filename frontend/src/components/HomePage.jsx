@@ -3,7 +3,7 @@ import React from 'react';
 const TEAL = '#00C9B1';
 const BLUE = '#1A73E8';
 
-function HomePage({ onNewAgent, onSelectArex, savedAgents, onSelectAgent }) {
+function HomePage({ onNewAgent, savedAgents, onSelectAgent }) {
   const hasAgents = savedAgents?.length > 0;
 
   return (
@@ -14,28 +14,20 @@ function HomePage({ onNewAgent, onSelectArex, savedAgents, onSelectAgent }) {
           Welcome to Archelon
         </h1>
         <p className="text-gray-500 dark:text-gray-400 mb-10 leading-relaxed">
-          Create an AI agent grounded in your documents, or chat with Arex — Ayush's personal assistant.
+          Create an AI agent grounded in your documents, or chat with one of your existing agents.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <button
-            onClick={onNewAgent}
-            style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
-            className="w-full sm:w-auto px-6 py-3 rounded-xl text-white text-sm font-medium hover:opacity-90 transition-opacity shadow-lg"
-          >
-            Create new agent
-          </button>
-          <button
-            onClick={onSelectArex}
-            className="w-full sm:w-auto px-6 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors"
-          >
-            Chat with Arex
-          </button>
-        </div>
+        <button
+          onClick={onNewAgent}
+          style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
+          className="px-6 py-3 rounded-xl text-white text-sm font-medium hover:opacity-90 transition-opacity shadow-lg"
+        >
+          Create new agent
+        </button>
 
         {hasAgents && (
           <div className="mt-12 text-left">
-            <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Your agents</p>
+            <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Chat with your agents</p>
             <div className="space-y-2">
               {savedAgents.map(agent => (
                 <button
