@@ -31,6 +31,12 @@ async def get_agent_by_id(agent_id: str, user_id: str) -> dict:
     return response.data
 
 
+async def get_system_agent_by_id(agent_id: str) -> dict:
+    db = get_supabase()
+    response = db.table("agents").select("*").eq("id", agent_id).eq("is_system", True).single().execute()
+    return response.data
+
+
 async def update_agent(agent_id: str, user_id: str, updates: dict) -> dict:
     db = get_supabase()
     response = db.table("agents").update(updates).eq("id", agent_id).eq("user_id", user_id).execute()
