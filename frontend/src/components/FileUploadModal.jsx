@@ -4,9 +4,9 @@ function FileUploadModal({ onClose, onFileSelect }) {
   const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      onFileSelect(file);
+    const files = Array.from(e.target.files).slice(0, 5);
+    if (files.length) {
+      onFileSelect(files);
       onClose();
     }
     e.target.value = '';
@@ -29,13 +29,14 @@ function FileUploadModal({ onClose, onFileSelect }) {
             </div>
             <div>
               <div className="text-sm text-gray-200">Choose file</div>
-              <div className="text-xs text-gray-500">PDF, DOCX, TXT</div>
+              <div className="text-xs text-gray-500">PDF, DOCX, TXT · up to 5 files</div>
             </div>
           </button>
           <input
             ref={fileInputRef}
             type="file"
             accept=".pdf,.docx,.txt"
+            multiple
             className="hidden"
             onChange={handleFileChange}
           />

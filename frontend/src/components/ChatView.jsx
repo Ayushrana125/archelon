@@ -149,7 +149,6 @@ function ChatView({ agentData, onAddFile, messages, setMessages }) {
   const [isTyping, setIsTyping] = useState(false);
   const [streamingMsg, setStreamingMsg] = useState(null);
   const [resumeFlow, setResumeFlow] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [isProcessingDoc, setIsProcessingDoc] = useState(false);
   const [processingMsgId, setProcessingMsgId] = useState(null);
@@ -163,20 +162,19 @@ function ChatView({ agentData, onAddFile, messages, setMessages }) {
   const defaultPlaceholder = isArex ? 'Ask Arex...' : `Ask ${agentName}...`;
   const isBusy = isTyping || !!streamingMsg || isProcessingDoc;
   const { resetIdle } = useAnimatedPlaceholder(isArex && !input && !isBusy, textareaRef, defaultPlaceholder);
-  const hasNoDocs = false; // docs check now handled by backend
+  const canUpload = agentData && !agentData.is_system;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingMsg]);
 
-  const handleFileSelect = async (file) => {
+  const handleFileSelect = async (files) => {
     if (processingStarted.current) return;
     processingStarted.current = true;
-    setSelectedFile(file);
     setIsProcessingDoc(true);
-
     try {
-      const result = await uploadFiles(agentData.id, [file]);
+      const fileArray = Array.isArray(files) ? files : [files];
+      const result = await uploadFiles(agentData.id, fileArray);
       const jobs = result.files.map(f => ({
         jobId: f.job_id,
         filename: f.filename,
@@ -185,11 +183,10 @@ function ChatView({ agentData, onAddFile, messages, setMessages }) {
       const id = Date.now();
       setProcessingMsgId(id);
       setMessages(prev => [...prev, { role: 'processing', id, jobs }]);
-      onAddFile?.(file);
+      fileArray.forEach(f => onAddFile?.(f));
     } catch (err) {
       setIsProcessingDoc(false);
       processingStarted.current = false;
-      setSelectedFile(null);
       setMessages(prev => [...prev, { role: 'assistant', content: `Upload failed: ${err.message}`, id: Date.now() }]);
     }
   };
@@ -197,7 +194,6 @@ function ChatView({ agentData, onAddFile, messages, setMessages }) {
   const handleProcessingComplete = () => {
     setIsProcessingDoc(false);
     processingStarted.current = false;
-    setSelectedFile(null);
     setMessages(prev => prev.map(m => m.role === 'processing' && !m.completed ? { ...m, completed: true } : m));
   };
 
@@ -228,7 +224,6 @@ function ChatView({ agentData, onAddFile, messages, setMessages }) {
     const text = (typeof directInput === 'string' ? directInput : input).trim();
     if (!text) return;
     setInput('');
-    setSelectedFile(null);
     resetIdle();
 
     const userMessage = { role: 'user', content: text, id: Date.now() };
@@ -393,7 +388,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages }) {
       <div className="bg-white dark:bg-[#212121] px-6 pb-6 pt-3">
         <div className="max-w-4xl mx-auto">
           <div className="relative bg-gray-100 dark:bg-[#2a2a2a] border border-gray-300 dark:border-transparent rounded-3xl px-5 pt-3 pb-2 focus-within:ring-2 focus-within:ring-blue-400 dark:focus-within:ring-gray-600 focus-within:border-transparent transition-all">
-            {hasNoDocs && (
+            {false && (
               <div className="absolute inset-0 rounded-3xl bg-gray-100/80 dark:bg-[#2a2a2a]/80 backdrop-blur-[1px] flex items-center justify-center gap-3 z-10">
                 <span className="text-sm text-gray-400 dark:text-gray-500">Upload docs to start conversation</span>
                 <button
@@ -407,16 +402,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages }) {
                 </button>
               </div>
             )}
-            {selectedFile && (
-              <div className="flex items-center gap-2 mb-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-[#333] rounded-lg text-xs border border-gray-200 dark:border-gray-600">
-                  <span className="text-gray-600 dark:text-gray-300 truncate max-w-[200px]">{selectedFile.name}</span>
-                  <button onClick={() => setSelectedFile(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 ml-1">x</button>
-                </div>
-              </div>
-            )}
-
-            <textarea
+<textarea
               ref={textareaRef}
               value={input}
               onChange={(e) => {
@@ -439,22 +425,22 @@ function ChatView({ agentData, onAddFile, messages, setMessages }) {
 
             <div className="flex items-center justify-between pt-1">
               <div className="relative">
-                {!isArex && (
+                {canUpload && (
                   <button
                     onClick={() => setShowUploadModal(prev => !prev)}
                     className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#333] transition-colors text-2xl leading-none"
-                    title="Add file to agent"
+                    title="Add files to agent"
                   >
                     +
                   </button>
                 )}
-                {!isArex && showUploadModal && (
+                {canUpload && showUploadModal && (
                   <FileUploadModal onClose={() => setShowUploadModal(false)} onFileSelect={handleFileSelect} />
                 )}
               </div>
               <button
                 onClick={() => handleSend()}
-                disabled={!input.trim() || hasNoDocs || isProcessingDoc || isTyping || !!streamingMsg}
+                disabled={!input.trim() || isProcessingDoc || isTyping || !!streamingMsg}
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
