@@ -1,6 +1,5 @@
 # Archelon Backend — Architecture Document
 
-> Written from the perspective of an AI Engineer.  
 > This document covers every file, every LLM call, data flow, design decisions, and what is built vs. what is planned.
 
 ---
