@@ -1,9 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { fetchDocuments, invalidateDocuments } from '../services/document_service';
 import { updateAgent, deleteAgent } from '../services/agent_service';
 import { uploadFiles } from '../services/ingest_service';
 import FileUpload from './FileUpload';
 import ProcessingSteps from './ProcessingSteps';
+
+const TEAL = '#00C9B1';
 
 function EditAgentView({ agentData, onSave, onCancel, onDelete }) {
   const [step, setStep] = useState('edit'); // 'edit' | 'upload' | 'processing'
@@ -72,7 +74,7 @@ function EditAgentView({ agentData, onSave, onCancel, onDelete }) {
     }
   };
 
-  // After processing done — refresh documents and go back to edit
+  // After processing done — refresh documents and show close button
   const handleProcessingComplete = () => {
     invalidateDocuments(agentData.id);
     fetchDocuments(agentData.id)
@@ -80,7 +82,7 @@ function EditAgentView({ agentData, onSave, onCancel, onDelete }) {
       .catch(() => {});
     setFiles([]);
     setJobs([]);
-    setStep('edit');
+    setStep('done');
   };
 
   const formatSize = (bytes) => {
@@ -106,6 +108,29 @@ function EditAgentView({ agentData, onSave, onCancel, onDelete }) {
     return (
       <div className="flex justify-center h-[calc(100vh-57px)] overflow-y-auto">
         <ProcessingSteps jobs={jobs} onComplete={handleProcessingComplete} />
+      </div>
+    );
+  }
+
+  // Done step — show close button
+  if (step === 'done') {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-57px)]">
+        <div className="text-center max-w-sm px-6">
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: `${TEAL}20` }}>
+            <svg className="w-7 h-7" style={{ color: TEAL }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-semibold mb-2 text-gray-900 dark:text-gray-100">Documents processed</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">Your documents have been ingested and are ready for retrieval.</p>
+          <button
+            onClick={() => setStep('edit')}
+            className="px-6 py-2.5 rounded-lg text-sm font-medium bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+          >
+            Back to agent
+          </button>
+        </div>
       </div>
     );
   }

@@ -75,3 +75,21 @@ async def get_agent_documents(agent_id: str, current_user: dict = Depends(verify
         raise HTTPException(status_code=404, detail="Agent not found")
     documents = await documents_db.get_documents_by_agent(agent_id)
     return documents
+
+
+@router.delete("/agents/{agent_id}/documents/{document_id}")
+async def delete_document(agent_id: str, document_id: str, current_user: dict = Depends(verify_token)):
+    agent = await agents_db.get_agent_by_id(agent_id, current_user["user_id"])
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    await documents_db.delete_document(document_id, agent_id)
+    return {"message": "Document deleted"}
+
+
+@router.get("/agents/{agent_id}/documents/{document_id}/history")
+async def get_document_history(agent_id: str, document_id: str, current_user: dict = Depends(verify_token)):
+    agent = await agents_db.get_agent_by_id(agent_id, current_user["user_id"])
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    job = await documents_db.get_ingestion_job_by_document(document_id)
+    return job or {}

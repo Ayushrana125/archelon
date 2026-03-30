@@ -15,6 +15,26 @@ export async function fetchDocuments(agentId, forceRefresh = false) {
   return data;
 }
 
+export async function deleteDocument(agentId, documentId) {
+  const res = await fetch(`${API_URL}/api/agents/${agentId}/documents/${documentId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to delete document');
+  invalidateDocuments(agentId);
+  return data;
+}
+
+export async function fetchDocumentHistory(agentId, documentId) {
+  const res = await fetch(`${API_URL}/api/agents/${agentId}/documents/${documentId}/history`, {
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to fetch history');
+  return data;
+}
+
 export function invalidateDocuments(agentId) {
   delete _cache[`docs_${agentId}`];
 }
