@@ -45,8 +45,18 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
     document.title = name ? `${name} - Archelon` : 'Archelon - Agentic RAG Platform';
   }, [agentData]);
 
-  const handleSaveAgent = (agent) => {
-    setSavedAgents(prev => [...prev, agent]);
+  const handleSaveAgent = async (agent) => {
+    // Re-fetch from DB to get clean list — avoids duplicates
+    try {
+      const agents = await fetchAgents(true); // force refresh
+      setSavedAgents(agents);
+    } catch {
+      setSavedAgents(prev => {
+        // Only add if not already in list
+        if (prev.find(a => a.id === agent.id)) return prev;
+        return [...prev, agent];
+      });
+    }
     setActiveAgentId(agent.id);
   };
 
