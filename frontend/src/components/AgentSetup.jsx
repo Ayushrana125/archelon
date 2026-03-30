@@ -1,6 +1,6 @@
 import React from 'react';
 
-function AgentSetup({ agentName, setAgentName, systemInstructions, setSystemInstructions, onContinue, onBack }) {
+function AgentSetup({ agentName, setAgentName, systemInstructions, setSystemInstructions, onContinue, onBack, onSkip }) {
   return (
     <div className="max-w-2xl mx-auto px-6 py-12">
       <div className="flex items-center gap-3 mb-8">
@@ -42,13 +42,22 @@ function AgentSetup({ agentName, setAgentName, systemInstructions, setSystemInst
           />
         </div>
 
-        <button
-          onClick={onContinue}
-          disabled={!agentName.trim()}
-          className="w-full px-6 py-3 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          Continue to Upload Documents
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={onContinue}
+            disabled={!agentName.trim()}
+            className="flex-1 px-6 py-3 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Upload Documents
+          </button>
+          <button
+            onClick={onSkip}
+            disabled={!agentName.trim()}
+            className="flex-1 px-6 py-3 border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Upload later
+          </button>
+        </div>
       </div>
     </div>
   );

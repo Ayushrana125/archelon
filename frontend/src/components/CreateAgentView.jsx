@@ -56,6 +56,7 @@ function CreateAgentView({ setMode, setAgentData, onSave }) {
         setSystemInstructions={setSystemInstructions}
         onContinue={handleContinueToUpload}
         onBack={() => setMode('arex')}
+        onSkip={handleSkipUpload}
       />
     );
   }
@@ -66,8 +67,6 @@ function CreateAgentView({ setMode, setAgentData, onSave }) {
         files={files}
         setFiles={setFiles}
         onCreateAgent={handleCreateAgent}
-        onSkip={handleSkipUpload}
-        showSkip={true}
       />
     );
   }
