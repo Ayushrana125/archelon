@@ -86,7 +86,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
     <div className={theme}>
       <div className="min-h-screen bg-white dark:bg-[#212121] text-gray-900 dark:text-gray-100">
         <TopNav
-          agentName={['arex', 'edit'].includes(mode) ? (agentData ? agentData.name : 'Arex') : null}
+          agentName={agentData ? agentData.name : null}
           agentData={agentData}
           collapsed={sidebarCollapsed}
           onDocsClick={() => setShowDocsPanel(p => !p)}
@@ -105,6 +105,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
             setCollapsed={setSidebarCollapsed}
             onLogout={onLogout}
             user={user}
+            onHome={() => { setAgentData(null); setActiveAgentId(null); setMode('arex'); }}
           />
           <main className="flex-1 pt-[57px]">
             {mode === 'arex' && !agentData && <HomePage onNewAgent={() => setMode('create')} onSelectArex={handleSelectArex} savedAgents={savedAgents} onSelectAgent={handleSelectAgent} />}

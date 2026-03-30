@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onSelectArex, collapsed, setCollapsed, onLogout, user }) {
+function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onSelectArex, collapsed, setCollapsed, onLogout, user, onHome }) {
   const displayName = user ? `${user.first_name} ${user.last_name}` : 'Account';
   const displayEmail = user?.email ?? '';
   const isArexActive = mode === 'arex' && !activeAgentId;
@@ -22,7 +22,7 @@ function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onS
       {/* Logo + collapse button */}
       <div className={`flex items-center h-[57px] flex-shrink-0 px-4 ${collapsed ? 'justify-center' : 'justify-between'}`}>
         {!collapsed && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={onHome}>
             <motion.img layoutId="archelon-logo" src="/Archelon_logo.png" alt="Archelon" className="h-7 w-auto object-contain flex-shrink-0" />
             <div className="brand-name text-xl tracking-tight">Archelon</div>
           </div>
