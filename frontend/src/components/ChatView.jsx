@@ -337,7 +337,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, onDocumentsUpda
                       <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{msg.content}</ReactMarkdown>
                     </div>
                     <SourceBadges sources={msg.sources} />
-                    {messages[msgIdx + 1]?.role !== 'processing' && (
+                    {msgIdx === messages.length - 1 && !streamingMsg && (
                       <img src="/Archelon_logo.png" alt="" className="block w-7 h-7 object-contain opacity-50 mt-2" />
                     )}
                   </div>
