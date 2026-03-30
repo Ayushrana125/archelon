@@ -37,4 +37,4 @@ async def update_agent(agent_id: str, user_id: str, updates: dict) -> dict:
 
 async def delete_agent(agent_id: str, user_id: str):
     db = get_supabase()
-    db.table("agents").update({"is_active": False}).eq("id", agent_id).eq("user_id", user_id).execute()
+    db.table("agents").delete().eq("id", agent_id).eq("user_id", user_id).execute()
