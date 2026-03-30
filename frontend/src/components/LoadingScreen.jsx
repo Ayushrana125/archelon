@@ -10,7 +10,7 @@ const QUOTES = [
   { text: 'Intent classification routes every query to the right agent.', label: 'Query Routing' },
 ];
 
-const DURATION = 2800;
+const DURATION = 1200;
 
 function LoadingScreen({ onDone }) {
   const [idx, setIdx] = useState(() => Math.floor(Math.random() * QUOTES.length));
