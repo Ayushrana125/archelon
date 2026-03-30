@@ -102,9 +102,16 @@ function EmbedModal({ agentName, onClose }) {
 
           <div className="flex-1 flex flex-col justify-center px-8 md:px-12 py-12 max-w-xl mx-auto w-full">
             <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">Embed on your website</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
               Paste this script before the closing <code className="bg-gray-100 dark:bg-[#2a2a2a] px-1.5 py-0.5 rounded text-xs">&lt;/body&gt;</code> tag on your website.
             </p>
+
+            {/* Coming soon notice — always visible */}
+            <div className="mb-6 px-4 py-3 rounded-xl border" style={{ borderColor: `${TEAL}40`, background: `${TEAL}10` }}>
+              <p className="text-xs leading-relaxed font-medium" style={{ color: TEAL }}>
+                🚧 Under development — this feature is not yet live. The script below is a preview of what's coming. Stay tuned, we're building it.
+              </p>
+            </div>
 
             {/* Script block */}
             <div className="relative rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1a1a1a] overflow-hidden mb-6">
