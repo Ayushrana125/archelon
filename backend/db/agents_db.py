@@ -27,14 +27,20 @@ async def get_agents_by_user(user_id: str) -> list:
 
 async def get_agent_by_id(agent_id: str, user_id: str) -> dict:
     db = get_supabase()
-    response = db.table("agents").select("*").eq("id", agent_id).eq("user_id", user_id).single().execute()
-    return response.data
+    try:
+        response = db.table("agents").select("*").eq("id", agent_id).eq("user_id", user_id).single().execute()
+        return response.data
+    except Exception:
+        return None
 
 
 async def get_system_agent_by_id(agent_id: str) -> dict:
     db = get_supabase()
-    response = db.table("agents").select("*").eq("id", agent_id).eq("is_system", True).single().execute()
-    return response.data
+    try:
+        response = db.table("agents").select("*").eq("id", agent_id).eq("is_system", True).single().execute()
+        return response.data
+    except Exception:
+        return None
 
 
 async def update_agent(agent_id: str, user_id: str, updates: dict) -> dict:
