@@ -98,15 +98,23 @@ function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onS
                     key={agent.id}
                     onClick={() => onSelectAgent(agent)}
                     title={agent.name}
-                    className={`w-full flex items-center rounded-lg transition-colors px-3 py-2.5 text-left ${
+                    className={`w-full flex items-center gap-2 rounded-lg transition-colors px-3 py-2.5 text-left ${
                       activeAgentId === agent.id
                         ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
                         : 'hover:bg-gray-200 dark:hover:bg-[#2a2a2a]'
                     }`}
                   >
-                    <div className="text-[15px] font-medium truncate">{agent.name}</div>
+                    <div className="text-[15px] font-medium truncate flex-1">{agent.name}</div>
                     {agent.is_system && (
-                      <span className="text-xs px-1.5 py-0.5 rounded font-medium ml-1.5 flex-shrink-0" style={{ background: '#00C9B115', color: '#00C9B1' }}>System</span>
+                      <span
+                        className="text-xs px-1.5 py-0.5 rounded font-medium flex-shrink-0"
+                        style={activeAgentId === agent.id
+                          ? { background: 'rgba(255,255,255,0.2)', color: 'white' }
+                          : { background: '#00C9B115', color: '#00C9B1' }
+                        }
+                      >
+                        System
+                      </span>
                     )}
                   </button>
                 ))}
