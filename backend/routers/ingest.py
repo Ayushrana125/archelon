@@ -5,22 +5,37 @@ All routes protected by JWT.
 
 import os
 import tempfile
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks
 from jwt_handler import verify_token
 from db import chunks_db, agents_db
 from ingestion.ingestor import ingest_document
 
 router = APIRouter()
 
-MAX_FILE_SIZE  = 10 * 1024 * 1024   # 10MB per file
-MAX_TOTAL_SIZE = 10 * 1024 * 1024   # 10MB total
+MAX_FILE_SIZE  = 10 * 1024 * 1024
+MAX_TOTAL_SIZE = 10 * 1024 * 1024
 MAX_FILES      = 5
-ALLOWED_TYPES  = {"application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"}
 ALLOWED_EXTS   = {".pdf", ".docx", ".txt"}
+
+
+async def run_ingestion(agent_id: str, tmp_path: str, original_filename: str, job_id: str, document_id: str):
+    """Background task — runs ingestion and cleans up temp file."""
+    try:
+        await ingest_document(
+            agent_id=agent_id,
+            file_path=tmp_path,
+            original_filename=original_filename,
+            job_id=job_id,
+            document_id=document_id,
+        )
+    finally:
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
 
 
 @router.post("/ingest")
 async def ingest(
+    background_tasks: BackgroundTasks,
     agent_id: str = Form(...),
     files: list[UploadFile] = File(...),
     current_user: dict = Depends(verify_token),
@@ -34,7 +49,8 @@ async def ingest(
     if len(files) > MAX_FILES:
         raise HTTPException(status_code=400, detail=f"Maximum {MAX_FILES} files allowed")
 
-    # Validate file sizes and types
+    # Validate sizes and types, read content
+    file_contents = []
     total_size = 0
     for file in files:
         ext = os.path.splitext(file.filename)[1].lower()
@@ -46,26 +62,33 @@ async def ingest(
         total_size += len(content)
         if total_size > MAX_TOTAL_SIZE:
             raise HTTPException(status_code=400, detail="Total file size exceeds 10MB limit")
-        await file.seek(0)
+        file_contents.append((file.filename, ext, content, len(content)))
 
-    # Process each file
+    # Create document rows + ingestion jobs upfront, save files to temp
     results = []
-    for file in files:
-        content = await file.read()
-        ext     = os.path.splitext(file.filename)[1].lower()
+    for filename, ext, content, file_size in file_contents:
+        # Create document row
+        document_id = await chunks_db.create_document(agent_id, filename, ext.lstrip("."), file_size)
+        # Create ingestion job
+        job_id = await chunks_db.create_ingestion_job(document_id)
 
         # Save to temp file
         with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
             tmp.write(content)
             tmp_path = tmp.name
 
-        try:
-            result = await ingest_document(agent_id, tmp_path, original_filename=file.filename)
-            result["filename"] = file.filename
-            results.append(result)
-        finally:
-            os.unlink(tmp_path)
+        # Queue background task
+        background_tasks.add_task(run_ingestion, agent_id, tmp_path, filename, job_id, document_id)
 
+        results.append({
+            "job_id":      job_id,
+            "document_id": document_id,
+            "filename":    filename,
+            "file_size":   file_size,
+            "status":      "pending",
+        })
+
+    # Return immediately with all job_ids
     return {"files": results}
 
 

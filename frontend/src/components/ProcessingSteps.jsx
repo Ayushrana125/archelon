@@ -18,17 +18,20 @@ function formatSize(bytes) {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-function FileProgress({ jobId, filename, fileSize }) {
+function FileProgress({ jobId, filename, fileSize, active, onComplete }) {
   const [job, setJob] = useState(null);
   const intervalRef = useRef(null);
 
   useEffect(() => {
+    if (!active) return;  // only poll when it's this file's turn
+
     const poll = async () => {
       try {
         const data = await getJobStatus(jobId);
         setJob(data);
         if (data.status === 'done' || data.status === 'error') {
           clearInterval(intervalRef.current);
+          setTimeout(() => onComplete?.(data.status), 800);
         }
       } catch {
         clearInterval(intervalRef.current);
@@ -38,7 +41,7 @@ function FileProgress({ jobId, filename, fileSize }) {
     poll();
     intervalRef.current = setInterval(poll, 1000);
     return () => clearInterval(intervalRef.current);
-  }, [jobId]);
+  }, [jobId, active]);
 
   const currentStep = job?.status ?? 'parsing';
   const meta        = job?.metadata ?? {};
@@ -131,29 +134,42 @@ function FileProgress({ jobId, filename, fileSize }) {
 }
 
 function ProcessingSteps({ jobs, onComplete }) {
-  const allDone = jobs.every(j => j.status === 'done' || j.status === 'error');
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [completedJobs, setCompletedJobs] = useState({});
+
+  const handleFileComplete = (jobId, status) => {
+    setCompletedJobs(prev => ({ ...prev, [jobId]: status }));
+    // Move to next file
+    setActiveIndex(prev => prev + 1);
+  };
 
   useEffect(() => {
+    const allDone = jobs.every(j => completedJobs[j.jobId]);
     if (allDone && jobs.length > 0) {
-      setTimeout(() => onComplete?.(), 1000);
+      setTimeout(() => onComplete?.(), 1500);
     }
-  }, [allDone]);
+  }, [completedJobs]);
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-12 w-full">
       <div className="mb-8">
         <h1 className="text-3xl font-semibold mb-1">Processing your documents</h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm">
-          {allDone ? 'All files processed successfully.' : 'Please wait while we process your files...'}
+          {Object.keys(completedJobs).length === jobs.length && jobs.length > 0
+            ? 'All files processed. Taking you to chat...'
+            : `Processing file ${Math.min(activeIndex + 1, jobs.length)} of ${jobs.length}...`
+          }
         </p>
       </div>
       <div className="space-y-4">
-        {jobs.map(job => (
+        {jobs.map((job, idx) => (
           <FileProgress
             key={job.jobId}
             jobId={job.jobId}
             filename={job.filename}
             fileSize={job.fileSize}
+            active={idx === activeIndex}
+            onComplete={(status) => handleFileComplete(job.jobId, status)}
           />
         ))}
       </div>
