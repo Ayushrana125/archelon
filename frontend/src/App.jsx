@@ -47,6 +47,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
 
   const handleSaveAgent = (agent) => {
     setSavedAgents(prev => [...prev, agent]);
+    setActiveAgentId(agent.id);
   };
 
   const handleSelectAgent = (agent) => {
