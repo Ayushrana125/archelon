@@ -23,15 +23,19 @@ export async function deleteDocument(agentId, documentId) {
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to delete document');
   invalidateDocuments(agentId);
+  delete _cache[`history_${documentId}`];
   return data;
 }
 
-export async function fetchDocumentHistory(agentId, documentId) {
+export async function fetchDocumentHistory(agentId, documentId, forceRefresh = false) {
+  const key = `history_${documentId}`;
+  if (!forceRefresh && _cache[key]) return _cache[key];
   const res = await fetch(`${API_URL}/api/agents/${agentId}/documents/${documentId}/history`, {
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to fetch history');
+  _cache[key] = data;
   return data;
 }
 
