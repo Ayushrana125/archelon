@@ -93,29 +93,39 @@ function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onS
               </button>
             ) : (
               <div className="space-y-1">
-                {savedAgents.map((agent) => (
+                {/* System agents first */}
+                {savedAgents.filter(a => a.is_system).map((agent) => (
                   <button
                     key={agent.id}
                     onClick={() => onSelectAgent(agent)}
                     title={agent.name}
                     className={`w-full flex items-center gap-2 rounded-lg transition-colors px-3 py-2.5 text-left ${
                       activeAgentId === agent.id
-                        ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
-                        : 'hover:bg-gray-200 dark:hover:bg-[#2a2a2a]'
+                        ? 'bg-[#2a2a2a] text-gray-100'
+                        : 'hover:bg-[#222222] dark:hover:bg-[#222222]'
                     }`}
                   >
                     <div className="text-[15px] font-medium truncate flex-1">{agent.name}</div>
-                    {agent.is_system && (
-                      <span
-                        className="text-xs px-1.5 py-0.5 rounded font-medium flex-shrink-0"
-                        style={activeAgentId === agent.id
-                          ? { background: '#00C9B125', color: '#00A896' }
-                          : { background: '#00C9B115', color: '#00C9B1' }
-                        }
-                      >
-                        System
-                      </span>
-                    )}
+                    <span className="text-xs px-1.5 py-0.5 rounded font-medium flex-shrink-0" style={{ background: '#00C9B115', color: '#00C9B1' }}>System</span>
+                  </button>
+                ))}
+                {/* Divider between system and user agents */}
+                {savedAgents.some(a => a.is_system) && savedAgents.some(a => !a.is_system) && (
+                  <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+                )}
+                {/* User agents */}
+                {savedAgents.filter(a => !a.is_system).map((agent) => (
+                  <button
+                    key={agent.id}
+                    onClick={() => onSelectAgent(agent)}
+                    title={agent.name}
+                    className={`w-full flex items-center gap-2 rounded-lg transition-colors px-3 py-2.5 text-left ${
+                      activeAgentId === agent.id
+                        ? 'bg-[#2a2a2a] text-gray-100'
+                        : 'hover:bg-[#222222] dark:hover:bg-[#222222]'
+                    }`}
+                  >
+                    <div className="text-[15px] font-medium truncate flex-1">{agent.name}</div>
                   </button>
                 ))}
               </div>
