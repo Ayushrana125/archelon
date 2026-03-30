@@ -1,9 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import EmbedModal from './EmbedModal';
+
+const TEAL = '#00C9B1';
 
 function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, onEditAgent, user }) {
+  const [showEmbed, setShowEmbed] = useState(false);
+
+  // Auto-open embed modal once per session for non-system agents
+  useEffect(() => {
+    if (!agentData?.id || agentData?.is_system) return;
+    const seen = sessionStorage.getItem('embed_intro_seen');
+    if (!seen) {
+      setShowEmbed(true);
+      sessionStorage.setItem('embed_intro_seen', 'true');
+    }
+  }, [agentData?.id]);
+
   return (
+    <>
     <nav className="bg-white dark:bg-[#212121] flex items-center h-[57px] fixed top-0 right-0 z-10 border-b border-gray-200 dark:border-gray-700" style={{ left: collapsed ? '56px' : '256px', transition: 'left 0.3s' }}>
-      <div className="flex items-center gap-3 px-5">
+      <div className="flex items-center gap-3 px-5 flex-1">
         <div className="agent-name text-xl tracking-tight text-gray-800 dark:text-gray-100">{agentName}</div>
         {agentData && documents.length > 0 && (
           <button
@@ -24,8 +40,24 @@ function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, 
             </svg>
           </button>
         )}
+
+        {/* Embed button — only for non-system agents */}
+        {agentData && !agentData.is_system && (
+          <button
+            onClick={() => setShowEmbed(true)}
+            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border"
+            style={{ color: TEAL, borderColor: `${TEAL}40`, background: `${TEAL}10` }}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+            Embed
+          </button>
+        )}
       </div>
     </nav>
+    {showEmbed && <EmbedModal agentName={agentData?.name} onClose={() => setShowEmbed(false)} />}
+    </>
   );
 }
 
