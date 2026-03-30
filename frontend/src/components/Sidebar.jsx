@@ -163,7 +163,7 @@ function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onS
           title="Ayush Rana"
           className={`w-full flex items-center gap-3 rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a2a2a] transition-colors py-2 ${collapsed ? 'justify-center px-0' : 'px-2'}`}
         >
-          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-normal" style={{ background: '#00C9B120', color: '#00C9B1' }}>
+          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, #00C9B1, #1A73E8)' }}>
             {initials}
           </div>
           {!collapsed && (

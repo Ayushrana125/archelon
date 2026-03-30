@@ -7,8 +7,7 @@ import LoginPage from './components/LoginPage';
 import LandingPage from './components/LandingPage';
 import LoadingScreen from './components/LoadingScreen';
 import { AnimatePresence } from 'framer-motion';
-import { clearCache } from './services/agent_service';
-import { clearDocumentCache } from './services/document_service';
+import './index.css';
 
 function RootInner() {
   const navigate = useNavigate();
@@ -20,8 +19,6 @@ function RootInner() {
   const [theme, setTheme] = React.useState('dark');
 
   const handleLogin = (userData) => {
-    clearCache();
-    clearDocumentCache();
     setUser(userData.user || userData);
     setIsLoading(true);
   };
