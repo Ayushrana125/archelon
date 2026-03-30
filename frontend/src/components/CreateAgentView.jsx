@@ -17,6 +17,21 @@ function CreateAgentView({ setMode, setAgentData, onSave }) {
 
   const handleProcessingComplete = () => setStep('ready');
 
+  const handleSkipUpload = async () => {
+    try {
+      const agent = await createAgent({
+        name:         agentName,
+        instructions: systemInstructions,
+        description:  '',
+      });
+      setAgentData(agent);
+      onSave(agent);
+      setMode('arex');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const handleStartChat = async () => {
     try {
       const agent = await createAgent({
@@ -51,7 +66,7 @@ function CreateAgentView({ setMode, setAgentData, onSave }) {
         files={files}
         setFiles={setFiles}
         onCreateAgent={handleCreateAgent}
-        onSkip={handleProcessingComplete}
+        onSkip={handleSkipUpload}
       />
     );
   }
