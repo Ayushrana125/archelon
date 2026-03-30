@@ -77,6 +77,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
   const handleSelectAgent = (agent) => {
     setAgentData(agent);
     setActiveAgentId(agent.id);
+    setAgentDocuments(getCachedDocuments(agent.id) || []);
     setMode('arex');
     setShowDocsPanel(false);
   };
