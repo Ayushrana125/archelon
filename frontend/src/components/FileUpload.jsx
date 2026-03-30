@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 
-function FileUpload({ files, setFiles, onCreateAgent }) {
+function FileUpload({ files, setFiles, onCreateAgent, onSkip }) {
   const fileInputRef = useRef(null);
 
   const handleFileSelect = (e) => {
@@ -84,6 +84,12 @@ function FileUpload({ files, setFiles, onCreateAgent }) {
         className="w-full mt-6 px-6 py-3 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         Create Agent with {files.length} Document{files.length !== 1 ? 's' : ''}
+      </button>
+      <button
+        onClick={onSkip}
+        className="w-full mt-3 px-6 py-3 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+      >
+        Skip for now — add documents later
       </button>
     </div>
   );

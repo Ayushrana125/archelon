@@ -50,6 +50,7 @@ function CreateAgentView({ setMode, setAgentData, onSave }) {
         files={files}
         setFiles={setFiles}
         onCreateAgent={handleCreateAgent}
+        onSkip={handleProcessingComplete}
       />
     );
   }

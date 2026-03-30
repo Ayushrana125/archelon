@@ -6,7 +6,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from jwt_handler import verify_token
-from db import agents_db
+from db import agents_db, documents_db
 
 router = APIRouter()
 
@@ -66,3 +66,12 @@ async def update_agent(agent_id: str, body: UpdateAgentRequest, current_user: di
 async def delete_agent(agent_id: str, current_user: dict = Depends(verify_token)):
     await agents_db.delete_agent(agent_id, current_user["user_id"])
     return {"message": "Agent deleted"}
+
+
+@router.get("/agents/{agent_id}/documents")
+async def get_agent_documents(agent_id: str, current_user: dict = Depends(verify_token)):
+    agent = await agents_db.get_agent_by_id(agent_id, current_user["user_id"])
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    documents = await documents_db.get_documents_by_agent(agent_id)
+    return documents
