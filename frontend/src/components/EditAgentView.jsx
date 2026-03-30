@@ -7,7 +7,7 @@ import ProcessingSteps from './ProcessingSteps';
 
 const TEAL = '#00C9B1';
 
-function EditAgentView({ agentData, onSave, onCancel, onDelete }) {
+function EditAgentView({ agentData, onSave, onCancel, onDelete, onDocumentDeleted }) {
   const [step, setStep] = useState('edit'); // 'edit' | 'upload' | 'processing'
   const [name, setName] = useState(agentData?.name ?? '');
   const [instructions, setInstructions] = useState(agentData?.instructions ?? '');
@@ -40,6 +40,7 @@ function EditAgentView({ agentData, onSave, onCancel, onDelete }) {
       await deleteDocument(agentData.id, docId);
       invalidateDocuments(agentData.id);
       setDocuments(prev => prev.filter(d => d.id !== docId));
+      onDocumentDeleted?.();
     } catch (err) {
       setError(err.message);
     }

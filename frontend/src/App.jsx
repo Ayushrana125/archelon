@@ -139,7 +139,27 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
             {mode === 'arex' && !agentData && <HomePage onNewAgent={() => setMode('create')} savedAgents={savedAgents} onSelectAgent={handleSelectAgent} />}
             {mode === 'arex' && agentData && <ChatView key={agentData?.id ?? 'arex'} agentData={agentData} onAddFile={handleAddFileToAgent} messages={currentMessages} setMessages={setCurrentMessages} />}
             {mode === 'create' && <CreateAgentView setMode={setMode} setAgentData={setAgentData} onSave={handleSaveAgent} />}
-            {mode === 'edit' && <EditAgentView agentData={agentData} onSave={(updated) => { setSavedAgents(prev => prev.map(a => a.id === updated.id ? updated : a)); setAgentData(updated); setMode('arex'); }} onCancel={() => setMode('arex')} onDelete={(id) => { setSavedAgents(prev => prev.filter(a => a.id !== id)); setAgentData(null); setActiveAgentId(null); setMode('arex'); }} />}
+            {mode === 'edit' && <EditAgentView
+              agentData={agentData}
+              onSave={(updated) => {
+                setSavedAgents(prev => prev.map(a => a.id === updated.id ? updated : a));
+                setAgentData(updated);
+                setMode('arex');
+              }}
+              onCancel={() => setMode('arex')}
+              onDelete={(id) => {
+                setSavedAgents(prev => prev.filter(a => a.id !== id));
+                setAgentData(null);
+                setActiveAgentId(null);
+                setAgentDocuments([]);
+                setMode('arex');
+              }}
+              onDocumentDeleted={() => {
+                fetchDocuments(agentData.id, true)
+                  .then(docs => setAgentDocuments(docs))
+                  .catch(() => {});
+              }}
+            />}
             {mode === 'library' && <AgentsLibrary agents={savedAgents} setAgentData={setAgentData} setMode={setMode} />}
             {mode === 'settings' && <SettingsView theme={theme} setTheme={setTheme} />}
           </main>
