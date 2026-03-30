@@ -7,7 +7,7 @@ function HomePage({ onNewAgent, savedAgents, onSelectAgent }) {
   const hasAgents = savedAgents?.length > 0;
 
   return (
-    <div className="flex flex-col items-center justify-center h-[calc(100vh-57px)] px-6">
+    <div className="flex flex-col items-center justify-start min-h-[calc(100vh-57px)] px-6 py-16 overflow-y-auto">
       <div className="text-center max-w-lg">
         <img src="/Archelon_logo.png" alt="Archelon" className="w-12 h-12 object-contain mx-auto mb-6 opacity-80" />
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">
