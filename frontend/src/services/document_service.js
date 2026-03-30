@@ -18,3 +18,7 @@ export async function fetchDocuments(agentId, forceRefresh = false) {
 export function invalidateDocuments(agentId) {
   delete _cache[`docs_${agentId}`];
 }
+
+export function clearDocumentCache() {
+  Object.keys(_cache).forEach(k => delete _cache[k]);
+}

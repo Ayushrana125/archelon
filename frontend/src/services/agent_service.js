@@ -3,6 +3,10 @@ import { authHeaders } from './auth_service';
 const API_URL = import.meta.env.VITE_API_URL;
 const _cache = {};
 
+export function clearCache() {
+  Object.keys(_cache).forEach(k => delete _cache[k]);
+}
+
 export async function fetchAgents(forceRefresh = false) {
   const key = 'agents';
   if (!forceRefresh && _cache[key]) return _cache[key];

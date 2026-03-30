@@ -8,6 +8,8 @@ import LandingPage from './components/LandingPage';
 import LoadingScreen from './components/LoadingScreen';
 import { AnimatePresence } from 'framer-motion';
 import './index.css';
+import { clearCache } from './services/agent_service';
+import { clearDocumentCache } from './services/document_service';
 
 function RootInner() {
   const navigate = useNavigate();
@@ -18,7 +20,12 @@ function RootInner() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [theme, setTheme] = React.useState('dark');
 
-  const handleLogin = (userData) => { setUser(userData.user || userData); setIsLoading(true); };
+  const handleLogin = (userData) => {
+    clearCache();
+    clearDocumentCache();
+    setUser(userData.user || userData);
+    setIsLoading(true);
+  };
 
   const handleDone = () => {
     localStorage.setItem('isLoggedIn', 'true');
@@ -29,6 +36,8 @@ function RootInner() {
   };
 
   const handleLogout = () => {
+    clearCache();
+    clearDocumentCache();
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('user');
     setIsLoggedIn(false);
