@@ -8,8 +8,6 @@ import LandingPage from './components/LandingPage';
 import LoadingScreen from './components/LoadingScreen';
 import { AnimatePresence } from 'framer-motion';
 import './index.css';
-import { clearCache, fetchAgents } from './services/agent_service';
-import { clearDocumentCache, fetchDocuments, fetchDocumentHistory } from './services/document_service';
 
 function RootInner() {
   const navigate = useNavigate();
@@ -21,40 +19,19 @@ function RootInner() {
   const [theme, setTheme] = React.useState('dark');
 
   const handleLogin = (userData) => {
-    clearCache();
-    clearDocumentCache();
     setUser(userData.user || userData);
     setIsLoading(true);
   };
 
-  const handleDone = async () => {
+  const handleDone = () => {
     localStorage.setItem('isLoggedIn', 'true');
     if (user) localStorage.setItem('user', JSON.stringify(user));
-
-    // Pre-warm cache during loading screen
-    try {
-      const agents = await fetchAgents();
-      // Fetch docs for all agents in parallel
-      const docFetches = agents.map(a => fetchDocuments(a.id));
-      const allDocs = await Promise.all(docFetches);
-      // Fetch history for all documents in parallel
-      const historyFetches = [];
-      agents.forEach((agent, i) => {
-        (allDocs[i] || []).forEach(doc => {
-          historyFetches.push(fetchDocumentHistory(agent.id, doc.id));
-        });
-      });
-      await Promise.all(historyFetches);
-    } catch {}
-
     setIsLoading(false);
     setIsLoggedIn(true);
     navigate('/chat');
   };
 
   const handleLogout = () => {
-    clearCache();
-    clearDocumentCache();
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('user');
     setIsLoggedIn(false);

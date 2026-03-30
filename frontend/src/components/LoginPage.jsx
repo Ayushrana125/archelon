@@ -38,9 +38,8 @@ function LoginPage({ onLogin, theme }) {
       const userData = await login(identifier, password);
       onLogin(userData);
     } catch (err) {
-      setError(err.message);
-    } finally {
       setLoading(false);
+      setError(err.message);
     }
   };
 
