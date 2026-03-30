@@ -109,7 +109,7 @@ function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onS
                       <span
                         className="text-xs px-1.5 py-0.5 rounded font-medium flex-shrink-0"
                         style={activeAgentId === agent.id
-                          ? { background: 'rgba(255,255,255,0.2)', color: 'white' }
+                          ? { background: '#00C9B125', color: '#00A896' }
                           : { background: '#00C9B115', color: '#00C9B1' }
                         }
                       >
