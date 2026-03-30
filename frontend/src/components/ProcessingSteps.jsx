@@ -18,12 +18,12 @@ function formatSize(bytes) {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-function FileProgress({ jobId, filename, fileSize, active, onComplete }) {
+function FileProgress({ jobId, filename, fileSize, active, alreadyDone, onComplete }) {
   const [job, setJob] = useState(null);
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(!alreadyDone);
   const intervalRef = useRef(null);
 
-  const isDone  = job?.status === 'done';
+  const isDone  = alreadyDone || job?.status === 'done';
   const isError = job?.status === 'error';
 
   useEffect(() => {
@@ -31,7 +31,7 @@ function FileProgress({ jobId, filename, fileSize, active, onComplete }) {
   }, [isDone]);
 
   useEffect(() => {
-    if (!active) return;
+    if (!active || alreadyDone) return;
     const poll = async () => {
       try {
         const data = await getJobStatus(jobId);
@@ -137,8 +137,8 @@ function FileProgress({ jobId, filename, fileSize, active, onComplete }) {
   );
 }
 
-function ProcessingSteps({ jobs, onComplete }) {
-  const [activeIndex, setActiveIndex] = useState(0);
+function ProcessingSteps({ jobs, completed, onComplete }) {
+  const [activeIndex, setActiveIndex] = useState(completed ? jobs.length : 0);
   const [completedJobs, setCompletedJobs] = useState({});
 
   const handleFileComplete = (jobId, status) => {
@@ -169,7 +169,8 @@ function ProcessingSteps({ jobs, onComplete }) {
           jobId={job.jobId}
           filename={job.filename}
           fileSize={job.fileSize}
-          active={idx === activeIndex}
+          active={!completed && idx === activeIndex}
+          alreadyDone={completed}
           onComplete={(status) => handleFileComplete(job.jobId, status)}
         />
       ))}

@@ -328,6 +328,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, onDocumentsUpda
                 ) : msg.role === 'processing' ? (
                   <ProcessingSteps
                     jobs={msg.jobs}
+                    completed={!!msg.completed}
                     onComplete={handleProcessingComplete}
                   />
                 ) : (
