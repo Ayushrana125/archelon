@@ -3,27 +3,34 @@ import AgentSetup from './AgentSetup';
 import FileUpload from './FileUpload';
 import ProcessingSteps from './ProcessingSteps';
 import { createAgent } from '../services/agent_service';
+import { uploadFiles } from '../services/ingest_service';
 
 function CreateAgentView({ setMode, setAgentData, onSave }) {
   const [step, setStep] = useState('setup');
   const [agentName, setAgentName] = useState('');
   const [systemInstructions, setSystemInstructions] = useState('');
   const [files, setFiles] = useState([]);
+  const [jobs, setJobs] = useState([]);   // [{ jobId, filename, fileSize, status }]
+  const [createdAgent, setCreatedAgent] = useState(null);
   const [error, setError] = useState('');
 
-  const handleContinueToUpload = () => setStep('upload');
-
-  const handleCreateAgent = () => setStep('processing');
-
-  const handleProcessingComplete = () => setStep('ready');
-
-  const handleSkipUpload = async () => {
+  // Step 1 — Create agent then go to upload
+  const handleContinueToUpload = async () => {
+    setError('');
     try {
-      const agent = await createAgent({
-        name:         agentName,
-        instructions: systemInstructions,
-        description:  '',
-      });
+      const agent = await createAgent({ name: agentName, instructions: systemInstructions, description: '' });
+      setCreatedAgent(agent);
+      setStep('upload');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  // Skip upload — agent already created above
+  const handleSkipUpload = async () => {
+    setError('');
+    try {
+      const agent = await createAgent({ name: agentName, instructions: systemInstructions, description: '' });
       setAgentData(agent);
       onSave(agent);
       setMode('arex');
@@ -32,76 +39,72 @@ function CreateAgentView({ setMode, setAgentData, onSave }) {
     }
   };
 
-  const handleStartChat = async () => {
+  // Upload files → get job IDs → go to processing
+  const handleCreateAgent = async () => {
+    setError('');
     try {
-      const agent = await createAgent({
-        name:         agentName,
-        instructions: systemInstructions,
-        description:  '',
-      });
-      setAgentData(agent);
-      onSave(agent);
-      setMode('arex');
+      const result = await uploadFiles(createdAgent.id, files);
+      // result.files = [{ job_id, filename, file_size, ... }]
+      const jobList = result.files.map(f => ({
+        jobId:    f.job_id,
+        filename: f.filename,
+        fileSize: files.find(fl => fl.name === f.filename)?.size ?? 0,
+        status:   'parsing',
+      }));
+      setJobs(jobList);
+      setStep('processing');
     } catch (err) {
       setError(err.message);
     }
+  };
+
+  // Processing complete — go to chat
+  const handleProcessingComplete = () => {
+    setAgentData(createdAgent);
+    onSave(createdAgent);
+    setMode('arex');
   };
 
   if (step === 'setup') {
     return (
-      <AgentSetup
-        agentName={agentName}
-        setAgentName={setAgentName}
-        systemInstructions={systemInstructions}
-        setSystemInstructions={setSystemInstructions}
-        onContinue={handleContinueToUpload}
-        onBack={() => setMode('arex')}
-        onSkip={handleSkipUpload}
-      />
+      <>
+        <AgentSetup
+          agentName={agentName}
+          setAgentName={setAgentName}
+          systemInstructions={systemInstructions}
+          setSystemInstructions={setSystemInstructions}
+          onContinue={handleContinueToUpload}
+          onBack={() => setMode('arex')}
+          onSkip={handleSkipUpload}
+        />
+        {error && <p className="text-sm text-red-400 text-center mt-2">{error}</p>}
+      </>
     );
   }
 
   if (step === 'upload') {
     return (
-      <FileUpload
-        files={files}
-        setFiles={setFiles}
-        onCreateAgent={handleCreateAgent}
-        onBack={() => setStep('setup')}
-      />
+      <>
+        <FileUpload
+          files={files}
+          setFiles={setFiles}
+          onCreateAgent={handleCreateAgent}
+          onBack={() => setStep('setup')}
+        />
+        {error && <p className="text-sm text-red-400 text-center mt-2">{error}</p>}
+      </>
     );
   }
 
   if (step === 'processing') {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-57px)]">
-        <ProcessingSteps onComplete={handleProcessingComplete} agentName={agentName} />
+      <div className="flex justify-center h-[calc(100vh-57px)] overflow-y-auto">
+        <ProcessingSteps jobs={jobs} onComplete={handleProcessingComplete} />
       </div>
     );
   }
 
-  return (
-    <div className="flex items-center justify-center h-[calc(100vh-57px)]">
-      <div className="text-center max-w-lg px-6">
-        <h2 className="text-3xl font-semibold mb-4">Your agent is ready</h2>
-        
-        <div className="bg-gray-50 dark:bg-[#2a2a2a] rounded-lg p-6 border border-gray-200 dark:border-gray-700 mb-8">
-          <div className="font-semibold text-xl mb-2">{agentName}</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            {files.length} document{files.length !== 1 ? 's' : ''} processed
-          </div>
-        </div>
-        
-        <button
-          onClick={handleStartChat}
-          className="px-8 py-3 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
-        >
-          Start chatting with {agentName}
-        </button>
-        {error && <p className="text-sm text-red-400 mt-3">{error}</p>}
-      </div>
-    </div>
-  );
+  return null;
 }
 
 export default CreateAgentView;

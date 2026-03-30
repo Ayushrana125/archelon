@@ -1,115 +1,162 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { getJobStatus } from '../services/ingest_service';
 
-const STEPS = [
-  { label: 'Reading documents',          icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-  { label: 'Extracting text content',    icon: 'M4 6h16M4 12h16M4 18h7' },
-  { label: 'Chunking into segments',     icon: 'M4 6h16M4 10h16M4 14h8M4 18h8' },
-  { label: 'Generating embeddings',      icon: 'M4 7h3m0 0V4m0 3l3-3m10 3h-3m0 0V4m0 3l-3-3M4 17h3m0 0v3m0-3l3 3m10-3h-3m0 0v3m0-3l-3 3' },
-  { label: 'Storing vectors',            icon: 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4' },
-  { label: 'Indexing knowledge base',    icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' },
-  { label: 'Agent ready',                icon: 'M5 13l4 4L19 7' },
-];
+const TEAL = '#00C9B1';
 
-function ProcessingSteps({ onComplete, agentName }) {
-  const [currentStep, setCurrentStep] = useState(-1);
-  const [done, setDone] = useState(false);
-  const [lineFillPct, setLineFillPct] = useState(0);
+const STEP_ORDER = ['parsing', 'chunking', 'saving', 'done'];
+const STEP_LABELS = {
+  parsing:  'Parsing document',
+  chunking: 'Creating chunks',
+  saving:   'Saving to database',
+  done:     'Complete',
+};
+
+function formatSize(bytes) {
+  if (!bytes) return '';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function FileProgress({ jobId, filename, fileSize }) {
+  const [job, setJob] = useState(null);
+  const intervalRef = useRef(null);
 
   useEffect(() => {
-    const timers = [];
-    STEPS.forEach((_, i) => {
-      timers.push(setTimeout(() => {
-        setCurrentStep(i);
-        setLineFillPct((i / (STEPS.length - 1)) * 88);
-      }, i * 700));
-    });
-    timers.push(setTimeout(() => {
-      setCurrentStep(STEPS.length);
-      setLineFillPct(100);
-      setDone(true);
-      setTimeout(onComplete, 800);
-    }, STEPS.length * 700));
-    return () => timers.forEach(clearTimeout);
-  }, []);
+    const poll = async () => {
+      try {
+        const data = await getJobStatus(jobId);
+        setJob(data);
+        if (data.status === 'done' || data.status === 'error') {
+          clearInterval(intervalRef.current);
+        }
+      } catch {
+        clearInterval(intervalRef.current);
+      }
+    };
+
+    poll();
+    intervalRef.current = setInterval(poll, 1000);
+    return () => clearInterval(intervalRef.current);
+  }, [jobId]);
+
+  const currentStep = job?.status ?? 'parsing';
+  const meta        = job?.metadata ?? {};
+  const isDone      = currentStep === 'done';
+  const isError     = currentStep === 'error';
+
+  const stepIndex = (step) => STEP_ORDER.indexOf(step);
+  const currentIdx = stepIndex(currentStep);
+
+  const subText = (step) => {
+    if (step === 'parsing')  return meta.elements ? `${meta.elements} elements extracted` : 'Reading file structure...';
+    if (step === 'chunking') return meta.parent_chunks ? `${meta.parent_chunks} parent · ${meta.child_chunks} child · avg ${meta.avg_tokens} tokens` : 'Splitting into chunks...';
+    if (step === 'saving')   return meta.parent_chunks ? `${meta.parent_chunks + meta.child_chunks} records` : 'Writing to database...';
+    if (step === 'done')     return meta.duration_ms ? `Done in ${(meta.duration_ms / 1000).toFixed(1)}s · ${meta.child_chunks} chunks stored` : 'Complete';
+    return '';
+  };
 
   return (
-    <div className="w-full max-w-md px-6">
-      <div
-        className="w-full rounded-xl overflow-hidden bg-gray-50 dark:bg-[#1e2030]"
-        style={{ border: '0.5px solid rgb(229 231 235)', borderLeft: '2px solid #00C9B1' }}
-      >
-        {/* Header */}
-        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-          <img
-            src="/Archelon_logo.png"
-            alt=""
-            className={`w-5 h-5 object-contain flex-shrink-0 opacity-70 ${!done ? 'animate-spin-slow' : ''}`}
-          />
-          <span className="flex-1 text-sm font-medium text-gray-800 dark:text-gray-100">
-            {done ? `${agentName} is ready` : `Creating ${agentName}...`}
-          </span>
-          {!done && (
-            <span className="text-xs text-gray-400 dark:text-gray-500 tabular-nums">
-              {Math.max(currentStep + 1, 0)} / {STEPS.length}
-            </span>
-          )}
-          {done && (
-            <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700 rounded-full px-2 py-0.5">
-              <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
-                <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              complete
-            </span>
-          )}
+    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1e1e1e] p-4">
+      {/* File header */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${TEAL}20` }}>
+          <svg className="w-4 h-4" style={{ color: TEAL }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
         </div>
-
-        {/* Steps */}
-        <div className="px-4 py-4 relative">
-          {/* Timeline track */}
-          <div className="absolute bg-gray-200 dark:bg-gray-700" style={{ left: 28, top: 16, bottom: 16, width: 1.5, zIndex: 0 }}>
-            <div className="absolute top-0 left-0 w-full transition-all duration-500" style={{ background: '#00C9B1', height: `${lineFillPct}%` }} />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate text-gray-900 dark:text-gray-100">{filename}</p>
+          <p className="text-xs text-gray-400">{formatSize(fileSize)} · {meta.filetype ?? '...'}</p>
+        </div>
+        {isDone && (
+          <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: TEAL }}>
+            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+            </svg>
           </div>
-
-          {STEPS.map((step, i) => {
-            const isDone = i < currentStep;
-            const isActive = i === currentStep && !done;
-            const isPending = !isDone && !isActive;
-
-            return (
-              <div key={i} className="relative flex items-center gap-3 py-2" style={{ zIndex: 1 }}>
-                <div className="w-6 h-6 flex items-center justify-center flex-shrink-0" style={{ zIndex: 2 }}>
-                  <div
-                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${isPending ? 'bg-gray-300 dark:bg-gray-600' : ''}`}
-                    style={{
-                      backgroundColor: isDone || isActive ? '#00C9B1' : undefined,
-                      boxShadow: isActive ? '0 0 0 4px rgba(0,201,177,0.15)' : 'none',
-                      animation: isActive ? 'dotPulse 1.4s ease-in-out infinite' : 'none',
-                    }}
-                  />
-                </div>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  className={`w-4 h-4 flex-shrink-0 transition-colors duration-300 ${isPending ? 'text-gray-300 dark:text-gray-600' : isActive ? 'text-[#00C9B1]' : 'text-gray-400 dark:text-gray-500'}`}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={step.icon} />
-                </svg>
-                <span className={`flex-1 text-sm whitespace-nowrap transition-all duration-300 ${isPending ? 'text-gray-400 dark:text-gray-600' : 'text-gray-800 dark:text-gray-100'} ${isActive ? 'font-medium' : 'font-normal'}`}>
-                  {step.label}
-                </span>
-                <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4 flex-shrink-0 transition-opacity duration-300" style={{ opacity: isDone ? 1 : 0 }}>
-                  <path d="M3 8l3.5 3.5L13 5" stroke="#00C9B1" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-            );
-          })}
-        </div>
+        )}
+        {isError && (
+          <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+        )}
       </div>
 
-      <style>{`
-        @keyframes dotPulse {
-          0%, 100% { box-shadow: 0 0 0 4px rgba(0,201,177,0.15); }
-          50% { box-shadow: 0 0 0 7px rgba(0,201,177,0.05); }
-        }
-      `}</style>
+      {/* Steps */}
+      <div className="space-y-2">
+        {STEP_ORDER.map((step, i) => {
+          const done    = isDone || stepIndex(currentStep) > i;
+          const active  = !isDone && stepIndex(currentStep) === i;
+          const pending = !done && !active;
+
+          return (
+            <div key={step} className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
+                {done ? (
+                  <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ background: TEAL }}>
+                    <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                ) : active ? (
+                  <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center" style={{ borderColor: TEAL }}>
+                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: TEAL }} />
+                  </div>
+                ) : (
+                  <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-medium ${done ? 'text-gray-900 dark:text-gray-100' : active ? '' : 'text-gray-400 dark:text-gray-600'}`}
+                  style={active ? { color: TEAL } : {}}>
+                  {STEP_LABELS[step]}
+                </p>
+                {(done || active) && (
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{subText(step)}</p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {isError && (
+        <p className="text-xs text-red-400 mt-3">{job?.error ?? 'Something went wrong'}</p>
+      )}
+    </div>
+  );
+}
+
+function ProcessingSteps({ jobs, onComplete }) {
+  const allDone = jobs.every(j => j.status === 'done' || j.status === 'error');
+
+  useEffect(() => {
+    if (allDone && jobs.length > 0) {
+      setTimeout(() => onComplete?.(), 1000);
+    }
+  }, [allDone]);
+
+  return (
+    <div className="max-w-2xl mx-auto px-6 py-12 w-full">
+      <div className="mb-8">
+        <h1 className="text-3xl font-semibold mb-1">Processing your documents</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          {allDone ? 'All files processed successfully.' : 'Please wait while we process your files...'}
+        </p>
+      </div>
+      <div className="space-y-4">
+        {jobs.map(job => (
+          <FileProgress
+            key={job.jobId}
+            jobId={job.jobId}
+            filename={job.filename}
+            fileSize={job.fileSize}
+          />
+        ))}
+      </div>
     </div>
   );
 }

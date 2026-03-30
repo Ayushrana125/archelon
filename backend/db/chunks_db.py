@@ -18,29 +18,70 @@ async def create_document(agent_id: str, filename: str, filetype: str, file_size
     return response.data[0]["id"]
 
 
-async def insert_parent_chunk(document_id: str, chunk, chunk_index: int) -> str:
-    db           = get_supabase()
-    section_name = " > ".join(chunk.heading_path) if chunk.heading_path else None
-    response     = db.table("parent_chunks").insert({
-        "document_id":  document_id,
-        "content":      chunk.markdown,
-        "section_name": section_name,
-        "page_number":  chunk.page_start or None,
-        "chunk_index":  chunk_index,
-        "token_count":  chunk.token_count,
+async def create_ingestion_job(document_id: str) -> str:
+    db = get_supabase()
+    response = db.table("ingestion_jobs").insert({
+        "document_id": document_id,
+        "status":      "parsing",
+        "metadata":    {},
     }).execute()
     return response.data[0]["id"]
 
 
-async def insert_child_chunk(parent_uuid: str, chunk, chunk_index: int):
+async def update_ingestion_job(job_id: str, status: str, metadata: dict = None, error: str = None):
     db = get_supabase()
-    db.table("child_chunks").insert({
-        "parent_id":   parent_uuid,
-        "content":     chunk.markdown,
-        "chunk_index": chunk_index,
-        "token_count": chunk.token_count,
-        "embedding":   None,  # added in embedding phase
-    }).execute()
+    updates = {"status": status}
+    if metadata is not None:
+        updates["metadata"] = metadata
+    if error is not None:
+        updates["error"] = error
+    if status == "done":
+        from datetime import datetime
+        updates["completed_at"] = datetime.utcnow().isoformat()
+    db.table("ingestion_jobs").update(updates).eq("id", job_id).execute()
+
+
+async def get_ingestion_job(job_id: str) -> dict:
+    db = get_supabase()
+    response = db.table("ingestion_jobs").select("*").eq("id", job_id).single().execute()
+    return response.data
+
+
+async def batch_insert_parent_chunks(document_id: str, chunks: list) -> dict:
+    """Insert all parent chunks in one DB call. Returns map of local_id -> supabase_uuid."""
+    db = get_supabase()
+    rows = []
+    for idx, chunk in enumerate(chunks):
+        section_name = " > ".join(chunk.heading_path) if chunk.heading_path else None
+        rows.append({
+            "document_id":  document_id,
+            "content":      chunk.markdown,
+            "section_name": section_name,
+            "page_number":  chunk.page_start or None,
+            "chunk_index":  idx,
+            "token_count":  chunk.token_count,
+        })
+    response = db.table("parent_chunks").insert(rows).execute()
+    # Map local parent_id (parent_0000) -> supabase UUID
+    parent_id_map = {}
+    for i, row in enumerate(response.data):
+        parent_id_map[chunks[i].parent_id] = row["id"]
+    return parent_id_map
+
+
+async def batch_insert_child_chunks(parent_id_map: dict, children: list):
+    """Insert all child chunks in one DB call."""
+    db = get_supabase()
+    rows = []
+    for idx, child in enumerate(children):
+        rows.append({
+            "parent_id":   parent_id_map[child.parent_id],
+            "content":     child.markdown,
+            "chunk_index": idx,
+            "token_count": child.token_count,
+            "embedding":   None,
+        })
+    db.table("child_chunks").insert(rows).execute()
 
 
 async def update_document_status(document_id: str, chunk_count: int, status: str = "processed"):
