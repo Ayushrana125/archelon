@@ -67,6 +67,7 @@ function CreateAgentView({ setMode, setAgentData, onSave }) {
         setFiles={setFiles}
         onCreateAgent={handleCreateAgent}
         onSkip={handleSkipUpload}
+        showSkip={true}
       />
     );
   }
