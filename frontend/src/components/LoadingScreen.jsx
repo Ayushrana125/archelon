@@ -10,15 +10,11 @@ const QUOTES = [
   { text: 'Intent classification routes every query to the right agent.', label: 'Query Routing' },
 ];
 
-const DURATION = 1200;
-
 function LoadingScreen({ onDone }) {
-  const [idx, setIdx] = useState(() => Math.floor(Math.random() * QUOTES.length));
+  const [idx] = useState(() => Math.floor(Math.random() * QUOTES.length));
 
   useEffect(() => {
-    const done = setTimeout(onDone, DURATION);
-    const rotate = setInterval(() => setIdx(i => (i + 1) % QUOTES.length), 1800);
-    return () => { clearTimeout(done); clearInterval(rotate); };
+    onDone();
   }, []);
 
   const quote = QUOTES[idx];
@@ -37,23 +33,11 @@ function LoadingScreen({ onDone }) {
         animate={{ rotate: 360 }}
         transition={{ repeat: Infinity, duration: 1.6, ease: 'linear' }}
       />
-
-      <div className="flex flex-col items-center gap-2 max-w-xs text-center px-6">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.35 }}
-            className="flex flex-col items-center gap-1.5"
-          >
-            <span className="text-[10px] font-semibold tracking-widest uppercase" style={{ color: '#00C9B1' }}>
-              {quote.label}
-            </span>
-            <span className="text-sm text-gray-400 leading-relaxed">{quote.text}</span>
-          </motion.div>
-        </AnimatePresence>
+      <div className="flex flex-col items-center gap-1.5 max-w-xs text-center px-6">
+        <span className="text-[10px] font-semibold tracking-widest uppercase" style={{ color: '#00C9B1' }}>
+          {quote.label}
+        </span>
+        <span className="text-sm text-gray-400 leading-relaxed">{quote.text}</span>
       </div>
     </motion.div>
   );
