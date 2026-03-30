@@ -111,7 +111,7 @@ function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onS
                 ))}
                 {/* Divider between system and user agents */}
                 {savedAgents.some(a => a.is_system) && savedAgents.some(a => !a.is_system) && (
-                  <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+                  <div className="my-1" />
                 )}
                 {/* User agents */}
                 {savedAgents.filter(a => !a.is_system).map((agent) => (

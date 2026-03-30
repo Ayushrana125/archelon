@@ -1,7 +1,14 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 
 function FileUpload({ files, setFiles, onCreateAgent, onBack }) {
   const fileInputRef = useRef(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleCreate = async () => {
+    setLoading(true);
+    await onCreateAgent();
+    setLoading(false);
+  };
 
   const handleFileSelect = (e) => {
     const selectedFiles = Array.from(e.target.files);
@@ -84,11 +91,11 @@ function FileUpload({ files, setFiles, onCreateAgent, onBack }) {
       )}
 
       <button
-        onClick={onCreateAgent}
-        disabled={files.length === 0}
+        onClick={handleCreate}
+        disabled={files.length === 0 || loading}
         className="w-full mt-6 px-6 py-3 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        Create Agent with {files.length} Document{files.length !== 1 ? 's' : ''}
+        {loading ? 'Uploading...' : `Create Agent with ${files.length} Document${files.length !== 1 ? 's' : ''}`}
       </button>
 
     </div>

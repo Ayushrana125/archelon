@@ -1,6 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 function AgentSetup({ agentName, setAgentName, systemInstructions, setSystemInstructions, onContinue, onBack, onSkip }) {
+  const [loading, setLoading] = useState(null); // 'continue' | 'skip'
+
+  const handleContinue = async () => {
+    setLoading('continue');
+    await onContinue();
+    setLoading(null);
+  };
+
+  const handleSkip = async () => {
+    setLoading('skip');
+    await onSkip();
+    setLoading(null);
+  };
   return (
     <div className="max-w-2xl mx-auto px-6 py-12">
       <div className="flex items-center gap-3 mb-8">
@@ -44,18 +57,18 @@ function AgentSetup({ agentName, setAgentName, systemInstructions, setSystemInst
 
         <div className="flex gap-3">
           <button
-            onClick={onContinue}
-            disabled={!agentName.trim()}
+            onClick={handleContinue}
+            disabled={!agentName.trim() || loading !== null}
             className="flex-1 px-6 py-3 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Upload Documents
+            {loading === 'continue' ? 'Creating...' : 'Upload Documents'}
           </button>
           <button
-            onClick={onSkip}
-            disabled={!agentName.trim()}
+            onClick={handleSkip}
+            disabled={!agentName.trim() || loading !== null}
             className="flex-1 px-6 py-3 border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Upload later
+            {loading === 'skip' ? 'Creating...' : 'Upload later'}
           </button>
         </div>
       </div>
