@@ -1,6 +1,6 @@
 import React from 'react';
 
-function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, onEditAgent }) {
+function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, onEditAgent, user }) {
   return (
     <nav className="bg-white dark:bg-[#212121] flex items-center h-[57px] fixed top-0 right-0 z-10 border-b border-gray-200 dark:border-gray-700" style={{ left: collapsed ? '56px' : '256px', transition: 'left 0.3s' }}>
       <div className="flex items-center gap-3 px-5">
@@ -13,7 +13,7 @@ function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, 
             {documents.length} doc{documents.length !== 1 ? 's' : ''}
           </button>
         )}
-        {agentData && !agentData.is_system && (
+        {agentData && (!agentData.is_system || agentData.user_id === user?.id) && (
           <button
             onClick={onEditAgent}
             title="Edit agent"

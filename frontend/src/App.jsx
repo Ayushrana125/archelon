@@ -118,6 +118,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
           collapsed={sidebarCollapsed}
           onDocsClick={() => setShowDocsPanel(p => !p)}
           onEditAgent={() => setMode('edit')}
+          user={user}
         />
         <div className="flex">
           <div className={`${sidebarCollapsed ? 'w-14' : 'w-64'} flex-shrink-0 transition-all duration-300`} />
