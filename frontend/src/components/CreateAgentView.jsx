@@ -40,6 +40,7 @@ function CreateAgentView({ setMode, setAgentData, onSave }) {
         systemInstructions={systemInstructions}
         setSystemInstructions={setSystemInstructions}
         onContinue={handleContinueToUpload}
+        onBack={() => setMode('arex')}
       />
     );
   }

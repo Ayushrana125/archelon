@@ -8,6 +8,7 @@ import SettingsView from './components/SettingsView';
 import AgentsLibrary from './components/AgentsLibrary';
 import EditAgentView from './components/EditAgentView';
 import DocsPanel from './components/DocsPanel';
+import HomePage from './components/HomePage';
 import { fetchAgents } from './services/agent_service';
 
 function App({ externalTheme, externalSetTheme, onLogout, user }) {
@@ -106,7 +107,8 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
             user={user}
           />
           <main className="flex-1 pt-[57px]">
-            {mode === 'arex' && <ChatView key={agentData?.id ?? 'arex'} agentData={agentData} onAddFile={handleAddFileToAgent} messages={currentMessages} setMessages={setCurrentMessages} />}
+            {mode === 'arex' && !agentData && <HomePage onNewAgent={() => setMode('create')} onSelectArex={handleSelectArex} savedAgents={savedAgents} onSelectAgent={handleSelectAgent} />}
+            {mode === 'arex' && agentData && <ChatView key={agentData?.id ?? 'arex'} agentData={agentData} onAddFile={handleAddFileToAgent} messages={currentMessages} setMessages={setCurrentMessages} />}
             {mode === 'create' && <CreateAgentView setMode={setMode} setAgentData={setAgentData} onSave={handleSaveAgent} />}
             {mode === 'edit' && <EditAgentView agentData={agentData} onSave={(updated) => { setSavedAgents(prev => prev.map(a => a.id === updated.id ? updated : a)); setAgentData(updated); setMode('arex'); }} onCancel={() => setMode('arex')} />}
             {mode === 'library' && <AgentsLibrary agents={savedAgents} setAgentData={setAgentData} setMode={setMode} />}

@@ -162,7 +162,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages }) {
   const defaultPlaceholder = isArex ? 'Ask Arex...' : `Ask ${agentName}...`;
   const isBusy = isTyping || !!streamingMsg || isProcessingDoc;
   const { resetIdle } = useAnimatedPlaceholder(isArex && !input && !isBusy, textareaRef, defaultPlaceholder);
-  const hasNoDocs = !isArex && (!agentData?.files || agentData.files.length === 0);
+  const hasNoDocs = false; // docs check now handled by backend
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
