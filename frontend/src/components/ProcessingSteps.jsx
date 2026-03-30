@@ -60,7 +60,7 @@ function FileProgress({ jobId, filename, fileSize, active, onComplete }) {
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1e1e1e] p-4">
+    <div className="rounded-xl bg-gray-50 dark:bg-[#1e1e1e] p-4" style={{ borderLeft: `2px solid ${TEAL}` }}>
       {/* File header */}
       <div className="flex items-center gap-3 mb-4">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${TEAL}20` }}>
@@ -139,7 +139,6 @@ function ProcessingSteps({ jobs, onComplete }) {
 
   const handleFileComplete = (jobId, status) => {
     setCompletedJobs(prev => ({ ...prev, [jobId]: status }));
-    // Move to next file
     setActiveIndex(prev => prev + 1);
   };
 
@@ -150,29 +149,26 @@ function ProcessingSteps({ jobs, onComplete }) {
     }
   }, [completedJobs]);
 
+  const doneCount = Object.keys(completedJobs).length;
+
   return (
-    <div className="max-w-2xl mx-auto px-6 py-12 w-full">
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold mb-1">Processing your documents</h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm">
-          {Object.keys(completedJobs).length === jobs.length && jobs.length > 0
-            ? 'All files processed. Taking you to chat...'
-            : `Processing file ${Math.min(activeIndex + 1, jobs.length)} of ${jobs.length}...`
-          }
-        </p>
-      </div>
-      <div className="space-y-4">
-        {jobs.map((job, idx) => (
-          <FileProgress
-            key={job.jobId}
-            jobId={job.jobId}
-            filename={job.filename}
-            fileSize={job.fileSize}
-            active={idx === activeIndex}
-            onComplete={(status) => handleFileComplete(job.jobId, status)}
-          />
-        ))}
-      </div>
+    <div className="w-full space-y-3">
+      <p className="text-xs text-gray-400 dark:text-gray-500 px-1">
+        {doneCount === jobs.length && jobs.length > 0
+          ? 'All files processed'
+          : `Processing file ${Math.min(activeIndex + 1, jobs.length)} of ${jobs.length}...`
+        }
+      </p>
+      {jobs.map((job, idx) => (
+        <FileProgress
+          key={job.jobId}
+          jobId={job.jobId}
+          filename={job.filename}
+          fileSize={job.fileSize}
+          active={idx === activeIndex}
+          onComplete={(status) => handleFileComplete(job.jobId, status)}
+        />
+      ))}
     </div>
   );
 }

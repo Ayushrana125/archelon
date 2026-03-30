@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import DocumentProcessing from './DocumentProcessing';
+import ProcessingSteps from './ProcessingSteps';
 import FileUploadModal from './FileUploadModal';
 import ThinkingSteps from './ThinkingSteps';
+import { uploadFiles } from '../services/ingest_service';
 
 const mdComponents = {
   h1: ({children}) => <h1 className="text-2xl font-bold mt-5 mb-2">{children}</h1>,
@@ -168,15 +169,29 @@ function ChatView({ agentData, onAddFile, messages, setMessages }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingMsg]);
 
-  const handleFileSelect = (file) => {
+  const handleFileSelect = async (file) => {
     if (processingStarted.current) return;
     processingStarted.current = true;
     setSelectedFile(file);
-    const id = Date.now();
-    setProcessingMsgId(id);
     setIsProcessingDoc(true);
-    setMessages(prev => [...prev, { role: 'processing', id, file: file.name }]);
-    onAddFile?.(file);
+
+    try {
+      const result = await uploadFiles(agentData.id, [file]);
+      const jobs = result.files.map(f => ({
+        jobId: f.job_id,
+        filename: f.filename,
+        fileSize: f.file_size,
+      }));
+      const id = Date.now();
+      setProcessingMsgId(id);
+      setMessages(prev => [...prev, { role: 'processing', id, jobs }]);
+      onAddFile?.(file);
+    } catch (err) {
+      setIsProcessingDoc(false);
+      processingStarted.current = false;
+      setSelectedFile(null);
+      setMessages(prev => [...prev, { role: 'assistant', content: `Upload failed: ${err.message}`, id: Date.now() }]);
+    }
   };
 
   const handleProcessingComplete = () => {
@@ -315,7 +330,10 @@ function ChatView({ agentData, onAddFile, messages, setMessages }) {
                     }}
                   />
                 ) : msg.role === 'processing' ? (
-                  <DocumentProcessing fileName={msg.file} alreadyDone={msg.completed} onComplete={handleProcessingComplete} />
+                  <ProcessingSteps
+                    jobs={msg.jobs}
+                    onComplete={handleProcessingComplete}
+                  />
                 ) : (
                   <div className="px-1">
                     <div className="text-[17px]">
