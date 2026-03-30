@@ -144,7 +144,7 @@ function useAnimatedPlaceholder(active, textareaRef, defaultPlaceholder = 'Ask A
   return { resetIdle };
 }
 
-function ChatView({ agentData, onAddFile, messages, setMessages }) {
+function ChatView({ agentData, onAddFile, messages, setMessages, onDocumentsUpdated }) {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [streamingMsg, setStreamingMsg] = useState(null);
@@ -195,6 +195,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages }) {
     setIsProcessingDoc(false);
     processingStarted.current = false;
     setMessages(prev => prev.map(m => m.role === 'processing' && !m.completed ? { ...m, completed: true } : m));
+    onDocumentsUpdated?.();
   };
 
   const addAssistantMsg = (content, sources) => {
