@@ -41,7 +41,12 @@ function HomePage({ onNewAgent, savedAgents, onSelectAgent }) {
                     </svg>
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{agent.name}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+                      {agent.name}
+                      {agent.is_system && (
+                        <span className="text-xs px-1.5 py-0.5 rounded font-medium" style={{ background: '#00C9B115', color: '#00C9B1' }}>System</span>
+                      )}
+                    </div>
                     {agent.description && <div className="text-xs text-gray-400 dark:text-gray-500 truncate">{agent.description}</div>}
                   </div>
                 </button>

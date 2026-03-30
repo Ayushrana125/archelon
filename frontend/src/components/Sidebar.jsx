@@ -105,6 +105,9 @@ function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onS
                     }`}
                   >
                     <div className="text-[15px] font-medium truncate">{agent.name}</div>
+                    {agent.is_system && (
+                      <span className="text-xs px-1.5 py-0.5 rounded font-medium ml-1.5 flex-shrink-0" style={{ background: '#00C9B115', color: '#00C9B1' }}>System</span>
+                    )}
                   </button>
                 ))}
               </div>

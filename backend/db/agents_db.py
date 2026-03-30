@@ -19,8 +19,10 @@ async def create_agent(user_id: str, name: str, description: str = None, instruc
 
 async def get_agents_by_user(user_id: str) -> list:
     db = get_supabase()
-    response = db.table("agents").select("*").eq("user_id", user_id).eq("is_active", True).execute()
-    return response.data
+    user_agents   = db.table("agents").select("*").eq("user_id", user_id).eq("is_active", True).execute().data
+    system_agents = db.table("agents").select("*").eq("is_system", True).execute().data
+    user_ids = {a["id"] for a in user_agents}
+    return user_agents + [a for a in system_agents if a["id"] not in user_ids]
 
 
 async def get_agent_by_id(agent_id: str, user_id: str) -> dict:
