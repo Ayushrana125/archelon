@@ -1,11 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { fetchDocuments } from '../services/document_service';
+import { updateAgent, deleteAgent } from '../services/agent_service';
 
-function EditAgentView({ agentData, onSave, onCancel }) {
+function EditAgentView({ agentData, onSave, onCancel, onDelete }) {
   const [name, setName] = useState(agentData?.name ?? '');
   const [instructions, setInstructions] = useState(agentData?.instructions ?? '');
   const [documents, setDocuments] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -26,8 +31,30 @@ function EditAgentView({ agentData, onSave, onCancel }) {
     e.target.value = '';
   };
 
-  const handleSave = () => {
-    onSave({ ...agentData, name, instructions });
+  const handleSave = async () => {
+    setSaving(true);
+    setError('');
+    try {
+      const updated = await updateAgent(agentData.id, { name, instructions });
+      onSave({ ...agentData, ...updated });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) { setConfirmDelete(true); return; }
+    setDeleting(true);
+    setError('');
+    try {
+      await deleteAgent(agentData.id);
+      onDelete(agentData.id);
+    } catch (err) {
+      setError(err.message);
+      setDeleting(false);
+    }
   };
 
   const formatSize = (bytes) => {
@@ -122,13 +149,35 @@ function EditAgentView({ agentData, onSave, onCancel }) {
             <input ref={fileInputRef} type="file" multiple accept=".pdf,.docx,.txt" onChange={handleFileAdd} className="hidden" />
           </div>
 
-          <button
-            onClick={handleSave}
-            disabled={!isDirty}
-            className="px-6 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
-          >
-            Save changes
-          </button>
+          {error && <p className="text-sm text-red-400">{error}</p>}
+
+          <div className="flex items-center justify-between pt-2">
+            <button
+              onClick={handleSave}
+              disabled={!isDirty || saving}
+              className="px-6 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
+            >
+              {saving ? 'Saving...' : 'Save changes'}
+            </button>
+
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                confirmDelete
+                  ? 'bg-red-500 text-white hover:bg-red-600'
+                  : 'text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
+              }`}
+            >
+              {deleting ? 'Deleting...' : confirmDelete ? 'Confirm delete' : 'Delete agent'}
+            </button>
+          </div>
+          {confirmDelete && !deleting && (
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              Click "Confirm delete" again to permanently delete this agent and all its data.
+              <button onClick={() => setConfirmDelete(false)} className="ml-2 underline">Cancel</button>
+            </p>
+          )}
         </div>
       </div>
     </div>
