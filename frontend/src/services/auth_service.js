@@ -16,6 +16,8 @@ export async function signup({ firstName, lastName, username, email, password, c
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Signup failed');
+  localStorage.setItem('archelon_token', data.token);
+  localStorage.setItem('archelon_user', JSON.stringify(data.user));
   return data;
 }
 
@@ -27,5 +29,26 @@ export async function login(identifier, password) {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Login failed');
+  localStorage.setItem('archelon_token', data.token);
+  localStorage.setItem('archelon_user', JSON.stringify(data.user));
   return data;
+}
+
+export function getToken() {
+  return localStorage.getItem('archelon_token');
+}
+
+export function getUser() {
+  const u = localStorage.getItem('archelon_user');
+  return u ? JSON.parse(u) : null;
+}
+
+export function logout() {
+  localStorage.removeItem('archelon_token');
+  localStorage.removeItem('archelon_user');
+}
+
+export function authHeaders() {
+  const token = getToken();
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
 }

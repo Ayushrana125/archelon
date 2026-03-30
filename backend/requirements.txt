@@ -8,4 +8,5 @@ supabase
 bcrypt
 pymupdf
 python-docx
+python-jose[cryptography]
 

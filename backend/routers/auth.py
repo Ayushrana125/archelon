@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr
 import bcrypt
 from db import users_db
+from jwt_handler import create_token
 
 router = APIRouter()
 
@@ -18,7 +19,7 @@ class SignupRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    identifier: str  # email or username
+    identifier: str
     password: str
 
 
@@ -42,18 +43,22 @@ async def signup(body: SignupRequest):
         website=body.website,
     )
 
+    token = create_token(user["id"], user["email"])
+
     return {
-        "id": user["id"],
-        "username": user["username"],
-        "email": user["email"],
-        "first_name": user["first_name"],
-        "last_name": user["last_name"],
+        "token": token,
+        "user": {
+            "id":         user["id"],
+            "username":   user["username"],
+            "email":      user["email"],
+            "first_name": user["first_name"],
+            "last_name":  user["last_name"],
+        }
     }
 
 
 @router.post("/auth/login")
 async def login(body: LoginRequest):
-    # try email first, then username
     if "@" in body.identifier:
         user = await users_db.get_user_by_email(body.identifier)
     else:
@@ -65,10 +70,15 @@ async def login(body: LoginRequest):
     if not bcrypt.checkpw(body.password.encode(), user["password_hash"].encode()):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
+    token = create_token(user["id"], user["email"])
+
     return {
-        "id": user["id"],
-        "username": user["username"],
-        "email": user["email"],
-        "first_name": user["first_name"],
-        "last_name": user["last_name"],
+        "token": token,
+        "user": {
+            "id":         user["id"],
+            "username":   user["username"],
+            "email":      user["email"],
+            "first_name": user["first_name"],
+            "last_name":  user["last_name"],
+        }
     }
