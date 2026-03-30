@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 
 function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onSelectArex, collapsed, setCollapsed, onLogout, user, onHome }) {
   const displayName = user ? `${user.first_name} ${user.last_name}` : 'Account';
+  const initials = user ? `${user.first_name?.[0] ?? ''}${user.last_name?.[0] ?? ''}`.toUpperCase() : '?';
   const displayEmail = user?.email ?? '';
   const isArexActive = mode === 'arex' && !activeAgentId;
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -162,9 +163,8 @@ function Sidebar({ mode, setMode, savedAgents, activeAgentId, onSelectAgent, onS
           title="Ayush Rana"
           className={`w-full flex items-center gap-3 rounded-lg hover:bg-gray-200 dark:hover:bg-[#2a2a2a] transition-colors py-2 ${collapsed ? 'justify-center px-0' : 'px-2'}`}
         >
-          <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden flex-shrink-0">
-            <img src="/profile.jpg" alt="Profile" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
-            <span className="hidden text-sm font-medium">A</span>
+          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, #00C9B1, #1A73E8)' }}>
+            {initials}
           </div>
           {!collapsed && (
             <div className="min-w-0 text-left">
