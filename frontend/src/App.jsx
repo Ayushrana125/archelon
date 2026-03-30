@@ -86,7 +86,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
     <div className={theme}>
       <div className="min-h-screen bg-white dark:bg-[#212121] text-gray-900 dark:text-gray-100">
         <TopNav
-          agentName={agentData ? agentData.name : null}
+          agentName={agentData ? agentData.name : 'Home'}
           agentData={agentData}
           collapsed={sidebarCollapsed}
           onDocsClick={() => setShowDocsPanel(p => !p)}
