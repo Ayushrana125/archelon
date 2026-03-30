@@ -2,30 +2,34 @@ import React, { useState } from 'react';
 import AgentSetup from './AgentSetup';
 import FileUpload from './FileUpload';
 import ProcessingSteps from './ProcessingSteps';
+import { createAgent } from '../services/agent_service';
 
 function CreateAgentView({ setMode, setAgentData, onSave }) {
   const [step, setStep] = useState('setup');
   const [agentName, setAgentName] = useState('');
   const [systemInstructions, setSystemInstructions] = useState('');
   const [files, setFiles] = useState([]);
+  const [error, setError] = useState('');
 
-  const handleContinueToUpload = () => {
-    setStep('upload');
-  };
+  const handleContinueToUpload = () => setStep('upload');
 
-  const handleCreateAgent = () => {
-    setStep('processing');
-  };
+  const handleCreateAgent = () => setStep('processing');
 
-  const handleProcessingComplete = () => {
-    setStep('ready');
-  };
+  const handleProcessingComplete = () => setStep('ready');
 
-  const handleStartChat = () => {
-    const agent = { name: agentName, instructions: systemInstructions, files };
-    setAgentData(agent);
-    onSave(agent);
-    setMode('arex');
+  const handleStartChat = async () => {
+    try {
+      const agent = await createAgent({
+        name:         agentName,
+        instructions: systemInstructions,
+        description:  '',
+      });
+      setAgentData(agent);
+      onSave(agent);
+      setMode('arex');
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   if (step === 'setup') {
@@ -76,6 +80,7 @@ function CreateAgentView({ setMode, setAgentData, onSave }) {
         >
           Start chatting with {agentName}
         </button>
+        {error && <p className="text-sm text-red-400 mt-3">{error}</p>}
       </div>
     </div>
   );

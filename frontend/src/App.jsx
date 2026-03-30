@@ -8,17 +8,21 @@ import SettingsView from './components/SettingsView';
 import AgentsLibrary from './components/AgentsLibrary';
 import EditAgentView from './components/EditAgentView';
 import DocsPanel from './components/DocsPanel';
+import { fetchAgents } from './services/agent_service';
 
 function App({ externalTheme, externalSetTheme, onLogout, user }) {
   const navigate = useNavigate();
   const [mode, setMode] = useState('arex');
   const [theme, setTheme] = useState(externalTheme || 'dark');
   const [agentData, setAgentData] = useState(null);
-  const [savedAgents, setSavedAgents] = useState(() => {
-    const saved = localStorage.getItem('arex_agents');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [savedAgents, setSavedAgents] = useState([]);
   const [activeAgentId, setActiveAgentId] = useState(null);
+
+  useEffect(() => {
+    fetchAgents()
+      .then(agents => setSavedAgents(agents))
+      .catch(() => setSavedAgents([]));
+  }, []);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showDocsPanel, setShowDocsPanel] = useState(false);
   const [chatHistories, setChatHistories] = useState({
@@ -40,12 +44,8 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
     document.title = name ? `${name} - Archelon` : 'Archelon - Agentic RAG Platform';
   }, [agentData]);
 
-  useEffect(() => {
-    localStorage.setItem('arex_agents', JSON.stringify(savedAgents));
-  }, [savedAgents]);
-
   const handleSaveAgent = (agent) => {
-    setSavedAgents(prev => [...prev, { ...agent, id: Date.now() }]);
+    setSavedAgents(prev => [...prev, agent]);
   };
 
   const handleSelectAgent = (agent) => {
