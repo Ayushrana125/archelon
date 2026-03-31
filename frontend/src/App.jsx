@@ -112,7 +112,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
     <div className={theme}>
       <div className="min-h-screen bg-white dark:bg-[#212121] text-gray-900 dark:text-gray-100">
         <TopNav
-          agentName={agentData ? agentData.name : 'Home'}
+          agentName={mode === 'settings' ? 'Settings' : agentData ? agentData.name : 'Home'}
           agentData={agentData}
           documents={agentDocuments}
           collapsed={sidebarCollapsed}
@@ -161,7 +161,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
               }}
             />}
             {mode === 'library' && <AgentsLibrary agents={savedAgents} setAgentData={setAgentData} setMode={setMode} />}
-            {mode === 'settings' && <SettingsView theme={theme} setTheme={setTheme} />}
+            {mode === 'settings' && <SettingsView theme={theme} setTheme={setTheme} onLogout={onLogout} />}
           </main>
           {showDocsPanel && agentData && (
             <DocsPanel

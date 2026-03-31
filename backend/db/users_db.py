@@ -38,3 +38,8 @@ async def email_exists(email: str) -> bool:
     db = get_supabase()
     response = db.table("users").select("id").eq("email", email).execute()
     return len(response.data) > 0
+
+
+async def delete_user(user_id: str):
+    db = get_supabase()
+    db.table("users").delete().eq("id", user_id).execute()

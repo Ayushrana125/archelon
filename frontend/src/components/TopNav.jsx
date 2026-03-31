@@ -21,7 +21,7 @@ function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, 
     <nav className="bg-white dark:bg-[#212121] flex items-center h-[57px] fixed top-0 right-0 z-10 border-b border-gray-200 dark:border-gray-700" style={{ left: collapsed ? '56px' : '256px', transition: 'left 0.3s' }}>
       <div className="flex items-center gap-3 px-5 flex-1">
         <div className="agent-name text-xl tracking-tight text-gray-800 dark:text-gray-100">{agentName}</div>
-        {agentData && documents.length > 0 && (
+        {agentData && documents.length > 0 && agentName !== 'Settings' && (
           <button
             onClick={onDocsClick}
             className="docs-pill cursor-pointer hover:opacity-70 transition-opacity"
@@ -29,7 +29,7 @@ function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, 
             {documents.length} doc{documents.length !== 1 ? 's' : ''}
           </button>
         )}
-        {agentData && (!agentData.is_system || agentData.user_id === user?.id) && (
+        {agentData && (!agentData.is_system || agentData.user_id === user?.id) && agentName !== 'Settings' && (
           <button
             onClick={onEditAgent}
             title="Edit agent"
@@ -42,7 +42,7 @@ function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, 
         )}
 
         {/* Embed button — only for non-system agents */}
-        {agentData && !agentData.is_system && (
+        {agentData && !agentData.is_system && agentName !== 'Settings' && (
           <button
             onClick={() => setShowEmbed(true)}
             className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border"

@@ -1,9 +1,9 @@
 from typing import Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, EmailStr
 import bcrypt
 from db import users_db
-from jwt_handler import create_token
+from jwt_handler import create_token, verify_token
 
 router = APIRouter()
 
@@ -82,3 +82,9 @@ async def login(body: LoginRequest):
             "last_name":  user["last_name"],
         }
     }
+
+
+@router.delete("/auth/account")
+async def delete_account(current_user: dict = Depends(verify_token)):
+    await users_db.delete_user(current_user["user_id"])
+    return {"message": "Account deleted"}

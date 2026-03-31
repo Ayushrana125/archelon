@@ -43,12 +43,23 @@ export function getUser() {
   return u ? JSON.parse(u) : null;
 }
 
+export function authHeaders() {
+  const token = getToken();
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
 export function logout() {
   localStorage.removeItem('archelon_token');
   localStorage.removeItem('archelon_user');
 }
 
-export function authHeaders() {
-  const token = getToken();
-  return token ? { 'Authorization': `Bearer ${token}` } : {};
+export async function deleteAccount() {
+  const res = await fetch(`${API_URL}/api/auth/account`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to delete account');
+  logout();
+  return data;
 }
