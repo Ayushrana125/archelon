@@ -38,8 +38,8 @@ async def get_dashboard_stats(
     if date_to:   users_q = users_q.lte("created_at", date_to)
     total_users = users_q.execute().count or 0
 
-    # Agents
-    agents_q = db.table("agents").select("id", count="exact")
+    # Agents (exclude system agents)
+    agents_q = db.table("agents").select("id", count="exact").eq("is_system", False)
     if user_id:   agents_q = agents_q.eq("user_id", user_id)
     if date_from: agents_q = agents_q.gte("created_at", date_from)
     if date_to:   agents_q = agents_q.lte("created_at", date_to)
@@ -70,8 +70,8 @@ async def get_dashboard_stats(
 
     # Users list for filter dropdown
     all_users = db.table("users").select("id, username, first_name, last_name").order("created_at", desc=True).execute().data or []
-    # Agents list for filter dropdown
-    all_agents = db.table("agents").select("id, name, user_id").order("created_at", desc=True).execute().data or []
+    # Agents list for filter dropdown (exclude system agents)
+    all_agents = db.table("agents").select("id, name, user_id").eq("is_system", False).order("created_at", desc=True).execute().data or []
 
     return {
         "total_users":         total_users,
