@@ -32,8 +32,8 @@ async def get_dashboard_stats(
             q = q.lte("created_at", date_to)
         return q
 
-    # Users
-    users_q = db.table("users").select("id", count="exact")
+    # Users (exclude developer accounts)
+    users_q = db.table("users").select("id", count="exact").eq("is_developer", False)
     if date_from: users_q = users_q.gte("created_at", date_from)
     if date_to:   users_q = users_q.lte("created_at", date_to)
     total_users = users_q.execute().count or 0
@@ -68,8 +68,8 @@ async def get_dashboard_stats(
     total_child_chunks = cc_res.count or 0
     child_tokens = sum(r.get("token_count") or 0 for r in (cc_res.data or []))
 
-    # Users list for filter dropdown
-    all_users = db.table("users").select("id, username, first_name, last_name").order("created_at", desc=True).execute().data or []
+    # Users list for filter dropdown (exclude developers)
+    all_users = db.table("users").select("id, username, first_name, last_name").eq("is_developer", False).order("created_at", desc=True).execute().data or []
     # Agents list for filter dropdown (exclude system agents)
     all_agents = db.table("agents").select("id, name, user_id").eq("is_system", False).order("created_at", desc=True).execute().data or []
 
