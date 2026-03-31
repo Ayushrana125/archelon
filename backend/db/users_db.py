@@ -18,14 +18,14 @@ async def create_user(first_name: str, last_name: str, username: str, email: str
 
 async def get_user_by_email(email: str) -> dict:
     db = get_supabase()
-    response = db.table("users").select("*").eq("email", email).single().execute()
-    return response.data
+    response = db.table("users").select("*").eq("email", email).execute()
+    return response.data[0] if response.data else None
 
 
 async def get_user_by_username(username: str) -> dict:
     db = get_supabase()
-    response = db.table("users").select("*").eq("username", username).single().execute()
-    return response.data
+    response = db.table("users").select("*").eq("username", username).execute()
+    return response.data[0] if response.data else None
 
 
 async def username_exists(username: str) -> bool:

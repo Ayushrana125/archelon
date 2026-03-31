@@ -29,7 +29,7 @@ async def signup(body: SignupRequest):
         raise HTTPException(status_code=400, detail="Username already taken")
 
     if await users_db.email_exists(body.email):
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="An account with this email already exists.")
 
     password_hash = bcrypt.hashpw(body.password.encode(), bcrypt.gensalt()).decode()
 
@@ -65,10 +65,10 @@ async def login(body: LoginRequest):
         user = await users_db.get_user_by_username(body.identifier)
 
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(status_code=404, detail="No account found. Create one instead.")
 
     if not bcrypt.checkpw(body.password.encode(), user["password_hash"].encode()):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(status_code=401, detail="Invalid credentials.")
 
     token = create_token(user["id"], user["email"])
 

@@ -58,8 +58,10 @@ export async function deleteAccount() {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.detail || 'Failed to delete account');
+  if (!res.ok) {
+    let detail = 'Failed to delete account';
+    try { const data = await res.json(); detail = data.detail || detail; } catch {}
+    throw new Error(detail);
+  }
   logout();
-  return data;
 }
