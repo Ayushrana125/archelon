@@ -42,7 +42,7 @@ function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, 
         )}
 
         {/* Dashboard button — developer only, home page only */}
-        {user?.is_developer && !agentData && (
+        {user?.is_developer && !agentData && agentName !== 'Dashboard' && (
           <button
             onClick={onDashboard}
             className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border"
