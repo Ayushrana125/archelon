@@ -62,11 +62,11 @@ function FileProgress({ jobId, filename, fileSize, active, alreadyDone, onComple
   };
 
   return (
-    <div className="rounded-xl bg-gray-50 dark:bg-[#1e1e1e]" style={{ borderLeft: `2px solid ${TEAL}` }}>
+    <div className="rounded-xl bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-gray-700 overflow-hidden">
       {/* Clickable header */}
       <div
         onClick={() => setExpanded(p => !p)}
-        className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors rounded-xl"
+        className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
       >
         <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${TEAL}20` }}>
           {isDone ? (
@@ -153,8 +153,8 @@ function ProcessingSteps({ jobs, completed, onComplete }) {
   };
 
   return (
-    <div className="w-full">
-      <p className="text-xs text-gray-400 dark:text-gray-500 px-1 mb-3">
+    <div className="w-full max-w-sm">
+      <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">
         {doneCount >= jobs.filter(j => j.jobId).length && jobs.length > 0
           ? 'All files processed'
           : completed ? '' : `Processing file ${Math.min(activeIndex + 1, jobs.length)} of ${jobs.length}...`

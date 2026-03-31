@@ -98,8 +98,10 @@ function CreateAgentView({ setMode, setAgentData, onSave }) {
 
   if (step === 'processing') {
     return (
-      <div className="flex justify-center h-[calc(100vh-57px)] overflow-y-auto">
-        <ProcessingSteps jobs={jobs} onComplete={handleProcessingComplete} />
+      <div className="flex justify-center items-start h-[calc(100vh-57px)] overflow-y-auto py-12 px-6">
+        <div className="w-full max-w-md">
+          <ProcessingSteps jobs={jobs} onComplete={handleProcessingComplete} />
+        </div>
       </div>
     );
   }
