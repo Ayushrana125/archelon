@@ -154,14 +154,12 @@ function ProcessingSteps({ jobs, completed, onComplete }) {
 
   return (
     <div className="w-full">
-      {!completed && (
-        <p className="text-xs text-gray-400 dark:text-gray-500 px-1 mb-3">
-          {doneCount >= jobs.filter(j => j.jobId).length && jobs.length > 0
-            ? 'All files processed'
-            : `Processing file ${Math.min(activeIndex + 1, jobs.length)} of ${jobs.length}...`
-          }
-        </p>
-      )}
+      <p className="text-xs text-gray-400 dark:text-gray-500 px-1 mb-3">
+        {doneCount >= jobs.filter(j => j.jobId).length && jobs.length > 0
+          ? 'All files processed'
+          : completed ? '' : `Processing file ${Math.min(activeIndex + 1, jobs.length)} of ${jobs.length}...`
+        }
+      </p>
       <div className="space-y-3">
         {jobs.map((job, idx) => (
           <FileProgress
