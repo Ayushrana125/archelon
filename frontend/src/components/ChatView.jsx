@@ -150,6 +150,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, onDocumentsUpda
   const [streamingMsg, setStreamingMsg] = useState(null);
   const [resumeFlow, setResumeFlow] = useState(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [isProcessingDoc, setIsProcessingDoc] = useState(false);
   const [processingMsgId, setProcessingMsgId] = useState(null);
   const [pendingResponse, setPendingResponse] = useState({});
@@ -170,11 +171,13 @@ function ChatView({ agentData, onAddFile, messages, setMessages, onDocumentsUpda
 
   const handleFileSelect = async (files) => {
     if (processingStarted.current) return;
+    const fileArray = Array.isArray(files) ? files : [files];
     processingStarted.current = true;
+    setIsUploading(true);
     setIsProcessingDoc(true);
     try {
-      const fileArray = Array.isArray(files) ? files : [files];
       const result = await uploadFiles(agentData.id, fileArray);
+      setIsUploading(false);
       const jobs = result.files.map(f => ({
         jobId: f.job_id,
         filename: f.filename,
@@ -185,6 +188,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, onDocumentsUpda
       setMessages(prev => [...prev, { role: 'processing', id, jobs }]);
       fileArray.forEach(f => onAddFile?.(f));
     } catch (err) {
+      setIsUploading(false);
       setIsProcessingDoc(false);
       processingStarted.current = false;
       setMessages(prev => [...prev, { role: 'assistant', content: `Upload failed: ${err.message}`, id: Date.now() }]);
@@ -390,21 +394,13 @@ function ChatView({ agentData, onAddFile, messages, setMessages, onDocumentsUpda
       <div className="bg-white dark:bg-[#212121] px-6 pb-6 pt-3">
         <div className="max-w-4xl mx-auto">
           <div className="relative bg-gray-100 dark:bg-[#2a2a2a] border border-gray-300 dark:border-transparent rounded-3xl px-5 pt-3 pb-2 focus-within:ring-2 focus-within:ring-blue-400 dark:focus-within:ring-gray-600 focus-within:border-transparent transition-all">
-            {false && (
-              <div className="absolute inset-0 rounded-3xl bg-gray-100/80 dark:bg-[#2a2a2a]/80 backdrop-blur-[1px] flex items-center justify-center gap-3 z-10">
-                <span className="text-sm text-gray-400 dark:text-gray-500">Upload docs to start conversation</span>
-                <button
-                  onClick={() => setShowUploadModal(p => !p)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-medium hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Add files
-                </button>
+            {isUploading && (
+              <div className="flex items-center gap-2 mb-2 text-xs text-gray-400">
+                <img src="/Archelon_logo.png" alt="" className="w-4 h-4 object-contain opacity-50 animate-spin-slow" />
+                Uploading files...
               </div>
             )}
-<textarea
+            <textarea
               ref={textareaRef}
               value={input}
               onChange={(e) => {

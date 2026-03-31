@@ -31,7 +31,7 @@ function FileProgress({ jobId, filename, fileSize, active, alreadyDone, onComple
   }, [isDone]);
 
   useEffect(() => {
-    if (!active || alreadyDone) return;
+    if (!active || alreadyDone || !jobId) return;
     const poll = async () => {
       try {
         const data = await getJobStatus(jobId);
@@ -139,39 +139,36 @@ function FileProgress({ jobId, filename, fileSize, active, alreadyDone, onComple
 
 function ProcessingSteps({ jobs, completed, onComplete }) {
   const [activeIndex, setActiveIndex] = useState(completed ? jobs.length : 0);
-  const [completedJobs, setCompletedJobs] = useState({});
+  const [doneCount, setDoneCount] = useState(completed ? jobs.length : 0);
 
-  const handleFileComplete = (jobId, status) => {
-    setCompletedJobs(prev => ({ ...prev, [jobId]: status }));
+  const handleFileComplete = () => {
+    setDoneCount(prev => {
+      const next = prev + 1;
+      if (next >= jobs.filter(j => j.jobId).length) {
+        setTimeout(() => onComplete?.(), 1500);
+      }
+      return next;
+    });
     setActiveIndex(prev => prev + 1);
   };
-
-  useEffect(() => {
-    const allDone = jobs.every(j => completedJobs[j.jobId]);
-    if (allDone && jobs.length > 0) {
-      setTimeout(() => onComplete?.(), 1500);
-    }
-  }, [completedJobs]);
-
-  const doneCount = Object.keys(completedJobs).length;
 
   return (
     <div className="w-full space-y-3">
       <p className="text-xs text-gray-400 dark:text-gray-500 px-1">
-        {doneCount === jobs.length && jobs.length > 0
+        {doneCount >= jobs.filter(j => j.jobId).length && jobs.length > 0
           ? 'All files processed'
           : `Processing file ${Math.min(activeIndex + 1, jobs.length)} of ${jobs.length}...`
         }
       </p>
       {jobs.map((job, idx) => (
         <FileProgress
-          key={job.jobId}
+          key={job.jobId ?? `pending-${idx}`}
           jobId={job.jobId}
           filename={job.filename}
           fileSize={job.fileSize}
           active={!completed && idx === activeIndex}
           alreadyDone={completed}
-          onComplete={(status) => handleFileComplete(job.jobId, status)}
+          onComplete={handleFileComplete}
         />
       ))}
     </div>
