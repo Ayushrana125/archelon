@@ -23,7 +23,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
   const [agentDocuments, setAgentDocuments] = useState([]);
 
   useEffect(() => {
-    fetchAgents()
+    fetchAgents(true)
       .then(agents => setSavedAgents(agents))
       .catch(() => setSavedAgents([]));
   }, []);
