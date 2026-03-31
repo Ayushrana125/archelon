@@ -308,7 +308,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, onDocumentsUpda
         <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
 
           {messages.map((msg, msgIdx) => (
-            <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`} style={messages[msgIdx - 1]?.role === 'thinking' ? {marginTop: '6px'} : {}}>
+            <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={msg.role === 'processing' ? 'w-full' : 'max-w-[80%]'}>
                 {msg.role === 'user' ? (
                   <div className="rounded-2xl px-5 py-3 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-[17px]">

@@ -153,24 +153,28 @@ function ProcessingSteps({ jobs, completed, onComplete }) {
   };
 
   return (
-    <div className="w-full space-y-3">
-      <p className="text-xs text-gray-400 dark:text-gray-500 px-1">
-        {doneCount >= jobs.filter(j => j.jobId).length && jobs.length > 0
-          ? 'All files processed'
-          : `Processing file ${Math.min(activeIndex + 1, jobs.length)} of ${jobs.length}...`
-        }
-      </p>
-      {jobs.map((job, idx) => (
-        <FileProgress
-          key={job.jobId ?? `pending-${idx}`}
-          jobId={job.jobId}
-          filename={job.filename}
-          fileSize={job.fileSize}
-          active={!completed && idx === activeIndex}
-          alreadyDone={completed}
-          onComplete={handleFileComplete}
-        />
-      ))}
+    <div className="w-full">
+      {!completed && (
+        <p className="text-xs text-gray-400 dark:text-gray-500 px-1 mb-3">
+          {doneCount >= jobs.filter(j => j.jobId).length && jobs.length > 0
+            ? 'All files processed'
+            : `Processing file ${Math.min(activeIndex + 1, jobs.length)} of ${jobs.length}...`
+          }
+        </p>
+      )}
+      <div className="space-y-3">
+        {jobs.map((job, idx) => (
+          <FileProgress
+            key={job.jobId ?? `pending-${idx}`}
+            jobId={job.jobId}
+            filename={job.filename}
+            fileSize={job.fileSize}
+            active={!completed && idx === activeIndex}
+            alreadyDone={completed}
+            onComplete={handleFileComplete}
+          />
+        ))}
+      </div>
     </div>
   );
 }
