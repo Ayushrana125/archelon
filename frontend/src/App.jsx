@@ -9,6 +9,7 @@ import AgentsLibrary from './components/AgentsLibrary';
 import EditAgentView from './components/EditAgentView';
 import DocsPanel from './components/DocsPanel';
 import HomePage from './components/HomePage';
+import DashboardView from './components/DashboardView';
 import { fetchAgents } from './services/agent_service';
 import { fetchDocuments, invalidateDocuments, getCachedDocuments } from './services/document_service';
 
@@ -27,17 +28,15 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
       .catch(() => setSavedAgents([]));
   }, []);
 
-  // Fetch documents when agent changes — seed from cache instantly
   useEffect(() => {
     if (!agentData?.id) { setAgentDocuments([]); return; }
-    // Seed from cache immediately so UI shows instantly
     const cached = getCachedDocuments(agentData.id);
     if (cached) setAgentDocuments(cached);
-    // Still fetch to ensure fresh data on first load
     fetchDocuments(agentData.id)
       .then(docs => setAgentDocuments(docs))
       .catch(() => {});
   }, [agentData?.id]);
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showDocsPanel, setShowDocsPanel] = useState(false);
   const [chatHistories, setChatHistories] = useState({
@@ -60,13 +59,11 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
   }, [agentData]);
 
   const handleSaveAgent = async (agent) => {
-    // Re-fetch from DB to get clean list — avoids duplicates
     try {
-      const agents = await fetchAgents(true); // force refresh
+      const agents = await fetchAgents(true);
       setSavedAgents(agents);
     } catch {
       setSavedAgents(prev => {
-        // Only add if not already in list
         if (prev.find(a => a.id === agent.id)) return prev;
         return [...prev, agent];
       });
@@ -112,13 +109,14 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
     <div className={theme}>
       <div className="min-h-screen bg-white dark:bg-[#212121] text-gray-900 dark:text-gray-100">
         <TopNav
-          agentName={mode === 'settings' ? '' : agentData ? agentData.name : 'Home'}
+          agentName={mode === 'settings' ? '' : mode === 'dashboard' ? '' : agentData ? agentData.name : 'Home'}
           agentData={agentData}
           documents={agentDocuments}
           collapsed={sidebarCollapsed}
           onDocsClick={() => setShowDocsPanel(p => !p)}
           onEditAgent={() => setMode('edit')}
           user={user}
+          onDashboard={() => setMode('dashboard')}
         />
         <div className="flex">
           <div className={`${sidebarCollapsed ? 'w-14' : 'w-64'} flex-shrink-0 transition-all duration-300`} />
@@ -162,6 +160,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
             />}
             {mode === 'library' && <AgentsLibrary agents={savedAgents} setAgentData={setAgentData} setMode={setMode} />}
             {mode === 'settings' && <SettingsView theme={theme} setTheme={setTheme} onLogout={onLogout} />}
+            {mode === 'dashboard' && <DashboardView />}
           </main>
           {showDocsPanel && agentData && (
             <DocsPanel

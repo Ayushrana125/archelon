@@ -48,11 +48,12 @@ async def signup(body: SignupRequest):
     return {
         "token": token,
         "user": {
-            "id":         user["id"],
-            "username":   user["username"],
-            "email":      user["email"],
-            "first_name": user["first_name"],
-            "last_name":  user["last_name"],
+            "id":           user["id"],
+            "username":     user["username"],
+            "email":        user["email"],
+            "first_name":   user["first_name"],
+            "last_name":    user["last_name"],
+            "is_developer": user.get("is_developer", False),
         }
     }
 
@@ -75,11 +76,12 @@ async def login(body: LoginRequest):
     return {
         "token": token,
         "user": {
-            "id":         user["id"],
-            "username":   user["username"],
-            "email":      user["email"],
-            "first_name": user["first_name"],
-            "last_name":  user["last_name"],
+            "id":           user["id"],
+            "username":     user["username"],
+            "email":        user["email"],
+            "first_name":   user["first_name"],
+            "last_name":    user["last_name"],
+            "is_developer": user.get("is_developer", False),
         }
     }
 
