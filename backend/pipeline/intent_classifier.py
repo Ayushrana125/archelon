@@ -1,10 +1,10 @@
 """
-intent_classifier.py — Classifies user query intent.
+intent_classifier.py — Classifies user query intent only.
 
 Intents:
   smalltalk  — pure greeting/casual, no retrieval needed
-  single     — one clear topic, one retrieval query
-  multi      — two or more distinct topics, multiple retrieval queries
+  single     — one clear information need (may have multiple keywords)
+  multi      — two or more distinct information needs
 """
 
 import os
@@ -21,9 +21,7 @@ Return raw JSON only. No markdown. No backticks. No explanation.
 Return exactly this format:
 {
   "intent": "single" or "multi" or "smalltalk",
-  "thinking": "User is asking about X",
-  "search_thinking": "Let's search for X from the uploaded documents",
-  "search_queries": ["keyword1", "keyword2"]
+  "thinking": "User is asking about X"
 }
 
 Rules for intent:
@@ -32,28 +30,16 @@ Rules for intent:
   If there is ANY question about a person, topic, skill, project, experience, document — it is NOT smalltalk.
   When in doubt, classify as single or multi, never smalltalk.
 
-- single: ONE clear topic, question, or information request.
-  Examples: "who is Ayush", "what are his skills", "tell me about his experience"
+- single: ONE information need, even if it mentions multiple related concepts.
+  Examples: "who is Ayush", "what are his Python and FastAPI skills", "tell me about his experience"
 
-- multi: TWO OR MORE distinct topics in one message.
-  Examples: "who is Ayush and what are his skills", "tell me his projects and his background"
+- multi: TWO OR MORE clearly distinct information needs that require separate lookups.
+  Examples: "who is Ayush and what are his skills", "tell me his projects and his education background"
 
 Rules for thinking:
 - Start with "User is asking about"
 - Describe what user wants in one line
-- Empty string "" for smalltalk only
-
-Rules for search_thinking:
-- Start with "Let's search for"
-- Mention what will be searched
-- Empty string "" for smalltalk only
-
-Rules for search_queries:
-- Optimized short search terms for vector search
-- One term per topic
-- Keep each term under 5 words
-- Be specific — use nouns not verbs
-- Empty array [] for smalltalk only"""
+- Empty string "" for smalltalk only"""
 
 
 async def classify_intent(user_message: str, system_instructions: str = "") -> dict:
@@ -72,8 +58,6 @@ async def classify_intent(user_message: str, system_instructions: str = "") -> d
     except Exception as e:
         print(f"[intent_classifier] ERROR: {e}")
         return {
-            "intent":         "single",
-            "thinking":       "",
-            "search_thinking": "",
-            "search_queries": [],
+            "intent":  "single",
+            "thinking": "",
         }

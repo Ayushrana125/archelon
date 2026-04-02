@@ -28,19 +28,19 @@ async def chat(body: ChatRequest):
 
     if intent == "smalltalk":
         return {
-            "intent":        intent,
-            "thinking":      "",
+            "intent":         intent,
+            "thinking":       "",
             "search_queries": [],
-            "answer":        "Hello! How can I help you?",
+            "answer":         "Hello! How can I help you?",
         }
 
-    result = await analyse_query(body.message)
+    result = await analyse_query(body.message, intent=intent)
 
     # TODO: retrieval → rerank → expand → synthesize
     return {
-        "intent":         intent,
-        "thinking":       classified.get("thinking"),
-        "search_thinking": classified.get("search_thinking"),
-        "search_queries": result.get("search_queries"),
-        "answer":         "retrieval coming soon",
+        "intent":          intent,
+        "thinking":        classified.get("thinking"),
+        "search_thinking": result.get("search_thinking"),
+        "search_queries":  result.get("search_queries"),
+        "answer":          "retrieval coming soon",
     }
