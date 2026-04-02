@@ -94,10 +94,13 @@ async def update_document_status(document_id: str, chunk_count: int, status: str
 
 
 async def update_child_chunk_embeddings(embeddings: dict[str, list[float]]):
-    """Batch update embeddings for child chunks. embeddings = {chunk_id: vector}."""
+    """Bulk update embeddings using upsert to avoid N individual update calls."""
     db = get_supabase()
-    for chunk_id, vector in embeddings.items():
-        db.table("child_chunks").update({"embedding": vector}).eq("id", chunk_id).execute()
+    rows = [{"id": chunk_id, "embedding": vector} for chunk_id, vector in embeddings.items()]
+    # Upsert in batches of 100 to avoid payload size limits
+    batch_size = 100
+    for i in range(0, len(rows), batch_size):
+        db.table("child_chunks").upsert(rows[i:i + batch_size]).execute()
 
 
 async def delete_document_cascade(document_id: str):

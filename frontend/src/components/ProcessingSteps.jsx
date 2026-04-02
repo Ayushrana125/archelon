@@ -23,7 +23,9 @@ function FileProgress({ jobId, filename, fileSize, active, alreadyDone, onComple
   const [job, setJob] = useState(null);
   const [expanded, setExpanded] = useState(!alreadyDone);
   const [fetchError, setFetchError] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const intervalRef = useRef(null);
+  const timerRef = useRef(null);
   const failCountRef = useRef(0);
 
   const isDone  = alreadyDone || job?.status === 'done';
@@ -32,6 +34,17 @@ function FileProgress({ jobId, filename, fileSize, active, alreadyDone, onComple
   useEffect(() => {
     if (isDone) setExpanded(false);
   }, [isDone]);
+
+  // Running timer
+  useEffect(() => {
+    if (!active || alreadyDone) return;
+    timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
+    return () => clearInterval(timerRef.current);
+  }, [active, alreadyDone]);
+
+  useEffect(() => {
+    if (isDone || isError) clearInterval(timerRef.current);
+  }, [isDone, isError]);
 
   useEffect(() => {
     if (!active || alreadyDone || !jobId) return;
@@ -97,7 +110,10 @@ function FileProgress({ jobId, filename, fileSize, active, alreadyDone, onComple
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate text-gray-900 dark:text-gray-100">{filename}</p>
-          <p className="text-xs text-gray-400">{formatSize(fileSize)}{meta.filetype ? ` · ${meta.filetype}` : ''}</p>
+          <p className="text-xs text-gray-400">
+            {formatSize(fileSize)}{meta.filetype ? ` · ${meta.filetype}` : ''}
+            {!isDone && !isError && active && elapsed > 0 && ` · ${elapsed}s`}
+          </p>
         </div>
         <svg
           className="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200"
