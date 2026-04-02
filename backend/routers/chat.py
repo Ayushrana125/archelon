@@ -15,10 +15,9 @@ router = APIRouter()
 
 
 class ChatRequest(BaseModel):
-    message:             str
-    agent_id:            str
-    session_id:          str
-    system_instructions: str = ""
+    message:    str
+    agent_id:   str
+    session_id: str
 
 
 async def _get_agent(agent_id: str, user_id: str) -> dict:
@@ -35,7 +34,7 @@ async def chat(body: ChatRequest, current_user: dict = Depends(verify_token)):
 
     classified = await classify_intent(
         user_message=body.message,
-        system_instructions=body.system_instructions,
+        system_instructions=agent.get("instructions", ""),
     )
     intent = classified.get("intent")
 

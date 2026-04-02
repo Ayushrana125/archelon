@@ -5,6 +5,7 @@ import ProcessingSteps from './ProcessingSteps';
 import FileUploadModal from './FileUploadModal';
 import ThinkingSteps from './ThinkingSteps';
 import { uploadFiles } from '../services/ingest_service';
+import { authHeaders } from '../services/auth_service';
 
 const mdComponents = {
   h1: ({children}) => <h1 className="text-2xl font-bold mt-5 mb-2">{children}</h1>,
@@ -256,14 +257,11 @@ function ChatView({ agentData, onAddFile, messages, setMessages, onDocumentsUpda
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({
           message: text,
           agent_id: agentData?.id?.toString() ?? 'arex',
           session_id: 'session_1',
-          system_instructions: agentData
-            ? `You are ${agentData.name}, an AI assistant.`
-            : 'You are Arex, Ayush Rana\'s personal AI assistant, built on the Archelon RAG Platform. If asked who you are, say: I am Arex, Ayush Rana\'s assistant, built on the Archelon RAG Platform. Ayush Rana is an AI and Automation Developer based in Mumbai. When users ask casual questions like "what is your experience", "what are your skills", "what projects have you worked on" — they are asking about Ayush Rana, not you. Answer on his behalf.',
         }),
       });
       const data = await res.json();
