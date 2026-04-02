@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MISTRAL_API_KEY  = os.getenv("MISTRAL_API_KEY")
+MISTRAL_API_KEY  = os.getenv("MISTRAL_API_KEY_1")
 EMBED_MODEL      = "mistral-embed"
 MAX_TOKENS_BATCH = 15_000
 RATE_LIMIT_DELAY = 1.1
