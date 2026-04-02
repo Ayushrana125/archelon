@@ -49,7 +49,17 @@ async def embed_chunks(chunks: list[dict], on_batch_done=None) -> dict[str, list
         return {}
 
     # Filter out empty or whitespace-only chunks
-    chunks = [c for c in chunks if c.get("content", "").strip()]
+    # Also truncate chunks that exceed Mistral's per-input limit (16K tokens ~ 64K chars)
+    MAX_CHARS = 60_000
+    cleaned = []
+    for c in chunks:
+        content = c.get("content", "").strip()
+        if not content:
+            continue
+        if len(content) > MAX_CHARS:
+            c = {**c, "content": content[:MAX_CHARS]}
+        cleaned.append(c)
+    chunks = cleaned
 
     batches = _build_batches(chunks)
     total_batches = len(batches)

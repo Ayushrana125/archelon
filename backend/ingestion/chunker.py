@@ -187,16 +187,50 @@ def build_child_chunks(parent_chunks: list) -> list:
 
             if line.startswith("```") or line.startswith("|"):
                 flush_buffer()
-                children.append(ChildChunk(
-                    child_id     = f"child_{child_index:05d}",
-                    parent_id    = parent.parent_id,
-                    doc_title    = parent.doc_title,
-                    heading_path = parent.heading_path,
-                    markdown     = line,
-                    page_start   = parent.page_start,
-                    token_count  = estimate_tokens(line),
-                ))
-                child_index += 1
+                # Split oversized code/table blocks into chunks
+                if estimate_tokens(line) > CHILD_MAX_TOKENS:
+                    words = line.split()
+                    buf, buf_t = [], 0
+                    for word in words:
+                        wt = estimate_tokens(word)
+                        if buf_t + wt > CHILD_MAX_TOKENS and buf:
+                            md = " ".join(buf)
+                            children.append(ChildChunk(
+                                child_id=f"child_{child_index:05d}",
+                                parent_id=parent.parent_id,
+                                doc_title=parent.doc_title,
+                                heading_path=parent.heading_path,
+                                markdown=md,
+                                page_start=parent.page_start,
+                                token_count=estimate_tokens(md),
+                            ))
+                            child_index += 1
+                            buf, buf_t = [], 0
+                        buf.append(word)
+                        buf_t += wt
+                    if buf:
+                        md = " ".join(buf)
+                        children.append(ChildChunk(
+                            child_id=f"child_{child_index:05d}",
+                            parent_id=parent.parent_id,
+                            doc_title=parent.doc_title,
+                            heading_path=parent.heading_path,
+                            markdown=md,
+                            page_start=parent.page_start,
+                            token_count=estimate_tokens(md),
+                        ))
+                        child_index += 1
+                else:
+                    children.append(ChildChunk(
+                        child_id     = f"child_{child_index:05d}",
+                        parent_id    = parent.parent_id,
+                        doc_title    = parent.doc_title,
+                        heading_path = parent.heading_path,
+                        markdown     = line,
+                        page_start   = parent.page_start,
+                        token_count  = estimate_tokens(line),
+                    ))
+                    child_index += 1
                 continue
 
             if line.startswith("#"):
