@@ -22,10 +22,12 @@ function formatSize(bytes) {
 function FileProgress({ jobId, filename, fileSize, active, alreadyDone, onComplete }) {
   const [job, setJob] = useState(null);
   const [expanded, setExpanded] = useState(!alreadyDone);
+  const [fetchError, setFetchError] = useState(false);
   const intervalRef = useRef(null);
+  const failCountRef = useRef(0);
 
   const isDone  = alreadyDone || job?.status === 'done';
-  const isError = job?.status === 'error';
+  const isError = job?.status === 'error' || fetchError;
 
   useEffect(() => {
     if (isDone) setExpanded(false);
@@ -36,13 +38,20 @@ function FileProgress({ jobId, filename, fileSize, active, alreadyDone, onComple
     const poll = async () => {
       try {
         const data = await getJobStatus(jobId);
+        failCountRef.current = 0;
         setJob(data);
         if (data.status === 'done' || data.status === 'error') {
           clearInterval(intervalRef.current);
           setTimeout(() => onComplete?.(data.status), 800);
         }
       } catch {
-        clearInterval(intervalRef.current);
+        failCountRef.current += 1;
+        if (failCountRef.current >= 3) {
+          clearInterval(intervalRef.current);
+          setFetchError(true);
+          setJob(prev => ({ ...prev, error: 'Processing failed. Document has been removed. Please try again.' }));
+          setTimeout(() => onComplete?.('error'), 800);
+        }
       }
     };
     poll();
@@ -135,7 +144,7 @@ function FileProgress({ jobId, filename, fileSize, active, alreadyDone, onComple
               </div>
             );
           })}
-          {isError && <p className="text-xs text-red-400 mt-1">{job?.error ?? 'Something went wrong'}</p>}
+          {isError && <p className="text-xs text-red-400 mt-1">{job?.error ?? 'Processing failed. Please try again.'}</p>}
         </div>
       </div>
     </div>
