@@ -94,19 +94,19 @@ async def update_document_status(document_id: str, chunk_count: int, status: str
 
 
 async def update_child_chunk_embeddings(embeddings: dict[str, list[float]]):
-    """Update embeddings concurrently in batches to avoid N sequential DB calls."""
+    """Update embeddings using thread pool to avoid blocking the async event loop."""
     import asyncio
     db = get_supabase()
 
-    async def update_one(chunk_id, vector):
+    def update_one(chunk_id, vector):
         db.table("child_chunks").update({"embedding": vector}).eq("id", chunk_id).execute()
 
-    # Run in concurrent batches of 20
+    # Run in thread pool, 10 at a time to avoid connection exhaustion
     items = list(embeddings.items())
-    batch_size = 20
+    batch_size = 10
     for i in range(0, len(items), batch_size):
         batch = items[i:i + batch_size]
-        await asyncio.gather(*[update_one(cid, vec) for cid, vec in batch])
+        await asyncio.gather(*[asyncio.to_thread(update_one, cid, vec) for cid, vec in batch])
 
 
 async def delete_document_cascade(document_id: str):

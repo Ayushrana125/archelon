@@ -108,11 +108,17 @@ async def ingest_document(agent_id: str, file_path: str, original_filename: str,
             await chunks_db.update_ingestion_job(job_id, "embedding", metadata=dict(current_meta))
 
         embeddings = await embed_chunks(child_chunks_for_embed, on_batch_done=on_batch_done)
+
+        # Step 5 — Save vectors
+        await chunks_db.update_ingestion_job(job_id, "vectorizing", metadata={
+            **current_meta,
+            "step": "vectorizing",
+        })
         await chunks_db.update_child_chunk_embeddings(embeddings)
 
         duration_ms = round((time.time() - start_time) * 1000)
 
-        # Step 5 — Done
+        # Step 6 — Done
         await chunks_db.update_ingestion_job(job_id, "done", metadata={
             "step":          "done",
             "filename":      filename,
