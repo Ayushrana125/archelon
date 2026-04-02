@@ -259,9 +259,12 @@ function ChatView({ agentData, onAddFile, messages, setMessages, onDocumentsUpda
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({
-          message: text,
-          agent_id: agentData?.id?.toString() ?? 'arex',
-          session_id: 'session_1',
+          message:            text,
+          agent_id:           agentData?.id?.toString() ?? 'arex',
+          session_id:         'session_1',
+          agent_name:         agentData?.name ?? '',
+          agent_description:  agentData?.description ?? '',
+          agent_instructions: agentData?.instructions ?? '',
         }),
       });
       const data = await res.json();

@@ -8,42 +8,34 @@ from pydantic import BaseModel
 from pipeline.intent_classifier import classify_intent
 from pipeline.query_analyser import analyse_query
 from pipeline.smalltalk_agent import handle_smalltalk
-from db import agents_db
 from jwt_handler import verify_token
 
 router = APIRouter()
 
 
 class ChatRequest(BaseModel):
-    message:    str
-    agent_id:   str
-    session_id: str
-
-
-async def _get_agent(agent_id: str, user_id: str) -> dict:
-    """Fetch agent from DB — tries user-owned first, then system agents."""
-    agent = await agents_db.get_agent_by_id(agent_id, user_id)
-    if not agent:
-        agent = await agents_db.get_system_agent_by_id(agent_id)
-    return agent or {}
+    message:             str
+    agent_id:            str
+    session_id:          str
+    agent_name:          str = ""
+    agent_description:   str = ""
+    agent_instructions:  str = ""
 
 
 @router.post("/chat")
 async def chat(body: ChatRequest, current_user: dict = Depends(verify_token)):
-    agent = await _get_agent(body.agent_id, current_user["user_id"])
-
     classified = await classify_intent(
         user_message=body.message,
-        system_instructions=agent.get("instructions", ""),
+        system_instructions=body.agent_instructions,
     )
     intent = classified.get("intent")
 
     if intent == "smalltalk":
         answer = await handle_smalltalk(
             user_message=body.message,
-            agent_name=agent.get("name", "Assistant"),
-            agent_description=agent.get("description", ""),
-            agent_instructions=agent.get("instructions", ""),
+            agent_name=body.agent_name or "Assistant",
+            agent_description=body.agent_description,
+            agent_instructions=body.agent_instructions,
         )
         return {
             "intent":         intent,
