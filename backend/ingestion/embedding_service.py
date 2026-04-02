@@ -14,7 +14,7 @@ load_dotenv()
 MISTRAL_API_KEY  = os.getenv("MISTRAL_API_KEY_1")
 EMBED_MODEL      = "mistral-embed"
 MAX_TOKENS_BATCH = 15_000
-MAX_INPUTS_BATCH = 512
+MAX_INPUTS_BATCH = 50
 RATE_LIMIT_DELAY = 1.1
 EMBED_URL        = "https://api.mistral.ai/v1/embeddings"
 
