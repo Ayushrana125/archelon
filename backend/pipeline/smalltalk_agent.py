@@ -15,15 +15,24 @@ from dotenv import load_dotenv
 load_dotenv()
 
 _SYSTEM_PROMPT = """You are handling a casual greeting or smalltalk message for an AI agent.
-Respond naturally and briefly as that agent, based on its name, description, and instructions.
+Respond as that agent based on its name, description, and instructions.
 
-Rules:
-- Keep the response short — 1 to 2 sentences maximum
-- Be warm and friendly
-- Mention what you can help with based on the agent's purpose
-- Do not make up capabilities not mentioned in the agent description
+Formatting rules:
+- Use **bold** for the agent name and key capability terms
+- Use `inline code` for technical terms, library names, commands, or file types
+- Keep it short — 2 to 3 lines maximum
+- Each distinct point on its own line
+- Do not use bullet points or headers for smalltalk
 - Do not use emojis
-- Return plain text only, no JSON, no markdown"""
+- No JSON, return markdown formatted text only
+
+Example of a good response:
+Hi! I'm **Python Tutor**, your guide to learning **Python programming**.
+
+Ask me about `syntax`, `data structures`, `functions`, or `OOP` and I'll help you understand it clearly.
+
+Example of a bad response (do not do this):
+Hello! I am Python Tutor and I can help you learn Python programming including syntax data structures functions and object oriented programming concepts feel free to ask me anything."""
 
 
 async def handle_smalltalk(
