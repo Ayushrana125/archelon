@@ -14,6 +14,7 @@ load_dotenv()
 MISTRAL_API_KEY  = os.getenv("MISTRAL_API_KEY_1")
 EMBED_MODEL      = "mistral-embed"
 MAX_TOKENS_BATCH = 15_000
+MAX_INPUTS_BATCH = 512
 RATE_LIMIT_DELAY = 1.1
 EMBED_URL        = "https://api.mistral.ai/v1/embeddings"
 
@@ -26,7 +27,7 @@ def _build_batches(chunks: list[dict]) -> list[list[dict]]:
 
     for chunk in chunks:
         t = chunk.get("token_count") or 1
-        if current_tokens + t > MAX_TOKENS_BATCH and current_batch:
+        if (current_tokens + t > MAX_TOKENS_BATCH or len(current_batch) >= MAX_INPUTS_BATCH) and current_batch:
             batches.append(current_batch)
             current_batch = []
             current_tokens = 0
