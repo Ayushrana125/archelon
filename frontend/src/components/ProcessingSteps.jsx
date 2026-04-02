@@ -124,6 +124,8 @@ function FileProgress({ jobId, filename, fileSize, active, alreadyDone, onComple
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
+                  ) : active && step === 'embedding' ? (
+                    <img src="/Archelon_logo.png" alt="" className="w-4 h-4 object-contain opacity-60 animate-spin-slow" />
                   ) : active ? (
                     <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center" style={{ borderColor: TEAL }}>
                       <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: TEAL }} />
@@ -139,6 +141,17 @@ function FileProgress({ jobId, filename, fileSize, active, alreadyDone, onComple
                   </p>
                   {(done || active) && (
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{subText(step)}</p>
+                  )}
+                  {active && step === 'embedding' && meta.embed_total > 0 && (
+                    <div className="mt-1.5 h-1 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden w-32">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          background: TEAL,
+                          width: `${Math.round(((meta.embed_batches || 0) / meta.embed_total) * 100)}%`
+                        }}
+                      />
+                    </div>
                   )}
                 </div>
               </div>

@@ -93,7 +93,7 @@ async def embed_chunks(chunks: list[dict], on_batch_done=None) -> dict[str, list
                 raise RuntimeError(f"Embedding failed on batch {i + 1}/{total_batches}: {e.response.status_code} {e.response.text[:200]}")
 
             if on_batch_done:
-                on_batch_done(i + 1, total_batches)
+                await on_batch_done(i + 1, total_batches)
 
             if i < total_batches - 1:
                 await asyncio.sleep(RATE_LIMIT_DELAY)
