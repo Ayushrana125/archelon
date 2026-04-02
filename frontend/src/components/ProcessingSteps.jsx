@@ -142,7 +142,7 @@ function FileProgress({ jobId, filename, fileSize, active, alreadyDone, onComple
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                  ) : active && step === 'embedding' ? (
+                  ) : active && (step === 'embedding' || step === 'vectorizing') ? (
                     <img src="/Archelon_logo.png" alt="" className="w-4 h-4 object-contain opacity-60 animate-spin-slow" />
                   ) : active ? (
                     <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center" style={{ borderColor: TEAL }}>
