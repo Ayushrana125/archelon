@@ -128,6 +128,8 @@ async def ingest_document(agent_id: str, file_path: str, original_filename: str,
 
     except Exception as e:
         error_msg = str(e)
+        # Write error to job first
         await chunks_db.update_ingestion_job(job_id, "error", error=error_msg)
-        # Clean up document and chunks but keep ingestion_job so frontend can show the error
-        await chunks_db.delete_document_cascade(document_id)
+        # Mark document as errored but don't delete it — deleting cascades and removes the job row
+        # User will see the error in the UI and can delete the document manually or retry
+        await chunks_db.update_document_status(document_id, 0, status="error")
