@@ -1,12 +1,9 @@
 """
-synthesizer.py — Generates the final answer from retrieved context chunks.
+synthesizer.py — Generates a grounded answer from retrieved context chunks.
 
-Takes the user query + retrieved parent chunks and produces a
-grounded, concise answer using the LLM.
-
-Token budgets:
-  single query  — context ~1500 tokens, answer max ~400 tokens
-  multi query   — context ~4500-6000 tokens, answer max ~1000 tokens
+Takes agent identity, user query, search queries, and retrieved parent chunks.
+Formats context as [section_name] + content blocks.
+Calls mistral-small-latest and returns the answer with token usage and sources.
 """
 
 import os
@@ -16,18 +13,111 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-_SYSTEM_PROMPT = """You are a helpful assistant that answers questions based strictly on the provided context.
 
-Rules:
-- Answer only from the context provided
-- If the answer is not in the context, say "I don't have that information in my documents"
-- Be concise and direct
-- Do not make up information"""
+def _estimate_tokens(text: str) -> int:
+    return max(1, len(text) // 4)
 
 
-async def synthesize(query: str, context_chunks: list[dict], max_tokens: int = 400) -> str:
+def _build_context(chunks: list[dict]) -> str:
+    """Format chunks as [section_name]\ncontent blocks."""
+    blocks = []
+    for chunk in chunks:
+        section = chunk.get("section_name") or "Document"
+        content = chunk.get("parent_content") or ""
+        blocks.append(f"[{section}]\n{content}")
+    return "\n\n---\n\n".join(blocks)
+
+
+def _build_sources(chunks: list[dict]) -> list[str]:
+    """Extract unique document filenames from section names."""
+    seen = set()
+    sources = []
+    for chunk in chunks:
+        section = chunk.get("section_name") or ""
+        # section_name format: "DOCUMENT_NAME > Section > ..."
+        # We want just the top-level document name
+        doc_name = section.split(" > ")[0].strip() if " > " in section else section.strip()
+        if doc_name and doc_name not in seen:
+            seen.add(doc_name)
+            sources.append(doc_name)
+    return sources
+
+
+async def synthesize(
+    user_message:       str,
+    context_chunks:     list[dict],
+    agent_name:         str = "Assistant",
+    agent_instructions: str = "",
+    search_queries:     list[str] = None,
+) -> dict:
     """
     Generate a grounded answer from context chunks.
-    context_chunks: list of {content, section_name, ...}
+
+    Returns:
+      {
+        answer:       str,
+        sources:      list[str],   # unique document names
+        token_usage:  { context, system, query, total }
+      }
     """
-    raise NotImplementedError("synthesizer not yet implemented")
+    try:
+        context_text = _build_context(context_chunks)
+        sources      = _build_sources(context_chunks)
+        search_hint  = ", ".join(search_queries) if search_queries else ""
+
+        system_prompt = f"""You are {agent_name}, an AI assistant.
+
+{agent_instructions}
+
+Answer the user's question using ONLY the context provided below.
+If the answer is not in the context, say "I don't have that information in my documents."
+
+Formatting rules:
+- Use **bold** for key terms, names, and important values
+- Use bullet points when listing multiple items — one item per line
+- Use `inline code` for technical terms, file names, and commands
+- Keep paragraphs short — 2 to 3 lines max
+- Do not mention "the context" or "the document" — just answer naturally
+- Do not make up information not present in the context
+- Be concise and direct
+
+Context:
+{context_text}"""
+
+        if search_hint:
+            system_prompt += f"\n\nSearch focus: {search_hint}"
+
+        # Token usage estimation
+        context_tokens = _estimate_tokens(context_text)
+        system_tokens  = _estimate_tokens(system_prompt)
+        query_tokens   = _estimate_tokens(user_message)
+        total_tokens   = system_tokens + query_tokens
+
+        llm = ChatMistralAI(
+            model="mistral-small-latest",
+            api_key=os.getenv("MISTRAL_API_KEY_1"),
+        )
+
+        response = await llm.ainvoke([
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=user_message),
+        ])
+
+        return {
+            "answer":  response.content.strip(),
+            "sources": sources,
+            "token_usage": {
+                "context": context_tokens,
+                "system":  system_tokens,
+                "query":   query_tokens,
+                "total":   total_tokens,
+            },
+        }
+
+    except Exception as e:
+        print(f"[synthesizer] ERROR: {e}")
+        return {
+            "answer":      f"I encountered an error generating a response. Please try again.",
+            "sources":     [],
+            "token_usage": {"context": 0, "system": 0, "query": 0, "total": 0},
+        }

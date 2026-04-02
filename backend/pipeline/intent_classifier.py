@@ -25,9 +25,10 @@ Return exactly this format:
 }
 
 Rules for intent:
-- smalltalk: ONLY pure greetings and casual conversation with zero information request.
-  Examples: "hi", "hello", "how are you", "good morning", "thanks", "okay", "bye"
-  If there is ANY question about a person, topic, skill, project, experience, document — it is NOT smalltalk.
+- smalltalk: Pure greetings, casual conversation, AND identity questions about the agent itself.
+  Examples: "hi", "hello", "how are you", "good morning", "thanks", "bye",
+  "who are you", "what are you", "what can you do", "tell me about yourself", "what is your name"
+  If there is ANY question about a specific person, topic, document content, skill, or project — it is NOT smalltalk.
   When in doubt, classify as single or multi, never smalltalk.
 
 - single: ONE information need, even if it mentions multiple related concepts.

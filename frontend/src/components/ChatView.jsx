@@ -70,7 +70,7 @@ function TypewriterMessage({ content, sources, onComplete }) {
         setDone(true);
         setTimeout(() => onComplete?.(), 100);
       }
-    }, 18);
+    }, 38);
 
     return () => clearInterval(interval);
   }, [content]);
@@ -157,7 +157,7 @@ function useAnimatedPlaceholder(active, textareaRef, defaultPlaceholder = 'Ask A
   return { resetIdle };
 }
 
-function ChatView({ agentData, onAddFile, messages, setMessages, onDocumentsUpdated }) {
+function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoading, onDocumentsUpdated }) {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [streamingMsg, setStreamingMsg] = useState(null);
@@ -363,6 +363,12 @@ function ChatView({ agentData, onAddFile, messages, setMessages, onDocumentsUpda
             </div>
           ))}
 
+          {isGreetingLoading && (
+            <div className="flex justify-start px-1">
+              <img src="/Archelon_logo.png" alt="" className="w-7 h-7 object-contain opacity-50 animate-spin-slow" />
+            </div>
+          )}
+
           {isTyping && (
             <div className="flex justify-start px-1">
               <img src="/Archelon_logo.png" alt="" className="w-7 h-7 object-contain opacity-50 animate-spin-slow" />
@@ -462,7 +468,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, onDocumentsUpda
           </div>
 
           <div className="text-xs text-gray-400 dark:text-gray-500 mt-2 text-center">
-            Press Enter to send · Shift + Enter for new line
+            Archelon can make mistakes. Consider checking important information.
           </div>
         </div>
       </div>

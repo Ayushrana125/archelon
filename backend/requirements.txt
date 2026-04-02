@@ -10,4 +10,5 @@ pymupdf
 python-docx
 python-jose[cryptography]
 python-multipart
-
+httpx
+unstructured

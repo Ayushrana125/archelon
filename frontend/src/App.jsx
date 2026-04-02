@@ -12,6 +12,7 @@ import HomePage from './components/HomePage';
 import DashboardView from './components/DashboardView';
 import { fetchAgents } from './services/agent_service';
 import { fetchDocuments, invalidateDocuments, getCachedDocuments } from './services/document_service';
+import { authHeaders } from './services/auth_service';
 
 function App({ externalTheme, externalSetTheme, onLogout, user }) {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
 
   const currentChatKey = activeAgentId ?? 'arex';
   const currentMessages = chatHistories[currentChatKey] ?? [{ role: 'assistant', content: `Hi, I'm ${agentData?.name ?? 'Arex'}. How can I help you?`, id: 0 }];
+  const isGreetingLoading = activeAgentId && chatHistories[activeAgentId]?.length === 0;
 
   const setCurrentMessages = (updater) => {
     setChatHistories(prev => ({
@@ -71,12 +73,46 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
     setActiveAgentId(agent.id);
   };
 
-  const handleSelectAgent = (agent) => {
+  const handleSelectAgent = async (agent) => {
     setAgentData(agent);
     setActiveAgentId(agent.id);
     setAgentDocuments(getCachedDocuments(agent.id) || []);
     setMode('arex');
     setShowDocsPanel(false);
+
+    // Auto-send "Hi" only if this agent has no chat history yet
+    setChatHistories(prev => {
+      if (prev[agent.id]) return prev; // already has history, skip
+      // Kick off the greeting fetch in the background
+      fetch(`${import.meta.env.VITE_API_URL}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({
+          message:            'Hi',
+          agent_id:           agent.id,
+          session_id:         'session_1',
+          agent_name:         agent.name ?? '',
+          agent_description:  agent.description ?? '',
+          agent_instructions: agent.instructions ?? '',
+        }),
+      })
+        .then(r => r.json())
+        .then(data => {
+          const reply = data.answer ?? `Hi! I'm ${agent.name}. How can I help you?`;
+          setChatHistories(h => ({
+            ...h,
+            [agent.id]: [{ role: 'assistant', content: reply, id: Date.now() }],
+          }));
+        })
+        .catch(() => {
+          setChatHistories(h => ({
+            ...h,
+            [agent.id]: [{ role: 'assistant', content: `Hi! I'm ${agent.name}. How can I help you?`, id: Date.now() }],
+          }));
+        });
+      // Return a loading placeholder immediately
+      return { ...prev, [agent.id]: [] };
+    });
   };
 
   const handleSelectArex = () => {
@@ -135,7 +171,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
           />
           <main className="flex-1 pt-[57px]">
             {mode === 'arex' && !agentData && <HomePage onNewAgent={() => setMode('create')} savedAgents={savedAgents} onSelectAgent={handleSelectAgent} />}
-            {mode === 'arex' && agentData && <ChatView key={agentData?.id ?? 'arex'} agentData={agentData} onAddFile={handleAddFileToAgent} messages={currentMessages} setMessages={setCurrentMessages} onDocumentsUpdated={() => { invalidateDocuments(agentData.id); fetchDocuments(agentData.id, true).then(docs => setAgentDocuments(docs)).catch(() => {}); }} />}
+            {mode === 'arex' && agentData && <ChatView key={agentData?.id ?? 'arex'} agentData={agentData} onAddFile={handleAddFileToAgent} messages={currentMessages} setMessages={setCurrentMessages} isGreetingLoading={isGreetingLoading} onDocumentsUpdated={() => { invalidateDocuments(agentData.id); fetchDocuments(agentData.id, true).then(docs => setAgentDocuments(docs)).catch(() => {}); }} />}
             {mode === 'create' && <CreateAgentView setMode={setMode} setAgentData={setAgentData} onSave={handleSaveAgent} />}
             {mode === 'edit' && <EditAgentView
               agentData={agentData}

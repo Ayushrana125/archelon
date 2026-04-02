@@ -1,0 +1,27 @@
+============================================================
+RETRIEVAL PIPELINE TEST SUMMARY
+Run at: 2026-04-03 05:07:11
+Agent ID: 1a726ade-5adf-4cd2-9d51-5fd525a065a3
+Match Count (per query): 15
+Relevance Threshold: 0.6
+Single Query Token Budget: 1500
+============================================================
+
+Query: "What is pricing?"
+--------------------------------------------------
+  Child chunks fetched       : 15
+  Unique parents (after dedup): 7
+  Duplicates removed          : 8
+  After score threshold (>0.6): 7
+  After token budget          : 5
+  Total tokens in context     : 1305
+  Sections included           :
+    - ARCHELON > 5. Archelon Pricing
+    - ARCHELON > 6. Technical Stack
+    - ARCHELON > 2. How Archelon Helps Businesses
+    - ARCHELON > 1. What is Archelon
+    - ARCHELON > 4. About Ayush Rana
+
+============================================================
+END OF SUMMARY
+============================================================

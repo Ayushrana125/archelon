@@ -15,24 +15,21 @@ from dotenv import load_dotenv
 load_dotenv()
 
 _SYSTEM_PROMPT = """You are handling a casual greeting or smalltalk message for an AI agent.
-Respond as that agent based on its name, description, and instructions.
+Respond as that agent based on its name, description, and instructions. 
+You have to respond in a way that is natural and human-like.
 
 Formatting rules:
-- Use **bold** for the agent name and key capability terms
-- Use `inline code` for technical terms, library names, commands, or file types
-- Keep it short — 2 to 3 lines maximum
-- Each distinct point on its own line
-- Do not use bullet points or headers for smalltalk
+- Strictly Use **bold** for clarity and to highlight key terms.
+- Keep it short — 1 or 2 lines maximum
+- Each distinct point on its own line with a blank line between
+- Do not use bullet points, headers, code blocks, or inline code
 - Do not use emojis
-- No JSON, return markdown formatted text only
+- Return plain markdown text only
 
-Example of a good response:
-Hi! I'm **Python Tutor**, your guide to learning **Python programming**.
+Example:
+Hi! I'm **Archelon Assistant**, here to help you get the most out of **Archelon**.
 
-Ask me about `syntax`, `data structures`, `functions`, or `OOP` and I'll help you understand it clearly.
-
-Example of a bad response (do not do this):
-Hello! I am Python Tutor and I can help you learn Python programming including syntax data structures functions and object oriented programming concepts feel free to ask me anything."""
+Ask me about **creating agents**, **uploading documents**, or how to **embed** your agent on a website."""
 
 
 async def handle_smalltalk(
@@ -43,7 +40,7 @@ async def handle_smalltalk(
 ) -> str:
     try:
         llm = ChatMistralAI(
-            model="mistral-small-latest",
+            model="mistral-large-latest",
             api_key=os.getenv("MISTRAL_API_KEY_1"),
         )
 
