@@ -94,13 +94,19 @@ async def update_document_status(document_id: str, chunk_count: int, status: str
 
 
 async def update_child_chunk_embeddings(embeddings: dict[str, list[float]]):
-    """Bulk update embeddings using upsert to avoid N individual update calls."""
+    """Update embeddings concurrently in batches to avoid N sequential DB calls."""
+    import asyncio
     db = get_supabase()
-    rows = [{"id": chunk_id, "embedding": vector} for chunk_id, vector in embeddings.items()]
-    # Upsert in batches of 100 to avoid payload size limits
-    batch_size = 100
-    for i in range(0, len(rows), batch_size):
-        db.table("child_chunks").upsert(rows[i:i + batch_size]).execute()
+
+    async def update_one(chunk_id, vector):
+        db.table("child_chunks").update({"embedding": vector}).eq("id", chunk_id).execute()
+
+    # Run in concurrent batches of 20
+    items = list(embeddings.items())
+    batch_size = 20
+    for i in range(0, len(items), batch_size):
+        batch = items[i:i + batch_size]
+        await asyncio.gather(*[update_one(cid, vec) for cid, vec in batch])
 
 
 async def delete_document_cascade(document_id: str):
