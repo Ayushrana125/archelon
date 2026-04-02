@@ -69,8 +69,8 @@ async def batch_insert_parent_chunks(document_id: str, chunks: list) -> dict:
     return parent_id_map
 
 
-async def batch_insert_child_chunks(parent_id_map: dict, children: list):
-    """Insert all child chunks in one DB call."""
+async def batch_insert_child_chunks(parent_id_map: dict, children: list) -> list[dict]:
+    """Insert all child chunks in one DB call. Returns inserted rows with IDs."""
     db = get_supabase()
     rows = []
     for idx, child in enumerate(children):
@@ -81,7 +81,8 @@ async def batch_insert_child_chunks(parent_id_map: dict, children: list):
             "token_count": child.token_count,
             "embedding":   None,
         })
-    db.table("child_chunks").insert(rows).execute()
+    response = db.table("child_chunks").insert(rows).execute()
+    return response.data or []
 
 
 async def update_document_status(document_id: str, chunk_count: int, status: str = "processed"):
@@ -90,3 +91,10 @@ async def update_document_status(document_id: str, chunk_count: int, status: str
         "chunk_count": chunk_count,
         "status":      status,
     }).eq("id", document_id).execute()
+
+
+async def update_child_chunk_embeddings(embeddings: dict[str, list[float]]):
+    """Batch update embeddings for child chunks. embeddings = {chunk_id: vector}."""
+    db = get_supabase()
+    for chunk_id, vector in embeddings.items():
+        db.table("child_chunks").update({"embedding": vector}).eq("id", chunk_id).execute()

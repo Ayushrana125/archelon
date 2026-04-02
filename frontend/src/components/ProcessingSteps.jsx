@@ -3,12 +3,13 @@ import { getJobStatus } from '../services/ingest_service';
 
 const TEAL = '#00C9B1';
 
-const STEP_ORDER = ['parsing', 'chunking', 'saving', 'done'];
+const STEP_ORDER = ['parsing', 'chunking', 'saving', 'embedding', 'done'];
 const STEP_LABELS = {
-  parsing:  'Parsing document',
-  chunking: 'Creating chunks',
-  saving:   'Saving to database',
-  done:     'Complete',
+  parsing:   'Parsing document',
+  chunking:  'Creating chunks',
+  saving:    'Saving to database',
+  embedding: 'Generating embeddings',
+  done:      'Complete',
 };
 
 function formatSize(bytes) {
@@ -54,10 +55,14 @@ function FileProgress({ jobId, filename, fileSize, active, alreadyDone, onComple
   const stepIndex   = (step) => STEP_ORDER.indexOf(step);
 
   const subText = (step) => {
-    if (step === 'parsing')  return meta.elements ? `${meta.elements} elements extracted` : 'Reading file structure...';
-    if (step === 'chunking') return meta.parent_chunks ? `${meta.parent_chunks} parent · ${meta.child_chunks} child · avg ${meta.avg_tokens} tokens` : 'Splitting into chunks...';
-    if (step === 'saving')   return meta.parent_chunks ? `${meta.parent_chunks + meta.child_chunks} records` : 'Writing to database...';
-    if (step === 'done')     return meta.duration_ms ? `Done in ${(meta.duration_ms / 1000).toFixed(1)}s · ${meta.child_chunks} chunks stored` : 'Complete';
+    if (step === 'parsing')   return meta.elements ? `${meta.elements} elements extracted` : 'Reading file structure...';
+    if (step === 'chunking')  return meta.parent_chunks ? `${meta.parent_chunks} parent · ${meta.child_chunks} child · avg ${meta.avg_tokens} tokens` : 'Splitting into chunks...';
+    if (step === 'saving')    return meta.parent_chunks ? `${meta.parent_chunks + meta.child_chunks} records` : 'Writing to database...';
+    if (step === 'embedding') {
+      if (meta.embed_batches && meta.embed_total) return `Batch ${meta.embed_batches} of ${meta.embed_total} · ${meta.child_chunks} chunks`;
+      return `Preparing ${meta.child_chunks || ''} chunks...`;
+    }
+    if (step === 'done') return meta.duration_ms ? `Done in ${(meta.duration_ms / 1000).toFixed(1)}s · ${meta.child_chunks} chunks embedded` : 'Complete';
     return '';
   };
 
@@ -95,7 +100,7 @@ function FileProgress({ jobId, filename, fileSize, active, alreadyDone, onComple
       </div>
 
       {/* Collapsible steps */}
-      <div className="overflow-hidden transition-all duration-300" style={{ maxHeight: expanded ? '300px' : '0px' }}>
+      <div className="overflow-hidden transition-all duration-300" style={{ maxHeight: expanded ? '400px' : '0px' }}>
         <div className="px-4 pb-4 space-y-2">
           {STEP_ORDER.map((step, i) => {
             const done    = isDone || stepIndex(currentStep) > i;
