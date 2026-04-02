@@ -64,7 +64,7 @@ async def embed_chunks(chunks: list[dict], on_batch_done=None) -> dict[str, list
                 },
                 json={
                     "model":  EMBED_MODEL,
-                    "inputs": texts,
+                    "input": texts,
                 },
             )
             response.raise_for_status()
