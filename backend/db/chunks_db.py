@@ -43,8 +43,8 @@ async def update_ingestion_job(job_id: str, status: str, metadata: dict = None, 
 
 async def get_ingestion_job(job_id: str) -> dict:
     db = get_supabase()
-    response = db.table("ingestion_jobs").select("*").eq("id", job_id).single().execute()
-    return response.data
+    response = db.table("ingestion_jobs").select("*").eq("id", job_id).execute()
+    return response.data[0] if response.data else None
 
 
 async def batch_insert_parent_chunks(document_id: str, chunks: list) -> dict:
@@ -101,7 +101,7 @@ async def update_child_chunk_embeddings(embeddings: dict[str, list[float]]):
 
 
 async def delete_document_cascade(document_id: str):
-    """Delete document and all related chunks. Supabase cascades child_chunks via parent_chunks FK."""
+    """Delete document and all related chunks. Keeps ingestion_job so error is visible to frontend."""
     db = get_supabase()
     db.table("parent_chunks").delete().eq("document_id", document_id).execute()
     db.table("documents").delete().eq("id", document_id).execute()

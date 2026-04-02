@@ -129,6 +129,5 @@ async def ingest_document(agent_id: str, file_path: str, original_filename: str,
     except Exception as e:
         error_msg = str(e)
         await chunks_db.update_ingestion_job(job_id, "error", error=error_msg)
-        # Clean up document and all its chunks from DB so user can retry cleanly
+        # Clean up document and chunks but keep ingestion_job so frontend can show the error
         await chunks_db.delete_document_cascade(document_id)
-        raise
