@@ -59,22 +59,27 @@ async def embed_chunks(chunks: list[dict], on_batch_done=None) -> dict[str, list
         for i, batch in enumerate(batches):
             texts = [c["content"] for c in batch]
 
-            response = await client.post(
-                EMBED_URL,
-                headers={
-                    "Authorization": f"Bearer {MISTRAL_API_KEY}",
-                    "Content-Type":  "application/json",
-                },
-                json={
-                    "model":  EMBED_MODEL,
-                    "input": texts,
-                },
-            )
-            response.raise_for_status()
-            data = response.json()
+            try:
+                response = await client.post(
+                    EMBED_URL,
+                    headers={
+                        "Authorization": f"Bearer {MISTRAL_API_KEY}",
+                        "Content-Type":  "application/json",
+                    },
+                    json={
+                        "model":  EMBED_MODEL,
+                        "input": texts,
+                    },
+                )
+                response.raise_for_status()
+                data = response.json()
 
-            for j, item in enumerate(data["data"]):
-                embeddings[batch[j]["id"]] = item["embedding"]
+                for j, item in enumerate(data["data"]):
+                    embeddings[batch[j]["id"]] = item["embedding"]
+
+            except httpx.HTTPStatusError as e:
+                # Re-raise so ingestor can clean up the document
+                raise RuntimeError(f"Embedding failed on batch {i + 1}/{total_batches}: {e.response.status_code} {e.response.text[:200]}")
 
             if on_batch_done:
                 on_batch_done(i + 1, total_batches)

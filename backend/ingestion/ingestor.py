@@ -127,6 +127,8 @@ async def ingest_document(agent_id: str, file_path: str, original_filename: str,
         })
 
     except Exception as e:
-        await chunks_db.update_ingestion_job(job_id, "error", error=str(e))
-        await chunks_db.update_document_status(document_id, 0, status="error")
+        error_msg = str(e)
+        await chunks_db.update_ingestion_job(job_id, "error", error=error_msg)
+        # Clean up document and all its chunks from DB so user can retry cleanly
+        await chunks_db.delete_document_cascade(document_id)
         raise

@@ -98,3 +98,10 @@ async def update_child_chunk_embeddings(embeddings: dict[str, list[float]]):
     db = get_supabase()
     for chunk_id, vector in embeddings.items():
         db.table("child_chunks").update({"embedding": vector}).eq("id", chunk_id).execute()
+
+
+async def delete_document_cascade(document_id: str):
+    """Delete document and all related chunks. Supabase cascades child_chunks via parent_chunks FK."""
+    db = get_supabase()
+    db.table("parent_chunks").delete().eq("document_id", document_id).execute()
+    db.table("documents").delete().eq("id", document_id).execute()
