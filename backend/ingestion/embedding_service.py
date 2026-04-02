@@ -48,6 +48,9 @@ async def embed_chunks(chunks: list[dict], on_batch_done=None) -> dict[str, list
     if not chunks:
         return {}
 
+    # Filter out empty or whitespace-only chunks
+    chunks = [c for c in chunks if c.get("content", "").strip()]
+
     batches = _build_batches(chunks)
     total_batches = len(batches)
     embeddings = {}
