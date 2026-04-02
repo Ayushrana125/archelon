@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import ProcessingSteps from './ProcessingSteps';
 import FileUploadModal from './FileUploadModal';
 import ThinkingSteps from './ThinkingSteps';
@@ -8,20 +10,28 @@ import { uploadFiles } from '../services/ingest_service';
 import { authHeaders } from '../services/auth_service';
 
 const mdComponents = {
-  h1: ({children}) => <h1 className="text-2xl font-bold mt-5 mb-2">{children}</h1>,
-  h2: ({children}) => <h2 className="text-xl font-bold mt-4 mb-1.5">{children}</h2>,
-  h3: ({children}) => <h3 className="text-lg font-semibold mt-3 mb-1">{children}</h3>,
+  h1: ({children}) => <h1 className="text-2xl font-bold mt-5 mb-2 text-gray-900 dark:text-gray-100">{children}</h1>,
+  h2: ({children}) => <h2 className="text-xl font-bold mt-4 mb-1.5 text-gray-900 dark:text-gray-100">{children}</h2>,
+  h3: ({children}) => <h3 className="text-lg font-semibold mt-3 mb-1 text-gray-900 dark:text-gray-100">{children}</h3>,
   p:  ({children}) => <p className="mb-3 leading-relaxed last:mb-0">{children}</p>,
   ul: ({children}) => <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>,
   ol: ({children}) => <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>,
   li: ({children}) => <li className="leading-relaxed">{children}</li>,
-  strong: ({children}) => <strong className="font-semibold">{children}</strong>,
+  strong: ({children}) => <strong className="font-semibold text-gray-900 dark:text-gray-100">{children}</strong>,
   em: ({children}) => <em className="italic">{children}</em>,
-  code: ({inline, children}) => inline
-    ? <code className="bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-sm font-mono">{children}</code>
-    : <pre className="bg-gray-200 dark:bg-gray-700 rounded-lg p-3 overflow-x-auto text-sm font-mono mb-3"><code>{children}</code></pre>,
+  a: ({href, children}) => <a href={href} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted" style={{ color: '#00C9B1' }}>{children}</a>,
   blockquote: ({children}) => <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic text-gray-500 dark:text-gray-400 mb-3">{children}</blockquote>,
   hr: () => <hr className="border-gray-200 dark:border-gray-700 my-4" />,
+  table: ({children}) => <div className="overflow-x-auto mb-3"><table className="w-full text-sm border-collapse">{children}</table></div>,
+  thead: ({children}) => <thead className="bg-gray-100 dark:bg-[#2a2a2a]">{children}</thead>,
+  th: ({children}) => <th className="px-3 py-2 text-left font-semibold border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">{children}</th>,
+  td: ({children}) => <td className="px-3 py-2 border border-gray-200 dark:border-gray-700">{children}</td>,
+  code: ({ inline, className, children }) => {
+    const language = className?.replace('language-', '') || 'text';
+    return inline
+      ? <code className="bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-sm font-mono text-pink-500 dark:text-pink-400">{children}</code>
+      : <SyntaxHighlighter language={language} style={oneDark} customStyle={{ borderRadius: '8px', fontSize: '13px', margin: '0 0 12px 0' }}>{String(children).replace(/\n$/, '')}</SyntaxHighlighter>;
+  },
 };
 
 function SourceBadges({ sources }) {
@@ -50,15 +60,17 @@ function TypewriterMessage({ content, sources, onComplete }) {
     setDisplayed('');
     setDone(false);
 
+    // Split by word to avoid breaking markdown mid-token (e.g. half a code fence)
+    const words = content.split(' ');
     const interval = setInterval(() => {
       idx.current += 1;
-      setDisplayed(content.slice(0, idx.current));
-      if (idx.current >= content.length) {
+      setDisplayed(words.slice(0, idx.current).join(' '));
+      if (idx.current >= words.length) {
         clearInterval(interval);
         setDone(true);
         setTimeout(() => onComplete?.(), 100);
       }
-    }, 6);
+    }, 18);
 
     return () => clearInterval(interval);
   }, [content]);
