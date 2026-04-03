@@ -554,7 +554,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
           </div>
 
           <div className="flex items-center justify-between mt-2 px-1">
-            <div className="text-xs text-gray-400 dark:text-gray-500">
+            <div className="text-xs text-gray-400 dark:text-gray-500 text-center flex-1">
               Archelon can make mistakes. Consider checking important information.
             </div>
             {agentData && (
