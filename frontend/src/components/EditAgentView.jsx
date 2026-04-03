@@ -88,7 +88,11 @@ function EditAgentView({ agentData, onSave, onCancel, onDelete, onDocumentDelete
       setJobs(jobList);
       setStep('processing');
     } catch (err) {
-      setError(err.message);
+      if (err.message?.includes('Token limit')) {
+        setError('You have used all your tokens. Upgrade your plan to continue.');
+      } else {
+        setError(err.message);
+      }
     }
   };
 

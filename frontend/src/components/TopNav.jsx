@@ -65,20 +65,9 @@ function BugReportModal({ onClose }) {
   );
 }
 
-function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, onEditAgent, user, onDashboard }) {
+function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, onEditAgent, user, onDashboard, tokenBalance }) {
   const [showEmbed, setShowEmbed] = useState(false);
   const [showBug, setShowBug]     = useState(false);
-  const [tokenBalance, setTokenBalance] = useState(null);
-
-  useEffect(() => {
-    if (!user) return;
-    fetch(`${import.meta.env.VITE_API_URL}/api/chat/balance`, {
-      headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    })
-      .then(r => r.json())
-      .then(d => setTokenBalance(d))
-      .catch(() => {});
-  }, [user?.id]);
 
   // Auto-open embed modal once per session for non-system agents
   useEffect(() => {
@@ -125,7 +114,7 @@ function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, 
               <span className="text-gray-500 dark:text-gray-400">Free Plan ·</span>
               <span className="text-gray-500 dark:text-gray-400">Tokens:</span>
               <span className="font-medium" style={{ color: '#00C9B1' }}>
-                {tokenBalance ? (tokenBalance.token_limit - tokenBalance.tokens_used).toLocaleString() : '...'}
+                {tokenBalance ? Math.max(0, (tokenBalance.token_limit ?? 25000) - (tokenBalance.tokens_used ?? 0)).toLocaleString() : '...'}
               </span>
             </div>
           {user?.is_developer && !agentData && agentName !== 'Dashboard' && (

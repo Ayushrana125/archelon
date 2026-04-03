@@ -241,7 +241,7 @@ function ModelSelector({ selected, onChange }) {
   );
 }
 
-function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoading, onDocumentsUpdated }) {
+function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoading, onDocumentsUpdated, onTokensUsed, onRequestBusy }) {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [streamingMsg, setStreamingMsg] = useState(null);
@@ -268,16 +268,12 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
       .then(r => r.json())
       .then(d => setAgentTotalTokens(d.total_tokens ?? 0))
       .catch(() => {});
-    fetch(`${import.meta.env.VITE_API_URL}/api/chat/balance`, {
-      headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    })
-      .then(r => r.json())
-      .then(d => { if ((d.tokens_remaining ?? 1) <= 0) setShowUpgradeModal(true); })
-      .catch(() => {});
   }, [agentData?.id]);
   const [selectedModel, setSelectedModel] = useState('mistral-large-latest');
   const processingStarted = useRef(false);
   const messagesEndRef = useRef(null);
+
+  const isBusyRef = useRef(false);
 
   const textareaRef = useRef(null);
   const isArex = !agentData;
@@ -293,6 +289,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
 
   const handleFileSelect = async (files) => {
     if (processingStarted.current) return;
+    if (showUpgradeModal) return;
     const fileArray = Array.isArray(files) ? files : [files];
     processingStarted.current = true;
     setIsUploading(true);
@@ -313,7 +310,11 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
       setIsUploading(false);
       setIsProcessingDoc(false);
       processingStarted.current = false;
-      setMessages(prev => [...prev, { role: 'assistant', content: `Upload failed: ${err.message}`, id: Date.now() }]);
+      if (err.message?.includes('Token limit')) {
+        setShowUpgradeModal(true);
+      } else {
+        setMessages(prev => [...prev, { role: 'assistant', content: `Upload failed: ${err.message}`, id: Date.now() }]);
+      }
     }
   };
 
@@ -376,6 +377,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
     }
 
     setIsTyping(true);
+    onRequestBusy?.(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/chat`, {
         method: 'POST',
@@ -391,10 +393,12 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
       });
       if (res.status === 402) {
         setIsTyping(false);
+        onRequestBusy?.(false);
         setShowUpgradeModal(true);
         return;
       }
       const data = await res.json();
+      onRequestBusy?.(false);
       const { intent, thinking, search_thinking, search_queries } = data;
 
       if (intent === 'single' || intent === 'multi') {
@@ -407,6 +411,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
           setSessionOutputTokens(prev => prev + outputTokens);
           setSessionTokens(prev => prev + inputTokens + outputTokens);
           setAgentTotalTokens(prev => prev + inputTokens + outputTokens);
+          onTokensUsed?.();
         }
         setPendingResponse(prev => ({ ...prev, [tid]: { response: data.answer ?? 'No answer returned.', sources: data.sources ?? [] } }));
         setIsTyping(false);
@@ -421,6 +426,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
       }
     } catch {
       setIsTyping(false);
+      onRequestBusy?.(false);
       addAssistantMsg('Could not reach the server. Please make sure the backend is running.');
     }
   };
@@ -569,7 +575,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
               <div className="flex items-center gap-1">
                 {canUpload && (
                   <button
-                    onClick={() => setShowUploadModal(prev => !prev)}
+                    onClick={() => { if (showUpgradeModal) { setShowUpgradeModal(true); return; } setShowUploadModal(prev => !prev); }}
                     className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#333] transition-colors text-2xl leading-none"
                     title="Add files to agent"
                   >

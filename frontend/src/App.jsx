@@ -22,6 +22,21 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
   const [savedAgents, setSavedAgents] = useState([]);
   const [activeAgentId, setActiveAgentId] = useState(null);
   const [agentDocuments, setAgentDocuments] = useState([]);
+  const [tokenBalance, setTokenBalance] = useState(null);
+  const [chatBusy, setChatBusy] = useState(false);
+  const [pendingAgent, setPendingAgent] = useState(null);
+
+  const refreshTokenBalance = () => {
+    if (!user) return;
+    fetch(`${import.meta.env.VITE_API_URL}/api/chat/balance`, {
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    })
+      .then(r => r.json())
+      .then(d => setTokenBalance(d))
+      .catch(() => {});
+  };
+
+  useEffect(() => { refreshTokenBalance(); }, [user?.id]);
 
   useEffect(() => {
     fetchAgents(true)
@@ -74,6 +89,11 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
   };
 
   const handleSelectAgent = async (agent) => {
+    if (chatBusy) {
+      setPendingAgent(agent);
+      return;
+    }
+    setChatBusy(false);
     setAgentData(agent);
     setActiveAgentId(agent.id);
     setAgentDocuments(getCachedDocuments(agent.id) || []);
@@ -144,6 +164,32 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
   return (
     <div className={theme}>
       <div className="min-h-screen bg-white dark:bg-[#212121] text-gray-900 dark:text-gray-100">
+        {pendingAgent && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-8 shadow-2xl border border-gray-200 dark:border-gray-700 max-w-sm w-full mx-4 text-center">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: '#1A73E815' }}>
+                <svg className="w-7 h-7" style={{ color: '#1A73E8' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Response in progress</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Switching agents now will cancel the current response. Are you sure?</p>
+              <button
+                onClick={() => { setChatBusy(false); handleSelectAgent(pendingAgent); setPendingAgent(null); }}
+                className="w-full py-3 rounded-xl text-white text-sm font-medium mb-3"
+                style={{ background: 'linear-gradient(135deg, #1A73E8, #0f5bbf)' }}
+              >
+                Switch anyway
+              </button>
+              <button
+                onClick={() => setPendingAgent(null)}
+                className="w-full py-2 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+              >
+                Keep waiting
+              </button>
+            </div>
+          </div>
+        )}
         <TopNav
           agentName={mode === 'settings' ? '' : mode === 'dashboard' ? 'Dashboard' : agentData ? agentData.name : 'Home'}
           agentData={mode === 'settings' || mode === 'dashboard' ? null : agentData}
@@ -153,6 +199,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
           onEditAgent={() => setMode('edit')}
           user={user}
           onDashboard={() => setMode('dashboard')}
+          tokenBalance={tokenBalance}
         />
         <div className="flex">
           <div className={`${sidebarCollapsed ? 'w-14' : 'w-64'} flex-shrink-0 transition-all duration-300`} />
@@ -171,7 +218,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
           />
           <main className="flex-1 pt-[57px]">
             {mode === 'arex' && !agentData && <HomePage onNewAgent={() => setMode('create')} savedAgents={savedAgents} onSelectAgent={handleSelectAgent} />}
-            {mode === 'arex' && agentData && <ChatView key={agentData?.id ?? 'arex'} agentData={agentData} onAddFile={handleAddFileToAgent} messages={currentMessages} setMessages={setCurrentMessages} isGreetingLoading={isGreetingLoading} onDocumentsUpdated={() => { invalidateDocuments(agentData.id); fetchDocuments(agentData.id, true).then(docs => setAgentDocuments(docs)).catch(() => {}); }} />}
+            {mode === 'arex' && agentData && <ChatView key={agentData?.id ?? 'arex'} agentData={agentData} onAddFile={handleAddFileToAgent} messages={currentMessages} setMessages={setCurrentMessages} isGreetingLoading={isGreetingLoading} onTokensUsed={refreshTokenBalance} onRequestBusy={setChatBusy} onDocumentsUpdated={() => { invalidateDocuments(agentData.id); fetchDocuments(agentData.id, true).then(docs => setAgentDocuments(docs)).catch(() => {}); }} />}
             {mode === 'create' && <CreateAgentView setMode={setMode} setAgentData={setAgentData} onSave={handleSaveAgent} />}
             {mode === 'edit' && <EditAgentView
               agentData={agentData}
