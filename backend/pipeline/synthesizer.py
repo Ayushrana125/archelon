@@ -91,7 +91,7 @@ Context:
         total_tokens   = system_tokens + query_tokens
 
         llm = ChatMistralAI(
-            model="mistral-small-latest",
+            model="mistral-large-latest",
             api_key=os.getenv("MISTRAL_API_KEY_1"),
         )
 
