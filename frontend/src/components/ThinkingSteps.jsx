@@ -36,7 +36,7 @@ function ThinkingSteps({ query, searchThinking, agentName, sources, onComplete, 
   }, []);
 
   return (
-    <div>
+    <div style={{ marginBottom: expanded ? '0' : '-18px' }}>
       {/* Toggle row */}
       <button
         onClick={() => setExpanded(p => !p)}
@@ -62,7 +62,7 @@ function ThinkingSteps({ query, searchThinking, agentName, sources, onComplete, 
         className="overflow-hidden transition-all duration-300"
         style={{ maxHeight: expanded ? '500px' : '0px' }}
       >
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 pb-1">
           {/* Step 1 bubble */}
           <div className={`rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm max-w-[85%] transition-all duration-300 ${
             (0 < currentStep) || done

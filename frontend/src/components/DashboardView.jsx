@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { authHeaders } from '../services/auth_service';
 
-const API_URL = import.meta.env.VITE_API_URL;
+import API_URL from '../services/api';
 const TEAL = '#00C9B1';
 const COST_PER_TOKEN = 0.020 / 1_000_000;
 

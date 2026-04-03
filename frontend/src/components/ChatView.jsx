@@ -157,6 +157,90 @@ function useAnimatedPlaceholder(active, textareaRef, defaultPlaceholder = 'Ask A
   return { resetIdle };
 }
 
+const MODELS = [
+  { id: 'mistral-large-latest',  name: 'mistral-large-latest',   desc: 'Most capable',        group: 'Mistral',   img: '/mistral.png' },
+  { id: 'mistral-small-latest',  name: 'mistral-small-latest',   desc: 'Fast & efficient',    group: 'Mistral',   img: '/Small.png' },
+  { id: 'codestral-latest',      name: 'codestral-latest',       desc: 'Code specialized',    group: 'Mistral',   img: '/Codestral.png' },
+  { id: 'archelon-arca',         name: 'archelon-arca',          desc: 'Coming soon',         group: 'Archelon',  img: '/Archelon_logo.png', disabled: true },
+  { id: 'archelon-tega',         name: 'archelon-tega',          desc: 'Coming soon',         group: 'Archelon',  img: '/Archelon_logo.png', disabled: true },
+];
+
+function ModelSelector({ selected, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const model = MODELS.find(m => m.id === selected) ?? MODELS[0];
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const groups = ['Mistral', 'Archelon'];
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(p => !p)}
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#333] transition-colors"
+      >
+        <img src={model.img} alt="" className="w-3.5 h-3.5 object-contain opacity-70" />
+        <span>{model.name}</span>
+        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute bottom-9 left-0 z-50 w-64 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-[#1e1e1e]">
+          <div className="px-3 pt-3 pb-1">
+            <p className="text-xs font-medium uppercase tracking-wider" style={{ color: '#00C9B1' }}>Select Model</p>
+          </div>
+          {groups.map(group => (
+            <div key={group}>
+              <div className="px-3 py-1.5">
+                <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-600 uppercase tracking-widest">{group}</p>
+              </div>
+              {MODELS.filter(m => m.group === group).map(m => (
+                <button
+                  key={m.id}
+                  type="button"
+                  disabled={m.disabled}
+                  onClick={() => { if (!m.disabled) { onChange(m.id); setOpen(false); } }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left ${
+                    m.disabled
+                      ? 'opacity-30 cursor-not-allowed grayscale'
+                      : selected === m.id
+                      ? 'bg-gray-100 dark:bg-[#2a2a2a]'
+                      : 'hover:bg-gray-50 dark:hover:bg-[#2a2a2a]'
+                  }`}
+                >
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-[#2a2a2a]">
+                    <img src={m.img} alt="" className="w-6 h-6 object-contain opacity-80" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{m.name}</div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500">{m.desc}</div>
+                  </div>
+                  {selected === m.id && !m.disabled && (
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#00C9B1' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+              ))}
+            </div>
+          ))}
+          <div className="px-3 py-2 border-t border-gray-100 dark:border-gray-700/60">
+            <p className="text-[10px] text-gray-400 dark:text-gray-600">Archelon models coming soon</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoading, onDocumentsUpdated }) {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -167,6 +251,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
   const [isProcessingDoc, setIsProcessingDoc] = useState(false);
   const [processingMsgId, setProcessingMsgId] = useState(null);
   const [pendingResponse, setPendingResponse] = useState({});
+  const [selectedModel, setSelectedModel] = useState('mistral-large-latest');
   const processingStarted = useRef(false);
   const messagesEndRef = useRef(null);
 
@@ -376,7 +461,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
           )}
 
           {streamingMsg && (
-            <div className="flex justify-start" style={messages[messages.length - 1]?.role === 'thinking' ? {marginTop: '6px'} : {}}>
+            <div className="flex justify-start">
               <div className="max-w-[80%]">
                 <TypewriterMessage
                   key={streamingMsg.id}
@@ -441,7 +526,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
             />
 
             <div className="flex items-center justify-between pt-1">
-              <div className="relative">
+              <div className="flex items-center gap-1">
                 {canUpload && (
                   <button
                     onClick={() => setShowUploadModal(prev => !prev)}
@@ -454,6 +539,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
                 {canUpload && showUploadModal && (
                   <FileUploadModal onClose={() => setShowUploadModal(false)} onFileSelect={handleFileSelect} />
                 )}
+                {agentData && <ModelSelector selected={selectedModel} onChange={setSelectedModel} />}
               </div>
               <button
                 onClick={() => handleSend()}
@@ -467,8 +553,28 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
             </div>
           </div>
 
-          <div className="text-xs text-gray-400 dark:text-gray-500 mt-2 text-center">
-            Archelon can make mistakes. Consider checking important information.
+          <div className="flex items-center justify-between mt-2 px-1">
+            <div className="text-xs text-gray-400 dark:text-gray-500">
+              Archelon can make mistakes. Consider checking important information.
+            </div>
+            {agentData && (
+              <div className="relative group">
+                <div className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 cursor-default">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#00C9B1' }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span style={{ color: '#00C9B1' }}>0</span> tokens
+                </div>
+                <div className="absolute bottom-6 right-0 hidden group-hover:block z-10">
+                  <div className="bg-gray-900 dark:bg-[#1a1a1a] text-gray-100 text-xs rounded-lg px-3 py-2 shadow-lg whitespace-nowrap border border-gray-700">
+                    <div className="font-medium mb-1">Session Token Usage</div>
+                    <div className="text-gray-400">Prompt + Instructions: <span className="text-gray-200">0</span></div>
+                    <div className="text-gray-400">Response: <span className="text-gray-200">0</span></div>
+                    <div className="text-gray-400 mt-1 pt-1 border-t border-gray-700">Total: <span className="text-white font-medium">0</span></div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

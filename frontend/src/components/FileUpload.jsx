@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 
 const ALLOWED_EXTS = ['.pdf', '.docx', '.txt'];
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
-const MAX_TOTAL_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = 2 * 1024 * 1024;
+const MAX_TOTAL_SIZE = 6 * 1024 * 1024;
 const MAX_FILES = 5;
 
 function validateFiles(incoming, existing = []) {
@@ -16,11 +16,11 @@ function validateFiles(incoming, existing = []) {
   let error = '';
   if (hasInvalid) error = 'Some files were skipped. Only PDF, DOCX, and TXT files are supported.';
   if (tooMany) error = `Only ${MAX_FILES} files allowed. Extra files were skipped.`;
-  if (tooBig) error = 'Total size exceeds 10MB. Some files were skipped.';
+  if (tooBig) error = 'Total size exceeds 6MB. Some files were skipped.';
   return { valid: newValid, error };
 }
 
-function FileUpload({ files, setFiles, onCreateAgent, onBack }) {
+function FileUpload({ files, setFiles, onCreateAgent, onBack, mode = 'create' }) {
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState([]);
@@ -123,7 +123,7 @@ function FileUpload({ files, setFiles, onCreateAgent, onBack }) {
         disabled={files.length === 0 || loading}
         className="w-full mt-6 px-6 py-3 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {loading ? 'Uploading...' : `Create Agent with ${files.length} Document${files.length !== 1 ? 's' : ''}`}
+        {loading ? 'Uploading...' : mode === 'edit' ? `Update Agent with ${files.length} Document${files.length !== 1 ? 's' : ''}` : `Create Agent with ${files.length} Document${files.length !== 1 ? 's' : ''}`}
       </button>
 
     </div>

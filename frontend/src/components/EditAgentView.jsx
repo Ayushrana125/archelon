@@ -117,6 +117,7 @@ function EditAgentView({ agentData, onSave, onCancel, onDelete, onDocumentDelete
         setFiles={setFiles}
         onCreateAgent={handleUpload}
         onBack={() => { setFiles([]); setStep('edit'); }}
+        mode="edit"
       />
     );
   }
@@ -124,7 +125,7 @@ function EditAgentView({ agentData, onSave, onCancel, onDelete, onDocumentDelete
   // Processing step
   if (step === 'processing') {
     return (
-      <div className="flex justify-center h-[calc(100vh-57px)] overflow-y-auto">
+      <div className="flex justify-center pt-12 px-6 h-[calc(100vh-57px)] overflow-y-auto">
         <ProcessingSteps jobs={jobs} onComplete={handleProcessingComplete} />
       </div>
     );

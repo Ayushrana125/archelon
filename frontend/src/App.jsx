@@ -14,91 +14,6 @@ import { fetchAgents } from './services/agent_service';
 import { fetchDocuments, invalidateDocuments, getCachedDocuments } from './services/document_service';
 import { authHeaders } from './services/auth_service';
 
-const TEAL = '#00C9B1';
-
-function BugReportButton() {
-  const [open, setOpen]           = useState(false);
-  const [text, setText]           = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading]     = useState(false);
-
-  const handleSubmit = async () => {
-    if (!text.trim()) return;
-    setLoading(true);
-    await new Promise(r => setTimeout(r, 800));
-    setLoading(false);
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setText('');
-      setOpen(false);
-    }, 2000);
-  };
-
-  return (
-    <>
-      <button
-        onClick={() => setOpen(true)}
-        title="Report a bug"
-        className="fixed bottom-5 right-5 z-50 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-medium shadow-lg transition-all hover:scale-105"
-        style={{ background: '#1a1a1a', border: `1px solid ${TEAL}40`, color: TEAL }}
-      >
-        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-        </svg>
-        Report Bug
-      </button>
-
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-end p-5" onClick={() => setOpen(false)}>
-          <div
-            className="w-80 rounded-2xl p-5 shadow-2xl flex flex-col gap-3"
-            style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-gray-100">Report a Bug</span>
-              <button onClick={() => setOpen(false)} className="text-gray-500 hover:text-gray-300 transition-colors">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {submitted ? (
-              <div className="flex flex-col items-center gap-2 py-4">
-                <svg className="w-8 h-8" style={{ color: TEAL }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span className="text-sm text-gray-300">Bug reported successfully!</span>
-              </div>
-            ) : (
-              <>
-                <p className="text-xs text-gray-500">Describe what happened and what you expected.</p>
-                <textarea
-                  value={text}
-                  onChange={e => setText(e.target.value)}
-                  placeholder="e.g. Clicking upload shows an error..."
-                  rows={4}
-                  className="w-full bg-[#2a2a2a] border border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-gray-500 resize-none"
-                />
-                <button
-                  onClick={handleSubmit}
-                  disabled={!text.trim() || loading}
-                  className="w-full py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{ background: TEAL, color: '#000' }}
-                >
-                  {loading ? 'Submitting...' : 'Submit Report'}
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
 function App({ externalTheme, externalSetTheme, onLogout, user }) {
   const navigate = useNavigate();
   const [mode, setMode] = useState('arex');
@@ -231,8 +146,8 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
       <div className="min-h-screen bg-white dark:bg-[#212121] text-gray-900 dark:text-gray-100">
         <TopNav
           agentName={mode === 'settings' ? '' : mode === 'dashboard' ? 'Dashboard' : agentData ? agentData.name : 'Home'}
-          agentData={agentData}
-          documents={agentDocuments}
+          agentData={mode === 'settings' || mode === 'dashboard' ? null : agentData}
+          documents={mode === 'settings' || mode === 'dashboard' ? [] : agentDocuments}
           collapsed={sidebarCollapsed}
           onDocsClick={() => setShowDocsPanel(p => !p)}
           onEditAgent={() => setMode('edit')}
@@ -292,7 +207,6 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
           )}
         </div>
       </div>
-      <BugReportButton />
     </div>
   );
 }
