@@ -41,8 +41,12 @@ async def insert_query_event(
 
 
 async def _increment_user_tokens(user_id: str, amount: int):
+    if amount <= 0:
+        return
     db = get_supabase()
-    db.rpc("increment_user_tokens", {"uid": user_id, "amount": amount}).execute()
+    res = db.table("users").select("tokens_used").eq("id", user_id).execute()
+    current = res.data[0]["tokens_used"] if res.data else 0
+    db.table("users").update({"tokens_used": (current or 0) + amount}).eq("id", user_id).execute()
 
 
 async def get_user_token_balance(user_id: str) -> dict:

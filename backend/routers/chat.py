@@ -37,6 +37,11 @@ async def get_agent_tokens(agent_id: str, current_user: dict = Depends(verify_to
     return {"agent_id": agent_id, "total_tokens": total}
 
 
+@router.get("/chat/balance")
+async def get_balance(current_user: dict = Depends(verify_token)):
+    return await get_user_token_balance(current_user["user_id"])
+
+
 @router.post("/chat")
 async def chat(body: ChatRequest, current_user: dict = Depends(verify_token)):
 
