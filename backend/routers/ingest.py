@@ -8,6 +8,7 @@ import tempfile
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks
 from jwt_handler import verify_token
 from db import chunks_db, agents_db
+from db.token_usage_db import get_user_token_balance
 from ingestion.ingestor import ingest_document
 
 router = APIRouter()
@@ -18,11 +19,12 @@ MAX_FILES      = 5
 ALLOWED_EXTS   = {".pdf", ".docx", ".txt"}
 
 
-async def run_ingestion(agent_id: str, tmp_path: str, original_filename: str, job_id: str, document_id: str):
+async def run_ingestion(agent_id: str, user_id: str, tmp_path: str, original_filename: str, job_id: str, document_id: str):
     """Background task — runs ingestion and cleans up temp file."""
     try:
         await ingest_document(
             agent_id=agent_id,
+            user_id=user_id,
             file_path=tmp_path,
             original_filename=original_filename,
             job_id=job_id,
@@ -44,6 +46,11 @@ async def ingest(
     agent = await agents_db.get_agent_by_id(agent_id, current_user["user_id"])
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
+
+    # Check token balance
+    balance = await get_user_token_balance(current_user["user_id"])
+    if balance["tokens_remaining"] <= 0:
+        raise HTTPException(status_code=402, detail="Token limit reached. Upgrade your plan to continue.")
 
     # Validate file count
     if len(files) > MAX_FILES:
@@ -78,7 +85,7 @@ async def ingest(
             tmp_path = tmp.name
 
         # Queue background task
-        background_tasks.add_task(run_ingestion, agent_id, tmp_path, filename, job_id, document_id)
+        background_tasks.add_task(run_ingestion, agent_id, current_user["user_id"], tmp_path, filename, job_id, document_id)
 
         results.append({
             "job_id":      job_id,

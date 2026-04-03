@@ -10,9 +10,10 @@ from ingestion.document_parser import parse_document
 from ingestion.chunker import build_parent_chunks, build_child_chunks
 from ingestion.embedding_service import embed_chunks
 from db import chunks_db
+from db.token_usage_db import insert_embedding_event
 
 
-async def ingest_document(agent_id: str, file_path: str, original_filename: str, job_id: str, document_id: str):
+async def ingest_document(agent_id: str, user_id: str, file_path: str, original_filename: str, job_id: str, document_id: str):
     start_time = time.time()
     filename   = original_filename
     file_size  = os.path.getsize(file_path)
@@ -146,6 +147,13 @@ async def ingest_document(agent_id: str, file_path: str, original_filename: str,
             "avg_tokens":    avg_tokens,
             "duration_ms":   duration_ms,
         })
+
+        await insert_embedding_event(
+            agent_id=agent_id,
+            user_id=user_id,
+            embedding_tokens=total_tokens,
+            job_id=job_id,
+        )
 
     except Exception as e:
         error_msg = str(e)

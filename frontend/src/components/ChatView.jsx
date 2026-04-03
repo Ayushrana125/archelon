@@ -251,6 +251,23 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
   const [isProcessingDoc, setIsProcessingDoc] = useState(false);
   const [processingMsgId, setProcessingMsgId] = useState(null);
   const [pendingResponse, setPendingResponse] = useState({});
+  const [sessionTokens, setSessionTokens] = useState(0);
+  const [sessionInputTokens, setSessionInputTokens] = useState(0);
+  const [sessionOutputTokens, setSessionOutputTokens] = useState(0);
+  const [agentTotalTokens, setAgentTotalTokens] = useState(0);
+
+  useEffect(() => {
+    if (!agentData?.id) return;
+    setSessionTokens(0);
+    setSessionInputTokens(0);
+    setSessionOutputTokens(0);
+    fetch(`${import.meta.env.VITE_API_URL}/api/chat/tokens/${agentData.id}`, {
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    })
+      .then(r => r.json())
+      .then(d => setAgentTotalTokens(d.total_tokens ?? 0))
+      .catch(() => {});
+  }, [agentData?.id]);
   const [selectedModel, setSelectedModel] = useState('mistral-large-latest');
   const processingStarted = useRef(false);
   const messagesEndRef = useRef(null);
@@ -369,6 +386,15 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
 
       if (intent === 'single' || intent === 'multi') {
         const tid = Date.now();
+        const usage = data.token_usage ?? {};
+        const inputTokens = (usage.system ?? 0) + (usage.query ?? 0);
+        const outputTokens = usage.total ?? 0;
+        if (inputTokens + outputTokens > 0) {
+          setSessionInputTokens(prev => prev + inputTokens);
+          setSessionOutputTokens(prev => prev + outputTokens);
+          setSessionTokens(prev => prev + inputTokens + outputTokens);
+          setAgentTotalTokens(prev => prev + inputTokens + outputTokens);
+        }
         setPendingResponse(prev => ({ ...prev, [tid]: { response: data.answer ?? 'No answer returned.', sources: data.sources ?? [] } }));
         setIsTyping(false);
         setMessages(prev => [...prev, {
@@ -563,14 +589,29 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#00C9B1' }}>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  <span style={{ color: '#00C9B1' }}>0</span> tokens
+                  <span style={{ color: '#00C9B1' }}>{sessionTokens.toLocaleString()}</span> session
+                  <span className="mx-1 text-gray-300 dark:text-gray-600">·</span>
+                  <span style={{ color: '#00C9B1' }}>{agentTotalTokens.toLocaleString()}</span> total
                 </div>
                 <div className="absolute bottom-6 right-0 hidden group-hover:block z-10">
-                  <div className="bg-gray-900 dark:bg-[#1a1a1a] text-gray-100 text-xs rounded-lg px-3 py-2 shadow-lg whitespace-nowrap border border-gray-700">
-                    <div className="font-medium mb-1">Session Token Usage</div>
-                    <div className="text-gray-400">Prompt + Instructions: <span className="text-gray-200">0</span></div>
-                    <div className="text-gray-400">Response: <span className="text-gray-200">0</span></div>
-                    <div className="text-gray-400 mt-1 pt-1 border-t border-gray-700">Total: <span className="text-white font-medium">0</span></div>
+                  <div className="bg-gray-900 dark:bg-[#1a1a1a] text-gray-100 text-xs rounded-xl shadow-2xl border border-gray-700 overflow-hidden" style={{ width: '240px' }}>
+                    <div className="px-3 py-2.5 border-b border-gray-700">
+                      <span className="font-medium">Session Token Usage</span>
+                    </div>
+                    <div className="px-3 py-2.5 space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Input (Prompt + Instructions)</span>
+                        <span className="text-gray-200">{sessionInputTokens.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Output</span>
+                        <span className="text-gray-200">{sessionOutputTokens.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between pt-1.5 border-t border-gray-700">
+                        <span className="text-gray-400">Total</span>
+                        <span style={{ color: '#00C9B1' }} className="font-medium">{sessionTokens.toLocaleString()}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
