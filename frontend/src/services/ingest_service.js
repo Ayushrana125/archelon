@@ -1,6 +1,6 @@
 import { authHeaders } from './auth_service';
 
-const API_URL = import.meta.env.VITE_API_URL;
+import API_URL from './api';
 
 export async function uploadFiles(agentId, files) {
   const formData = new FormData();

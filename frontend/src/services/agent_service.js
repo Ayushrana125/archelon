@@ -1,6 +1,6 @@
 import { authHeaders } from './auth_service';
 
-const API_URL = import.meta.env.VITE_API_URL;
+import API_URL from './api';
 const _cache = {};
 
 export function clearCache() {

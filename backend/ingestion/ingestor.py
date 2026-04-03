@@ -107,7 +107,22 @@ async def ingest_document(agent_id: str, file_path: str, original_filename: str,
             current_meta["embed_total"]   = total
             await chunks_db.update_ingestion_job(job_id, "embedding", metadata=dict(current_meta))
 
-        embeddings = await embed_chunks(child_chunks_for_embed, on_batch_done=on_batch_done)
+        embeddings = None
+        for attempt in range(3):
+            try:
+                embeddings = await embed_chunks(child_chunks_for_embed, on_batch_done=on_batch_done)
+                break
+            except RuntimeError as e:
+                if attempt == 2:
+                    raise
+                wait = 2 ** attempt  # 1s, 2s
+                print(f"[ingestor] Embedding attempt {attempt + 1} failed, retrying in {wait}s: {e}")
+                await chunks_db.update_ingestion_job(job_id, "embedding", metadata={
+                    **current_meta,
+                    "embed_retry": attempt + 1,
+                })
+                import asyncio
+                await asyncio.sleep(wait)
 
         # Step 5 — Save vectors
         await chunks_db.update_ingestion_job(job_id, "vectorizing", metadata={

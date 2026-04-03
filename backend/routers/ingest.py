@@ -12,8 +12,8 @@ from ingestion.ingestor import ingest_document
 
 router = APIRouter()
 
-MAX_FILE_SIZE  = 10 * 1024 * 1024
-MAX_TOTAL_SIZE = 10 * 1024 * 1024
+MAX_FILE_SIZE  = 2 * 1024 * 1024   # 2MB per file
+MAX_TOTAL_SIZE = 6 * 1024 * 1024   # 6MB total across all files in one upload
 MAX_FILES      = 5
 ALLOWED_EXTS   = {".pdf", ".docx", ".txt"}
 
@@ -58,10 +58,10 @@ async def ingest(
             raise HTTPException(status_code=400, detail=f"{file.filename}: only PDF, DOCX, TXT allowed")
         content = await file.read()
         if len(content) > MAX_FILE_SIZE:
-            raise HTTPException(status_code=400, detail=f"{file.filename}: exceeds 10MB limit")
+            raise HTTPException(status_code=400, detail=f"{file.filename}: exceeds 2MB limit")
         total_size += len(content)
         if total_size > MAX_TOTAL_SIZE:
-            raise HTTPException(status_code=400, detail="Total file size exceeds 10MB limit")
+            raise HTTPException(status_code=400, detail="Total file size exceeds 6MB limit")
         file_contents.append((file.filename, ext, content, len(content)))
 
     # Create document rows + ingestion jobs upfront, save files to temp
