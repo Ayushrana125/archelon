@@ -96,9 +96,10 @@ async def update_document_status(document_id: str, chunk_count: int, status: str
 async def update_child_chunk_embeddings(embeddings: dict[str, list[float]]):
     """Update embeddings using thread pool to avoid blocking the async event loop."""
     import asyncio
-    db = get_supabase()
 
     def update_one(chunk_id, vector):
+        # Fresh client per thread — avoids shared HTTP/2 connection resets
+        db = get_supabase()
         db.table("child_chunks").update({"embedding": vector}).eq("id", chunk_id).execute()
 
     # Run in thread pool, 10 at a time to avoid connection exhaustion
