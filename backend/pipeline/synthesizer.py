@@ -116,14 +116,19 @@ CONTEXT BLOCK — answer only from what is written here:
             HumanMessage(content=user_message),
         ])
 
+        input_tokens  = system_tokens + query_tokens
+        output_tokens = _estimate_tokens(response.content)
+
         return {
             "answer":  response.content.strip(),
             "sources": sources,
             "token_usage": {
-                "context": context_tokens,
-                "system":  system_tokens,
-                "query":   query_tokens,
-                "total":   total_tokens,
+                "context":       context_tokens,
+                "system":        system_tokens,
+                "query":         query_tokens,
+                "input_tokens":  input_tokens,
+                "output_tokens": output_tokens,
+                "total":         input_tokens + output_tokens,
             },
         }
 

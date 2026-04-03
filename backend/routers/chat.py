@@ -107,8 +107,8 @@ async def chat(body: ChatRequest, current_user: dict = Depends(verify_token)):
     await insert_query_event(
         agent_id=body.agent_id,
         user_id=current_user["user_id"],
-        input_tokens=token_usage.get("system", 0) + token_usage.get("query", 0),
-        output_tokens=token_usage.get("total", 0),
+        input_tokens=token_usage.get("input_tokens", 0),
+        output_tokens=token_usage.get("output_tokens", 0),
         user_message=body.message,
         agent_response=result["answer"],
     )

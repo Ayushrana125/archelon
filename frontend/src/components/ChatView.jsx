@@ -387,8 +387,8 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
       if (intent === 'single' || intent === 'multi') {
         const tid = Date.now();
         const usage = data.token_usage ?? {};
-        const inputTokens = (usage.system ?? 0) + (usage.query ?? 0);
-        const outputTokens = usage.total ?? 0;
+        const inputTokens = usage.input_tokens ?? 0;
+        const outputTokens = usage.output_tokens ?? 0;
         if (inputTokens + outputTokens > 0) {
           setSessionInputTokens(prev => prev + inputTokens);
           setSessionOutputTokens(prev => prev + outputTokens);
