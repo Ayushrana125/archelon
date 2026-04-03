@@ -13,26 +13,29 @@ load_dotenv()
 
 MISTRAL_API_KEY  = os.getenv("MISTRAL_API_KEY_1")
 EMBED_MODEL      = "mistral-embed"
-MAX_TOKENS_BATCH = 15_000
-MAX_INPUTS_BATCH = 50
+MAX_CHARS_BATCH  = 80_000   # max total characters per batch (~safe for technical content)
+MAX_INPUTS_BATCH = 32       # max chunks per batch regardless of size
 RATE_LIMIT_DELAY = 1.1
 EMBED_URL        = "https://api.mistral.ai/v1/embeddings"
 
 
 def _build_batches(chunks: list[dict]) -> list[list[dict]]:
-    """Group chunks into batches where total tokens <= MAX_TOKENS_BATCH."""
+    """Group chunks into batches capped by total character count and input count.
+    Character-based batching is more reliable than token-based for technical content
+    because token estimators undercount symbols, code, and key-value structures.
+    """
     batches = []
     current_batch = []
-    current_tokens = 0
+    current_chars = 0
 
     for chunk in chunks:
-        t = chunk.get("token_count") or 1
-        if (current_tokens + t > MAX_TOKENS_BATCH or len(current_batch) >= MAX_INPUTS_BATCH) and current_batch:
+        char_count = len(chunk.get("content") or "")
+        if (current_chars + char_count > MAX_CHARS_BATCH or len(current_batch) >= MAX_INPUTS_BATCH) and current_batch:
             batches.append(current_batch)
             current_batch = []
-            current_tokens = 0
+            current_chars = 0
         current_batch.append(chunk)
-        current_tokens += t
+        current_chars += char_count
 
     if current_batch:
         batches.append(current_batch)
