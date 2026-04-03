@@ -65,13 +65,23 @@ async def chat(body: ChatRequest, current_user: dict = Depends(verify_token)):
             agent_description=body.agent_description,
             agent_instructions=body.agent_instructions,
         )
+        input_tokens  = len(body.message) // 4
+        output_tokens = len(answer) // 4
+        await insert_query_event(
+            agent_id=body.agent_id,
+            user_id=current_user["user_id"],
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            user_message=body.message,
+            agent_response=answer,
+        )
         return {
             "intent":         intent,
             "thinking":       "",
             "search_queries": [],
             "answer":         answer,
             "sources":        [],
-            "token_usage":    {"context": 0, "system": 0, "query": 0, "total": 0},
+            "token_usage":    {"input_tokens": input_tokens, "output_tokens": output_tokens, "total": input_tokens + output_tokens},
         }
 
     # ── Step 3: Analyse query → extract search terms ─────────────────────────

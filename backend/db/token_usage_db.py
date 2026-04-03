@@ -57,10 +57,11 @@ async def get_user_token_balance(user_id: str) -> dict:
     row = res.data[0]
     token_limit = row.get("token_limit") or 25000
     tokens_used = row.get("tokens_used") or 0
+    remaining = max(0, token_limit - tokens_used)
     return {
         "token_limit":      token_limit,
         "tokens_used":      tokens_used,
-        "tokens_remaining": token_limit - tokens_used,
+        "tokens_remaining": remaining,
     }
 
 
