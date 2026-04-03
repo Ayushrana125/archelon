@@ -13,8 +13,8 @@ load_dotenv()
 
 MISTRAL_API_KEY  = os.getenv("MISTRAL_API_KEY_1")
 EMBED_MODEL      = "mistral-embed"
-MAX_CHARS_BATCH  = 80_000   # max total characters per batch (~safe for technical content)
-MAX_INPUTS_BATCH = 32       # max chunks per batch regardless of size
+MAX_CHARS_BATCH  = 40_000   # reduced for dense technical content with heavy symbols
+MAX_INPUTS_BATCH = 16       # reduced accordingly
 RATE_LIMIT_DELAY = 1.1
 EMBED_URL        = "https://api.mistral.ai/v1/embeddings"
 
@@ -54,7 +54,7 @@ async def embed_chunks(chunks: list[dict], on_batch_done=None) -> dict[str, list
 
     # Filter out empty or whitespace-only chunks
     # Also truncate chunks that exceed Mistral's per-input limit (16K tokens ~ 64K chars)
-    MAX_CHARS = 60_000
+    MAX_CHARS = 30_000
     cleaned = []
     for c in chunks:
         content = c.get("content", "").strip()
