@@ -284,13 +284,13 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
 
       if (intent === 'single' || intent === 'multi') {
         const tid = Date.now();
-        setPendingResponse(prev => ({ ...prev, [tid]: { response: 'User query successfully processed.', sources: search_queries ?? [] } }));
+        setPendingResponse(prev => ({ ...prev, [tid]: { response: data.answer ?? 'No answer returned.', sources: data.sources ?? [] } }));
         setIsTyping(false);
         setMessages(prev => [...prev, {
           role: 'thinking', id: tid,
           query: thinking,
           searchThinking: search_thinking,
-          sources: search_queries ?? [],
+          sources: data.sources ?? [],
         }]);
       } else {
         addAssistantMsg(data.answer ?? 'User query successfully processed.');

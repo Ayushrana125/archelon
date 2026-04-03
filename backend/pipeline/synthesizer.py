@@ -29,17 +29,14 @@ def _build_context(chunks: list[dict]) -> str:
 
 
 def _build_sources(chunks: list[dict]) -> list[str]:
-    """Extract unique document filenames from section names."""
+    """Extract unique document filenames from chunks."""
     seen = set()
     sources = []
     for chunk in chunks:
-        section = chunk.get("section_name") or ""
-        # section_name format: "DOCUMENT_NAME > Section > ..."
-        # We want just the top-level document name
-        doc_name = section.split(" > ")[0].strip() if " > " in section else section.strip()
-        if doc_name and doc_name not in seen:
-            seen.add(doc_name)
-            sources.append(doc_name)
+        filename = chunk.get("filename") or ""
+        if filename and filename not in seen:
+            seen.add(filename)
+            sources.append(filename)
     return sources
 
 
