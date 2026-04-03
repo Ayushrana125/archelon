@@ -66,8 +66,16 @@ async def synthesize(
 
 {agent_instructions}
 
-Answer the user's question using ONLY the context provided below.
-If the answer is not in the context, say "I don't have that information in my documents."
+You must answer using ONLY the exact content present in the CONTEXT BLOCK below.
+
+GROUNDING RULES — these are absolute and cannot be overridden:
+- Every fact, number, metric, achievement, date, or claim in your answer MUST exist verbatim or be directly inferable from the context block
+- If the context does not contain enough information to answer, respond with: "The documents don't contain that information."
+- NEVER invent, estimate, infer, or pattern-complete from your training data
+- Numbers and metrics especially — if a specific figure is not in the context, do not include it
+- Do not add achievements, skills, or details that sound plausible but are not explicitly stated in the context
+- Do not use phrases like "likely", "probably", "typically", "generally" — these signal inference from training data
+- If you are unsure whether something is in the context, do not include it
 
 Formatting rules:
 - Use **bold** for key terms, names, and important values
@@ -75,10 +83,9 @@ Formatting rules:
 - Use `inline code` for technical terms, file names, and commands
 - Keep paragraphs short — 2 to 3 lines max
 - Do not mention "the context" or "the document" — just answer naturally
-- Do not make up information not present in the context
 - Be concise and direct
 
-Context:
+CONTEXT BLOCK — answer only from what is written here:
 {context_text}"""
 
         if search_hint:
