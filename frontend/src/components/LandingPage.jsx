@@ -263,17 +263,21 @@ function ResumeModal({ onClose }) {
 }
 
 const FEATURES = [
-  { title: 'Document Intelligence', desc: 'Upload PDFs, DOCX, and text files. Archelon processes and indexes them instantly for precise retrieval.', path: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-  { title: 'Custom AI Agents', desc: 'Create purpose-built agents with custom instructions, each grounded in your own document knowledge base.', path: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
-  { title: 'Agentic RAG Pipeline', desc: 'Multi-step retrieval-augmented generation that reasons across documents before generating a response.', path: 'M13 10V3L4 14h7v7l9-11h-7z' },
-  { title: 'Secure & Isolated', desc: 'Each agent knowledge is fully isolated. Your documents never bleed into other agents or users.', path: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
+  { title: 'Document Intelligence', desc: 'Upload PDFs, DOCX, and TXT files. Archelon parses, chunks, and embeds them using a parent-child strategy for precise retrieval.', path: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+  { title: 'Custom AI Agents', desc: 'Create purpose-built agents with custom names, descriptions, and system instructions — each grounded in its own isolated knowledge base.', path: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
+  { title: 'Agentic RAG Pipeline', desc: 'Multi-step pipeline: intent classification → query analysis → parallel vector search → gap detection reranking → grounded synthesis.', path: 'M13 10V3L4 14h7v7l9-11h-7z' },
+  { title: 'Thinking Steps', desc: 'Transparent reasoning — users see what the agent is thinking, what it searched, and which documents it found before answering.', path: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
+  { title: 'Embed on Any Website', desc: 'Generate an API key, whitelist your domain, and paste one script tag. Your agent becomes a floating chat widget on any website.', path: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4' },
+  { title: 'Token Usage Tracking', desc: 'Every query and document upload is metered. See session tokens, agent totals, and remaining quota — all in real time.', path: 'M13 10V3L4 14h7v7l9-11h-7z' },
+  { title: 'Model Selection', desc: 'Choose from Mistral Large, Mistral Small, or Codestral per agent. Archelon models coming soon for full infrastructure independence.', path: 'M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z' },
+  { title: 'Secure & Isolated', desc: 'Each agent knowledge base is fully isolated. JWT auth, token quotas, domain whitelisting, and rate limiting protect every endpoint.', path: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
 ];
 
 const STEPS = [
-  { num: '01', title: 'Create an Agent', desc: 'Name your agent and define its purpose with system instructions.' },
-  { num: '02', title: 'Upload Documents', desc: 'Add your PDFs, reports, or knowledge base files to the agent.' },
-  { num: '03', title: 'Processing Pipeline', desc: 'Archelon chunks, embeds, and indexes your documents automatically.' },
-  { num: '04', title: 'Start Chatting', desc: 'Ask questions and get precise, document-grounded answers instantly.' },
+  { num: '01', title: 'Create an Agent', desc: 'Name your agent, write system instructions, and define its purpose. Takes under a minute.' },
+  { num: '02', title: 'Upload Documents', desc: 'Add PDFs, DOCX, or TXT files. Archelon parses, chunks, embeds, and indexes them automatically.' },
+  { num: '03', title: 'Chat with Your Agent', desc: 'Ask questions and get precise, document-grounded answers. The agent shows its thinking steps transparently.' },
+  { num: '04', title: 'Embed on Your Website', desc: 'Enable the embed widget, generate an API key, whitelist your domain, and paste one script tag.' },
 ];
 
 const PIPELINE = [
@@ -308,6 +312,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
             <div className="hidden md:flex items-center gap-8 text-sm text-gray-500 dark:text-gray-400">
               <a href="#features" className="hover:text-gray-900 dark:hover:text-gray-100 transition-colors">Features</a>
               <a href="#how-it-works" className="hover:text-gray-900 dark:hover:text-gray-100 transition-colors">How it works</a>
+              <a href="#use-cases" className="hover:text-gray-900 dark:hover:text-gray-100 transition-colors">Use cases</a>
             </div>
 
             <div className="hidden md:flex items-center gap-2">
@@ -431,13 +436,13 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
 
           <div className="relative max-w-3xl mx-auto">
             <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight mb-6 text-gray-900 dark:text-gray-100">
-              Build AI agents that<br />
+              Built to carry<br />
               <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}>
-                know your documents
+                your knowledge.
               </span>
             </h1>
             <p className="text-lg text-gray-500 dark:text-gray-400 max-w-xl mx-auto mb-10 leading-relaxed">
-              Archelon lets you create intelligent agents grounded in your own knowledge base, powered by a multi-step agentic RAG pipeline.
+              Archelon was the largest sea turtle that ever lived — up to 4.6 metres long, built to carry enormous weight across vast oceans. Archelon does the same for your documents.
             </p>
             {/* Button with ripple rings */}
             <div className="relative inline-block">
@@ -450,58 +455,13 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
             </div>
           </div>
 
-          {/* Wave divider */}
-          <div className="relative mt-20 max-w-2xl mx-auto">
-            <div className="bg-gray-50 dark:bg-[#141414] border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-xl text-left transition-colors duration-300">
-              <div className="flex items-center gap-3 mb-6 pb-5 border-b border-gray-100 dark:border-gray-800">
-                <div className="w-9 h-9 rounded-lg bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-gray-700 flex items-center justify-center shadow-sm">
-                  <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">quarterly_report.pdf</div>
-                  <div className="text-xs text-gray-400 dark:text-gray-500">Processing document...</div>
-                </div>
-                <div className="ml-auto flex items-center gap-1.5 text-xs font-semibold" style={{ color: TEAL }}>
-                  <span className="w-1.5 h-1.5 rounded-full inline-block animate-pulse" style={{ background: TEAL }} />
-                  Live
-                </div>
-              </div>
-
-              <div className="relative">
-                <div className="absolute top-3 bottom-3 w-0.5" style={{ left: '14px', background: `linear-gradient(to bottom, ${TEAL} 57%, #e5e7eb 57%)` }} />
-                <div className="space-y-0">
-                  {PIPELINE.map((step, i) => (
-                    <div key={i} className="relative flex items-center gap-4 py-2 pl-1" style={{ zIndex: 1 }}>
-                      <div className="relative z-10 w-[22px] h-[22px] rounded-full flex-shrink-0 flex items-center justify-center transition-all"
-                        style={step.done
-                          ? { background: TEAL }
-                          : step.active
-                          ? { background: 'transparent', border: `2px solid ${TEAL}` }
-                          : { background: 'transparent', border: '2px solid #d1d5db' }
-                        }>
-                        {step.done && (
-                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                        {step.active && <span className="w-2 h-2 rounded-full inline-block animate-pulse" style={{ background: TEAL }} />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className={`text-sm font-medium ${step.done || step.active ? 'text-gray-800 dark:text-gray-200' : 'text-gray-400 dark:text-gray-600'}`}
-                          style={step.active ? { color: TEAL } : {}}>
-                          {step.label}
-                        </div>
-                        <div className="text-xs text-gray-400 dark:text-gray-600">{step.sub}</div>
-                      </div>
-                      {step.done && <span className="text-xs font-medium flex-shrink-0" style={{ color: TEAL }}>Done</span>}
-                      {step.active && <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">In progress</span>}
-                    </div>
-                  ))}
-                </div>
-              </div>
+          {/* Hero screenshot */}
+          <div className="relative mt-16 max-w-5xl mx-auto px-4">
+            <div className="relative rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-2xl">
+              <img src="/dashboard.png" alt="Archelon Dashboard" className="w-full h-auto object-cover" />
+              <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none" style={{ background: 'linear-gradient(to top, #0d0d0d, transparent)' }} />
             </div>
+            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-3/4 h-16 pointer-events-none" style={{ background: `radial-gradient(ellipse, ${TEAL}20 0%, transparent 70%)`, filter: 'blur(20px)' }} />
           </div>
         </section>
 
@@ -515,51 +475,160 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
           </svg>
         </div>
 
-        {/* Features */}
-        <section id="features" className="relative py-24 px-6 bg-gray-50 dark:bg-[#111111] transition-colors duration-300 overflow-hidden">
-          {/* Depth gradient */}
-          <div className="absolute inset-0 pointer-events-none" aria-hidden style={{
-            background: `linear-gradient(to bottom, ${TEAL}06 0%, transparent 40%)`,
-          }} />
+        {/* Features — alternating asymmetric rows */}
+        <section id="features" className="relative py-32 px-6 bg-gray-50 dark:bg-[#111111] transition-colors duration-300 overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none" aria-hidden style={{ background: `linear-gradient(to bottom, ${TEAL}06 0%, transparent 40%)` }} />
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-gray-900 dark:text-gray-100">Everything you need</h2>
-              <p className="text-gray-500 dark:text-gray-400 max-w-lg mx-auto">A complete platform for building document-aware AI agents without writing a single line of code.</p>
+
+            {/* Section label */}
+            <div className="mb-24">
+              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: TEAL }}>What Archelon does</p>
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100 max-w-2xl leading-tight">
+                Everything your documents<br />deserve to be
+              </h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {FEATURES.map((f, i) => (
-                <div key={f.title} className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 transition-all hover:shadow-md dark:hover:shadow-none">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: i % 2 === 0 ? `${TEAL}15` : `${BLUE}15` }}>
-                    <svg className="w-5 h-5" style={{ color: i % 2 === 0 ? TEAL : BLUE }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={f.path} />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">{f.title}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{f.desc}</p>
+
+            {/* Row 1 — text left, visual right */}
+            <div className="grid md:grid-cols-[2fr_3fr] gap-16 items-center mb-28">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: TEAL }}>01</p>
+                <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 leading-tight">Documents that actually answer questions</h3>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Upload PDFs, DOCX, or TXT files. Archelon parses them using a parent-child chunking strategy — child chunks for precise matching, parent chunks for rich context. Your documents become queryable knowledge.</p>
+                <div className="space-y-2">
+                  {['PDF, DOCX, TXT support', 'Instant indexing after upload', 'Searches meaning, not just keywords'].map(t => (
+                    <div key={t} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: TEAL }} />
+                      {t}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+              <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-xl">
+                <img src="/document-processing.png" alt="Document Processing" className="w-full h-auto object-contain" />
+              </div>
+            </div>
+
+            {/* Row 2 — visual left, text right */}
+            <div className="grid md:grid-cols-[3fr_2fr] gap-16 items-center mb-28">
+              <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-xl order-2 md:order-1">
+                <img src="/chat-view.png" alt="Agent Chat" className="w-full h-auto object-contain" />
+              </div>
+              <div className="order-1 md:order-2">
+                <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: BLUE }}>02</p>
+                <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 leading-tight">Agents that think before they answer</h3>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Every query goes through intent classification, query analysis, parallel vector search, gap detection reranking, and grounded synthesis. Users see the thinking steps — what was searched, what was found, before the answer appears.</p>
+                <div className="space-y-2">
+                  {['Understands what you\'re really asking', 'Finds the most relevant sections', 'Shows reasoning before answering'].map(t => (
+                    <div key={t} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: BLUE }} />
+                      {t}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Row 3 — text left, visual right */}
+            <div className="grid md:grid-cols-[2fr_3fr] gap-16 items-center">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: TEAL }}>03</p>
+                <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 leading-tight">Deploy anywhere with one script tag</h3>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Generate an API key, whitelist your domain, and paste one script tag. Your agent becomes a floating chat widget on any website — with token metering, rate limiting, and domain-level security built in.</p>
+                <div className="space-y-2">
+                  {['API key + domain whitelist', 'Token usage metering', 'One script tag deployment'].map(t => (
+                    <div key={t} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: TEAL }} />
+                      {t}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-xl">
+                <img src="/embed-widget.png" alt="Embed Widget" className="w-full h-auto object-contain" />
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        {/* How it works — vertical timeline */}
+        <section id="how-it-works" className="relative py-32 px-6 bg-white dark:bg-[#0d0d0d] transition-colors duration-300 overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none" aria-hidden style={{ background: `linear-gradient(to bottom, ${BLUE}04 0%, transparent 50%)` }} />
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-20">
+              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: BLUE }}>The process</p>
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100 leading-tight">
+                From documents<br />to deployed — in minutes
+              </h2>
+            </div>
+
+            <div className="relative">
+              {/* Vertical line */}
+              <div className="absolute left-6 top-0 bottom-0 w-px bg-gray-100 dark:bg-gray-800 hidden md:block" />
+
+              <div className="space-y-0">
+                {[
+                  { num: '01', title: 'Create an agent', body: 'Name your agent, write system instructions, define its purpose. Each agent is isolated — its knowledge never bleeds into others.', color: TEAL },
+                  { num: '02', title: 'Upload your documents', body: 'Add PDFs, DOCX, or TXT files. Archelon parses, chunks, embeds, and indexes them automatically. You see every step of the pipeline in real time.', color: BLUE },
+                  { num: '03', title: 'Chat with your agent', body: 'Ask questions. The agent classifies intent, searches your documents, reranks results, and synthesizes a grounded answer — showing its thinking at every step.', color: TEAL },
+                  { num: '04', title: 'Embed on your website', body: 'Enable the widget, generate an API key, whitelist your domain, paste one script tag. Your agent is live as a floating chat widget on any website.', color: BLUE },
+                ].map((step, i) => (
+                  <div key={i} className="relative flex gap-10 md:gap-16 pb-16 last:pb-0">
+                    {/* Step number circle */}
+                    <div className="relative z-10 flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white" style={{ background: `linear-gradient(135deg, ${step.color}, ${step.color}99)` }}>
+                        {step.num}
+                      </div>
+                    </div>
+                    {/* Content */}
+                    <div className="pt-2 pb-2">
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">{step.title}</h3>
+                      <p className="text-gray-500 dark:text-gray-400 leading-relaxed max-w-lg">{step.body}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        {/* How it works */}
-        <section id="how-it-works" className="relative py-24 px-6 bg-white dark:bg-[#0d0d0d] transition-colors duration-300 overflow-hidden">
-          {/* Depth gradient */}
-          <div className="absolute inset-0 pointer-events-none" aria-hidden style={{
-            background: `linear-gradient(to bottom, ${BLUE}05 0%, transparent 40%)`,
-          }} />
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-gray-900 dark:text-gray-100">How it works</h2>
-              <p className="text-gray-500 dark:text-gray-400">From documents to intelligent answers in four steps.</p>
+        {/* Use cases — large statement layout */}
+        <section id="use-cases" className="relative py-32 px-6 bg-gray-50 dark:bg-[#111111] transition-colors duration-300 overflow-hidden">
+          <div className="max-w-6xl mx-auto">
+            <div className="mb-20">
+              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: TEAL }}>Use cases</p>
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100 leading-tight max-w-2xl">
+                Any team with documents<br />has a use case
+              </h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {STEPS.map((s, i) => (
-                <div key={s.num} className="flex gap-5 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-[#141414] hover:border-gray-200 dark:hover:border-gray-700 transition-colors">
-                  <div className="text-2xl font-bold select-none flex-shrink-0 w-10" style={{ color: i % 2 === 0 ? `${TEAL}40` : `${BLUE}40` }}>{s.num}</div>
+
+            {/* Large list — each use case is a full-width row */}
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+              {[
+                { num: '01', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', title: 'Customer Support', industry: 'SaaS · E-commerce · Fintech', body: 'Upload product docs, FAQs, and policies. Your agent answers support questions grounded in your documentation, reducing repetitive ticket load.', tags: ['FAQ automation', 'Policy lookup', 'Ticket deflection'] },
+                { num: '02', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', title: 'Internal Knowledge Base', industry: 'Enterprise · Startups · Agencies', body: 'Upload SOPs, onboarding guides, and internal wikis. Teams get answers from your documents without digging through folders or pinging colleagues.', tags: ['Onboarding', 'SOP lookup', 'HR policies'] },
+                { num: '03', icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4', title: 'Product Documentation', industry: 'Developer Tools · APIs · Platforms', body: 'Turn technical docs, API references, and changelogs into a conversational agent. Users find answers faster directly from your documentation.', tags: ['API docs', 'Changelogs', 'Integration guides'] },
+                { num: '04', icon: 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3', title: 'Legal & Compliance', industry: 'Law Firms · Finance · Healthcare', body: 'Upload contracts, compliance guidelines, and regulatory documents. Get answers grounded in the source — always verify critical information independently.', tags: ['Contract review', 'Compliance Q&A', 'Policy search'] },
+                { num: '05', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', title: 'Education & Training', industry: 'EdTech · Corporates · Universities', body: 'Upload course material, training manuals, and study guides. Learners ask questions and get answers drawn from the content they are studying.', tags: ['Course Q&A', 'Training manuals', 'Study guides'] },
+                { num: '06', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', title: 'Healthcare & Research', industry: 'Clinics · Research Labs · Pharma', body: 'Upload research papers, clinical guidelines, and protocols. Query complex documents conversationally — always verify with qualified professionals.', tags: ['Research papers', 'Clinical protocols', 'Drug references'] },
+              ].map((uc, i) => (
+                <div key={i} className="py-10 grid md:grid-cols-[100px_1fr_1fr] gap-6 md:gap-10 items-start">
+                  <div className="flex items-start">
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: i % 2 === 0 ? `${TEAL}15` : `${BLUE}15` }}>
+                      <svg className="w-5 h-5" style={{ color: i % 2 === 0 ? TEAL : BLUE }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={uc.icon} />
+                      </svg>
+                    </div>
+                  </div>
                   <div>
-                    <h3 className="font-semibold mb-1.5 text-gray-900 dark:text-gray-100">{s.title}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{s.desc}</p>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">{uc.title}</h3>
+                    <p className="text-xs text-gray-400 dark:text-gray-600 mb-3">{uc.industry}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{uc.body}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 md:justify-end md:pt-1">
+                    {uc.tags.map(tag => (
+                      <span key={tag} className="text-xs px-3 py-1 rounded-full border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">{tag}</span>
+                    ))}
                   </div>
                 </div>
               ))}
@@ -568,8 +637,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
         </section>
 
         {/* CTA */}
-        <section className="relative py-24 px-6 bg-gray-50 dark:bg-[#111111] transition-colors duration-300 overflow-hidden">
-          {/* Shell hex pattern — blue tint */}
+        <section className="relative py-24 px-6 bg-white dark:bg-[#0d0d0d] transition-colors duration-300 overflow-hidden">
           <div className="absolute inset-0 pointer-events-none" aria-hidden>
             <svg width="100%" height="100%" style={{ opacity: 0.02 }}>
               <defs>
