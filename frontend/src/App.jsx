@@ -10,6 +10,7 @@ import EditAgentView from './components/EditAgentView';
 import DocsPanel from './components/DocsPanel';
 import HomePage from './components/HomePage';
 import DashboardView from './components/DashboardView';
+import DeploymentsView from './components/DeploymentsView';
 import { fetchAgents } from './services/agent_service';
 import { fetchDocuments, invalidateDocuments, getCachedDocuments } from './services/document_service';
 import { authHeaders } from './services/auth_service';
@@ -25,6 +26,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
   const [tokenBalance, setTokenBalance] = useState(null);
   const [chatBusy, setChatBusy] = useState(false);
   const [pendingAgent, setPendingAgent] = useState(null);
+  const [deployFocusId, setDeployFocusId] = useState(null);
 
   const refreshTokenBalance = () => {
     if (!user) return;
@@ -191,12 +193,13 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
           </div>
         )}
         <TopNav
-          agentName={mode === 'settings' ? '' : mode === 'dashboard' ? 'Dashboard' : agentData ? agentData.name : 'Home'}
-          agentData={mode === 'settings' || mode === 'dashboard' ? null : agentData}
-          documents={mode === 'settings' || mode === 'dashboard' ? [] : agentDocuments}
+          agentName={mode === 'settings' ? '' : mode === 'dashboard' ? 'Dashboard' : mode === 'deployments' ? 'Deployments' : agentData ? agentData.name : 'Home'}
+          agentData={mode === 'settings' || mode === 'dashboard' || mode === 'deployments' ? null : agentData}
+          documents={mode === 'settings' || mode === 'dashboard' || mode === 'deployments' ? [] : agentDocuments}
           collapsed={sidebarCollapsed}
           onDocsClick={() => setShowDocsPanel(p => !p)}
           onEditAgent={() => setMode('edit')}
+          onDeploy={() => { setDeployFocusId(agentData?.id ?? null); setMode('deployments'); }}
           user={user}
           onDashboard={() => setMode('dashboard')}
           tokenBalance={tokenBalance}
@@ -244,6 +247,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
             {mode === 'library' && <AgentsLibrary agents={savedAgents} setAgentData={setAgentData} setMode={setMode} />}
             {mode === 'settings' && <SettingsView theme={theme} setTheme={setTheme} onLogout={onLogout} />}
             {mode === 'dashboard' && <DashboardView />}
+            {mode === 'deployments' && <DeploymentsView savedAgents={savedAgents} focusAgentId={deployFocusId} />}
           </main>
           {showDocsPanel && agentData && (
             <DocsPanel

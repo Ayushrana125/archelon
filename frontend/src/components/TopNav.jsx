@@ -65,11 +65,10 @@ function BugReportModal({ onClose }) {
   );
 }
 
-function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, onEditAgent, user, onDashboard, tokenBalance }) {
+function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, onEditAgent, user, onDashboard, tokenBalance, onDeploy }) {
   const [showEmbed, setShowEmbed] = useState(false);
-  const [showBug, setShowBug]     = useState(false);
+  const [showBug, setShowBug] = useState(false);
 
-  // Auto-open embed modal once per session for non-system agents
   useEffect(() => {
     if (!agentData?.id || agentData?.is_system) return;
     const seen = sessionStorage.getItem('embed_intro_seen');
@@ -153,7 +152,7 @@ function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, 
         </div>
       </div>
     </nav>
-    {showEmbed && <EmbedModal agentName={agentData?.name} onClose={() => setShowEmbed(false)} />}
+    {showEmbed && <EmbedModal agentId={agentData?.id} agentName={agentData?.name} user={user} onClose={() => setShowEmbed(false)} />}
     {showBug && <BugReportModal onClose={() => setShowBug(false)} />}
     </>
   );
