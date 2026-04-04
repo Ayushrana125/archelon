@@ -8,8 +8,10 @@ Smalltalk:     direct LLM response, no retrieval
 """
 
 import asyncio
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+import time
+from collections import defaultdict
+from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel, validator
 from pipeline.intent_classifier import classify_intent
 from pipeline.query_analyser import analyse_query
 from pipeline.smalltalk_agent import handle_smalltalk
@@ -21,6 +23,32 @@ from db.token_usage_db import insert_query_event, get_user_token_balance, get_ag
 
 router = APIRouter()
 
+# ── Rate limiter — 20 requests per 60 seconds per user ──────────────────────
+_rate_store: dict[str, list[float]] = defaultdict(list)
+
+def check_rate_limit(user_id: str, limit: int = 20, window: int = 60):
+    now = time.time()
+    _rate_store[user_id] = [t for t in _rate_store[user_id] if now - t < window]
+    if len(_rate_store[user_id]) >= limit:
+        raise HTTPException(status_code=429, detail="Too many requests. Please slow down.")
+    _rate_store[user_id].append(now)
+
+# ── Prompt injection patterns ────────────────────────────────────────────────
+INJECTION_PATTERNS = [
+    "ignore all previous", "ignore previous instructions",
+    "disregard your instructions", "disregard all instructions",
+    "you are now", "act as if", "forget everything",
+    "new instructions:", "system prompt:", "override instructions",
+]
+
+def sanitize_message(message: str) -> str:
+    lower = message.lower()
+    for pattern in INJECTION_PATTERNS:
+        if pattern in lower:
+            # Wrap as data so LLM treats it as user input, not instruction
+            return f"[User message]: {message}"
+    return message
+
 
 class ChatRequest(BaseModel):
     message:            str
@@ -29,6 +57,15 @@ class ChatRequest(BaseModel):
     agent_name:         str = ""
     agent_description:  str = ""
     agent_instructions: str = ""
+
+    @validator('message')
+    def validate_message(cls, v):
+        v = v.strip()
+        if not v:
+            raise ValueError('Message cannot be empty.')
+        if len(v) > 2000:
+            raise ValueError('Message too long. Maximum 2000 characters.')
+        return v
 
 
 @router.get("/chat/tokens/{agent_id}")
@@ -45,6 +82,12 @@ async def get_balance(current_user: dict = Depends(verify_token)):
 @router.post("/chat")
 async def chat(body: ChatRequest, current_user: dict = Depends(verify_token)):
 
+    # ── Rate limit check ─────────────────────────────────────────────────────
+    check_rate_limit(current_user["user_id"])
+
+    # ── Sanitize message ──────────────────────────────────────────────────
+    safe_message = sanitize_message(body.message)
+
     # ── Token balance check ─────────────────────────────────────────────────────
     balance = await get_user_token_balance(current_user["user_id"])
     if balance["tokens_remaining"] <= 0:
@@ -52,7 +95,7 @@ async def chat(body: ChatRequest, current_user: dict = Depends(verify_token)):
 
     # ── Step 1: Classify intent ──────────────────────────────────────────────
     classified = await classify_intent(
-        user_message=body.message,
+        user_message=safe_message,
         system_instructions=body.agent_instructions,
     )
     intent = classified.get("intent", "single")
@@ -60,19 +103,19 @@ async def chat(body: ChatRequest, current_user: dict = Depends(verify_token)):
     # ── Step 2: Smalltalk — no retrieval needed ──────────────────────────────
     if intent == "smalltalk":
         answer = await handle_smalltalk(
-            user_message=body.message,
+            user_message=safe_message,
             agent_name=body.agent_name or "Assistant",
             agent_description=body.agent_description,
             agent_instructions=body.agent_instructions,
         )
-        input_tokens  = len(body.message) // 4
+        input_tokens  = len(safe_message) // 4
         output_tokens = len(answer) // 4
         await insert_query_event(
             agent_id=body.agent_id,
             user_id=current_user["user_id"],
             input_tokens=input_tokens,
             output_tokens=output_tokens,
-            user_message=body.message,
+            user_message=safe_message,
             agent_response=answer,
         )
         return {
@@ -85,8 +128,8 @@ async def chat(body: ChatRequest, current_user: dict = Depends(verify_token)):
         }
 
     # ── Step 3: Analyse query → extract search terms ─────────────────────────
-    analysed      = await analyse_query(body.message, intent=intent)
-    search_queries = analysed.get("search_queries") or [body.message]
+    analysed      = await analyse_query(safe_message, intent=intent)
+    search_queries = analysed.get("search_queries") or [safe_message]
 
     # ── Step 4: Vector search — parallel fan-out for multi queries ───────────
     search_tasks = [
@@ -104,7 +147,7 @@ async def chat(body: ChatRequest, current_user: dict = Depends(verify_token)):
 
     # ── Step 6: Synthesize — generate grounded answer ────────────────────────
     result = await synthesize(
-        user_message=body.message,
+        user_message=safe_message,
         context_chunks=context_chunks,
         agent_name=body.agent_name or "Assistant",
         agent_instructions=body.agent_instructions,
@@ -119,7 +162,7 @@ async def chat(body: ChatRequest, current_user: dict = Depends(verify_token)):
         user_id=current_user["user_id"],
         input_tokens=token_usage.get("input_tokens", 0),
         output_tokens=token_usage.get("output_tokens", 0),
-        user_message=body.message,
+        user_message=safe_message,
         agent_response=result["answer"],
     )
 

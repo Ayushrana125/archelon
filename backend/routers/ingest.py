@@ -4,6 +4,7 @@ All routes protected by JWT.
 """
 
 import os
+import re
 import tempfile
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks
 from jwt_handler import verify_token
@@ -17,6 +18,13 @@ MAX_FILE_SIZE  = 2 * 1024 * 1024   # 2MB per file
 MAX_TOTAL_SIZE = 6 * 1024 * 1024   # 6MB total across all files in one upload
 MAX_FILES      = 5
 ALLOWED_EXTS   = {".pdf", ".docx", ".txt"}
+
+
+def sanitize_filename(name: str) -> str:
+    name = os.path.basename(name)              # strip path traversal e.g. ../../etc/passwd
+    name = re.sub(r'[^\w\s\-.]', '', name)     # strip special chars, keep word chars, spaces, hyphens, dots
+    name = name.strip('. ')                    # strip leading/trailing dots and spaces
+    return name[:100] or 'document'            # max 100 chars, fallback if empty
 
 
 async def run_ingestion(agent_id: str, user_id: str, tmp_path: str, original_filename: str, job_id: str, document_id: str):
@@ -69,7 +77,7 @@ async def ingest(
         total_size += len(content)
         if total_size > MAX_TOTAL_SIZE:
             raise HTTPException(status_code=400, detail="Total file size exceeds 6MB limit")
-        file_contents.append((file.filename, ext, content, len(content)))
+        file_contents.append((sanitize_filename(file.filename), ext, content, len(content)))
 
     # Create document rows + ingestion jobs upfront, save files to temp
     results = []

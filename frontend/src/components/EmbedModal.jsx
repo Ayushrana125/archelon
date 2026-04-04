@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { authHeaders } from '../services/auth_service';
 
 const TEAL = '#00C9B1';
 
@@ -42,6 +43,23 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
   const [showSteps, setShowSteps] = useState(false);
 
   const [showDisableConfirm, setShowDisableConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/embed/${agentId}`, {
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (d.enabled) {
+          setEnabled(true);
+          setSavedName(d.widget_name || '');
+          setDomains(d.allowed_origins || []);
+          setApiKey('masked');
+        }
+      })
+      .catch(() => {});
+  }, [agentId]);
 
   const handleToggle = () => {
     if (enabled) {
@@ -51,21 +69,40 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
     }
   };
 
-  const handleConfirmDisable = () => {
+  const handleConfirmDisable = async () => {
+    setLoading(true);
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/embed/${agentId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      });
+    } catch {}
     setEnabled(false);
     setApiKey(null);
     setKeyJustGenerated(false);
-    apiKeyRef.current = null;
     setShowDisableConfirm(false);
+    setLoading(false);
   };
 
   const displayName = savedName || agentName || 'Assistant';
 
-  const handleGenerate = () => {
-    const key = 'arch_live_' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
-    setApiKey(key);
-    setKeyJustGenerated(true);
-    apiKeyRef.current = key;
+  const handleGenerate = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/embed/${agentId}/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ widget_name: savedName || agentName, allowed_origins: domains }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Failed to generate key');
+      setApiKey(data.raw_key);
+      setKeyJustGenerated(true);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAddDomain = () => {
@@ -90,11 +127,11 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
 <script>
   window.ArchelonConfig = {
     agentId: "${agentId}",
-    apiKey: "${apiKey ? apiKey : 'arch_live_YOUR_KEY_HERE'}",
+    apiKey: "${apiKey && apiKey !== 'masked' ? apiKey : 'arch_live_YOUR_KEY_HERE'}",
     name: "${displayName}"
   };
 </script>
-<script src="https://api.archelon.aranixlabs.cloud/embed.js" async></script>`;
+<script src="https://api.archelon.cloud/embed.js" async></script>`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -373,13 +410,14 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
                   {!apiKey ? (
                     <button
                       onClick={handleGenerate}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
+                      disabled={loading}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
                       style={{ background: `linear-gradient(135deg, ${TEAL}, #1A73E8)` }}
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                       </svg>
-                      Generate API Key
+                      {loading ? 'Generating...' : 'Generate API Key'}
                     </button>
                   ) : (
                     <div className="px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1a1a1a] text-xs font-mono text-gray-400 select-none">
@@ -476,7 +514,7 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
       theme: "light"
     };
   </script>
-  <script src="https://api.archelon.aranixlabs.cloud/embed.js" async></script>
+  <script src="https://api.archelon.cloud/embed.js" async></script>
 
 </body>
 </html>`} label="Copy full HTML" />
@@ -510,7 +548,7 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
       theme: "light"
     };
   </script>
-  <script src="https://api.archelon.aranixlabs.cloud/embed.js" async></script>
+  <script src="https://api.archelon.cloud/embed.js" async></script>
 
 </body>
 </html>`}</pre>

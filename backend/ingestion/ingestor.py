@@ -28,6 +28,11 @@ async def ingest_document(agent_id: str, user_id: str, file_path: str, original_
 
         elements, doc_title, filetype = parse_document(file_path)
 
+        # Zip bomb / parser explosion guard — parsed content must be reasonable
+        total_content_size = sum(len(str(e)) for e in elements)
+        if total_content_size > 5_000_000:  # 5MB of extracted text is excessive
+            raise ValueError("Parsed content too large. File may be malformed.")
+
         from db.supabase_client import get_supabase
         get_supabase().table("documents").update({"filetype": filetype}).eq("id", document_id).execute()
 
