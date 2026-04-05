@@ -50,8 +50,9 @@
     #archelon-avatar {
       width: 36px; height: 36px; border-radius: 50%; position: relative; flex-shrink: 0;
       background: rgba(0,201,177,0.2); display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
     }
-    #archelon-avatar img { width: 22px; height: 22px; object-fit: contain; }
+    #archelon-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     #archelon-online {
       position: absolute; bottom: 1px; right: 1px;
       width: 9px; height: 9px; border-radius: 50%;
@@ -90,8 +91,9 @@
     .arch-bot-avatar {
       width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
       background: rgba(0,201,177,0.15); display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
     }
-    .arch-bot-avatar img { width: 14px; height: 14px; object-fit: contain; }
+    .arch-bot-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
     /* Thinking steps */
     .arch-thinking-wrap {
@@ -166,6 +168,17 @@
       #archelon-window { width: calc(100vw - 24px); right: 12px; bottom: 80px; height: 70vh; }
       #archelon-fab { bottom: 16px; right: 16px; }
     }
+    .arch-dots { display: inline-flex; align-items: center; gap: 4px; }
+    .arch-dots span {
+      width: 6px; height: 6px; border-radius: 50%; background: #9ca3af;
+      animation: arch-dot-bounce 0.8s ease-in-out infinite;
+    }
+    .arch-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .arch-dots span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes arch-dot-bounce {
+      0%, 100% { transform: translateY(0); opacity: 0.5; }
+      50% { transform: translateY(-4px); opacity: 1; }
+    }
     /* Dark theme */
     #archelon-widget-root.dark #archelon-window { background: #1a1a1a; border-color: #2a2a2a; }
     #archelon-widget-root.dark #archelon-messages { background: #141414; }
@@ -239,10 +252,10 @@
 
   // ── Thinking steps ────────────────────────────────────────────────────────
   const STEPS = [
-    { label: 'Understanding your question' },
-    { label: 'Searching through documents' },
-    { label: 'Finding the best answer' },
-    { label: 'Almost there' },
+    { label: 'Reading your message...' },
+    { label: 'Scanning through documents...' },
+    { label: 'Pulling the best answer...' },
+    { label: 'Almost ready...' },
   ];
 
   // ── Fetch agent name from backend ─────────────────────────────────────────
@@ -266,7 +279,7 @@
           const avatarImg = document.querySelector('#archelon-avatar img');
           if (avatarImg) avatarImg.src = LOGO;
           // Replace FAB icon with custom logo
-          fab.innerHTML = `<img src="${d.logo_url}" alt="" style="width:32px;height:32px;object-fit:contain;border-radius:50%;" onerror="this.style.display='none'" />`;
+          fab.innerHTML = `<img src="${d.logo_url}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:50%;" onerror="this.style.display='none'" />`;
         }
         if (d.theme === 'dark') {
           THEME = 'dark';
@@ -311,6 +324,27 @@
     msg.innerHTML = `<div class="arch-bubble">${parseMarkdown(text)}</div>`;
     msgs.appendChild(msg);
     scrollToBottom();
+  }
+
+  function showDots() {
+    const el = document.createElement('div');
+    el.className = 'arch-msg bot';
+    el.id = 'arch-thinking';
+    el.innerHTML = `
+      <div class="arch-bot-avatar">
+        <img src="${API_BASE}/Archelon_logo.png" alt="" onerror="this.style.display='none'" />
+      </div>
+      <div class="arch-bubble" style="padding:10px 16px;">
+        <span class="arch-dots">
+          <span></span><span></span><span></span>
+        </span>
+      </div>
+    `;
+    const img = el.querySelector('img');
+    if (img) img.src = LOGO;
+    msgs.appendChild(el);
+    scrollToBottom();
+    return el;
   }
 
   function showThinking() {

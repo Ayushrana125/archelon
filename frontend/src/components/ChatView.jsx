@@ -420,6 +420,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
           query: thinking,
           searchThinking: search_thinking,
           sources: data.sources ?? [],
+          isSmallTalk: intent !== 'single' && intent !== 'multi',
         }]);
       } else {
         addAssistantMsg(data.answer ?? 'User query successfully processed.');
@@ -463,6 +464,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
                     searchThinking={msg.searchThinking}
                     agentName={agentName}
                     sources={msg.sources}
+                    isSmallTalk={msg.isSmallTalk}
                     isHistorical={!pendingResponse[msg.id]}
                     onComplete={() => {
                       const pending = pendingResponse[msg.id];
