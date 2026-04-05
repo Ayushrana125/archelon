@@ -18,7 +18,11 @@ app.add_middleware(
 @app.get("/embed.js")
 async def serve_embed_js():
     from fastapi.responses import FileResponse
-    return FileResponse("embed.js", media_type="application/javascript")
+    return FileResponse("embed.js", media_type="application/javascript", headers={
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
+    })
 
 @app.get("/Archelon_logo.png")
 async def serve_logo():
