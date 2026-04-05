@@ -220,11 +220,6 @@
       margin-bottom: 14px; flex-shrink: 0; position: relative;
     }
     #archelon-prechat-logo img { width: 100%; height: 100%; object-fit: cover; }
-    #archelon-prechat-online {
-      position: absolute; bottom: 3px; right: 3px;
-      width: 14px; height: 14px; border-radius: 50%;
-      background: #22c55e; border: 2.5px solid #fff;
-    }
     #archelon-prechat-name {
       font-size: 16px; font-weight: 700; color: #111827;
       margin-bottom: 4px; text-align: center;
@@ -238,7 +233,6 @@
     }
     #archelon-widget-root.dark #archelon-prechat { background: #1a1a1a; }
     #archelon-widget-root.dark #archelon-prechat-name { color: #f3f4f6; }
-    #archelon-widget-root.dark #archelon-prechat-online { border-color: #1a1a1a; }
     #archelon-widget-root.dark #archelon-prechat-greeting { color: #9ca3af; }
     .arch-dots { display: inline-flex; align-items: center; gap: 4px; }
     .arch-dots span {
@@ -306,7 +300,6 @@
         </div>
         <div id="archelon-prechat-logo">
           <img id="archelon-prechat-logo-img" src="" alt="" style="opacity:0;transition:opacity 0.2s;" />
-          <div id="archelon-prechat-online"></div>
         </div>
         <div id="archelon-prechat-name">...</div>
         <div id="archelon-prechat-status">
@@ -515,7 +508,7 @@
     // Bold and italic
     html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<b><em>$1</em></b>');
     html = html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
-    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    html = html.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
     // Unordered lists
     html = html.replace(/^[\-\*] (.+)$/gm, '<div style="display:flex;gap:6px;margin:2px 0;"><span style="color:#9ca3af;flex-shrink:0;">•</span><span>$1</span></div>');
     // Ordered lists
@@ -743,7 +736,7 @@
       removeThinking();
       thinkingEl = showThinking();
       upgradedToSteps = true;
-    }, 800);
+    }, 400);
 
     try {
       const res = await fetch(`${API_BASE}/api/public/chat`, {
