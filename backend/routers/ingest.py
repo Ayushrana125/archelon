@@ -5,12 +5,15 @@ All routes protected by JWT.
 
 import os
 import re
+import uuid
 import tempfile
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks
 from jwt_handler import verify_token
 from db import chunks_db, agents_db
 from db.token_usage_db import get_user_token_balance
+from db.api_keys_db import update_key_settings
 from ingestion.ingestor import ingest_document
+from db.supabase_client import get_supabase
 
 router = APIRouter()
 
@@ -113,3 +116,43 @@ async def get_ingest_status(job_id: str, current_user: dict = Depends(verify_tok
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     return job
+
+
+@router.post("/embed/{agent_id}/logo")
+async def upload_logo(
+    agent_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(verify_token),
+):
+    # Verify agent belongs to user
+    agent = await agents_db.get_agent_by_id(agent_id, current_user["user_id"])
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+
+    # Validate file type
+    allowed = {'.png', '.jpg', '.jpeg', '.webp', '.svg'}
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in allowed:
+        raise HTTPException(status_code=400, detail="Only PNG, JPG, WEBP, SVG allowed")
+
+    # Validate file size — 500KB max
+    content = await file.read()
+    if len(content) > 500 * 1024:
+        raise HTTPException(status_code=400, detail="Logo must be under 500KB")
+
+    # Upload to Supabase Storage
+    filename = f"{agent_id}_{uuid.uuid4().hex[:8]}{ext}"
+    db = get_supabase()
+    res = db.storage.from_("widget-logos").upload(
+        path=filename,
+        file=content,
+        file_options={"content-type": file.content_type, "upsert": "true"},
+    )
+
+    # Get public URL
+    public_url = db.storage.from_("widget-logos").get_public_url(filename)
+
+    # Save to api_keys
+    await update_key_settings(agent_id, logo_url=public_url)
+
+    return {"logo_url": public_url}

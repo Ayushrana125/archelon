@@ -44,6 +44,11 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
 
   const [showDisableConfirm, setShowDisableConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [theme, setTheme] = useState('light');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [maxInputChars, setMaxInputChars] = useState(2000);
+  const [maxOutputTokens, setMaxOutputTokens] = useState(500);
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/api/embed/${agentId}`, {
@@ -56,6 +61,10 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
           setSavedName(d.widget_name || '');
           setDomains(d.allowed_origins || []);
           setApiKey('masked');
+          setTheme(d.theme || 'light');
+          setLogoUrl(d.logo_url || '');
+          setMaxInputChars(d.max_input_chars || 2000);
+          setMaxOutputTokens(d.max_output_tokens || 500);
         }
       })
       .catch(() => {});
@@ -92,7 +101,7 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/embed/${agentId}/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ widget_name: savedName || agentName, allowed_origins: domains }),
+        body: JSON.stringify({ widget_name: savedName || agentName, allowed_origins: domains, theme, max_input_chars: maxInputChars, max_output_tokens: maxOutputTokens }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || 'Failed to generate key');
@@ -102,6 +111,28 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
       alert(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/embed/${agentId}/logo`, {
+        method: 'POST',
+        headers: { ...authHeaders() },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Upload failed');
+      setLogoUrl(data.logo_url);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLogoUploading(false);
     }
   };
 
@@ -463,6 +494,83 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
                   {domains.length === 0 && (
                     <p className="text-xs text-gray-400">No domains added — all origins allowed (not recommended for production).</p>
                   )}
+                </div>
+
+                {/* Widget logo */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Widget logo <span className="text-gray-400 font-normal text-xs">(shown in chat header — PNG, JPG, SVG, max 500KB)</span>
+                  </label>
+                  <div className="flex items-center gap-3">
+                    {logoUrl && (
+                      <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded-lg object-contain border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1a1a1a]" />
+                    )}
+                    <label className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm cursor-pointer border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {logoUploading ? 'Uploading...' : logoUrl ? 'Change logo' : 'Upload logo'}
+                      <input type="file" accept=".png,.jpg,.jpeg,.webp,.svg" className="hidden" onChange={handleLogoUpload} disabled={logoUploading} />
+                    </label>
+                    {logoUrl && (
+                      <button onClick={() => setLogoUrl('')} className="text-xs text-red-400 hover:text-red-500 transition-colors">Remove</button>
+                    )}
+                  </div>
+                  {!logoUrl && <p className="text-xs text-gray-400 mt-1.5">Not set — defaults to Archelon logo</p>}
+                </div>
+
+                {/* Theme toggle */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Widget theme</label>
+                  <div className="flex gap-3">
+                    {['light', 'dark'].map(t => (
+                      <button
+                        key={t}
+                        onClick={() => setTheme(t)}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm border transition-all capitalize ${
+                          theme === t
+                            ? 'border-[#00C9B1] text-[#00C9B1] bg-[#00C9B1]/5'
+                            : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#1a1a1a]'
+                        }`}
+                      >
+                        {t === 'light' ? (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" /></svg>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                        )}
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Input/Output limits */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Response limits</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-gray-400 mb-1">Max input characters</label>
+                      <input
+                        type="number"
+                        min={100} max={4000} step={100}
+                        value={maxInputChars}
+                        onChange={e => setMaxInputChars(Number(e.target.value))}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-sm focus:outline-none focus:ring-2 focus:ring-[#00C9B1]/40"
+                      />
+                      <p className="text-[10px] text-gray-400 mt-1">How long a visitor's message can be</p>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-400 mb-1">Max output tokens</label>
+                      <input
+                        type="number"
+                        min={100} max={2000} step={100}
+                        value={maxOutputTokens}
+                        onChange={e => setMaxOutputTokens(Number(e.target.value))}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-sm focus:outline-none focus:ring-2 focus:ring-[#00C9B1]/40"
+                      />
+                      <p className="text-[10px] text-gray-400 mt-1">How long the agent's response can be</p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Script snippet */}

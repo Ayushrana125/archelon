@@ -46,6 +46,7 @@ async def synthesize(
     agent_name:         str = "Assistant",
     agent_instructions: str = "",
     search_queries:     list[str] = None,
+    max_output_tokens:  int = None,
 ) -> dict:
     """
     Generate a grounded answer from context chunks.
@@ -109,6 +110,7 @@ CONTEXT BLOCK — answer only from what is written here:
         llm = ChatMistralAI(
             model="mistral-large-latest",
             api_key=os.getenv("MISTRAL_API_KEY_1"),
+            max_tokens=max_output_tokens if max_output_tokens else None,
         )
 
         response = await llm.ainvoke([

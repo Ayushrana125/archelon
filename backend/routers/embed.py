@@ -43,8 +43,11 @@ def check_public_rate_limit(key_id: str, limit: int = 10, window: int = 60):
 # ── Private endpoints ─────────────────────────────────────────────────────────
 
 class GenerateKeyRequest(BaseModel):
-    widget_name:     str = ""
-    allowed_origins: list[str] = []
+    widget_name:      str = ""
+    allowed_origins:  list[str] = []
+    theme:            str = "light"
+    max_input_chars:  int = 2000
+    max_output_tokens: int = 500
 
 
 class UpdateSettingsRequest(BaseModel):
@@ -64,6 +67,9 @@ async def generate_key(agent_id: str, body: GenerateKeyRequest, current_user: di
         agent_id=agent_id,
         widget_name=body.widget_name or agent["name"],
         allowed_origins=body.allowed_origins,
+        theme=body.theme,
+        max_input_chars=body.max_input_chars,
+        max_output_tokens=body.max_output_tokens,
     )
     return result  # raw_key returned here — only time it's visible
 
@@ -93,21 +99,40 @@ async def get_embed_status(agent_id: str, current_user: dict = Depends(verify_to
         raise HTTPException(status_code=404, detail="Agent not found")
     key_record = await get_key_by_agent(agent_id)
     return {
-        "enabled":         key_record is not None,
-        "key_prefix":      key_record["key_prefix"] if key_record else None,
-        "widget_name":     key_record["widget_name"] if key_record else None,
-        "allowed_origins": key_record["allowed_origins"] if key_record else [],
-        "created_at":      key_record["created_at"] if key_record else None,
-        "last_used_at":    key_record["last_used_at"] if key_record else None,
+        "enabled":           key_record is not None,
+        "key_prefix":        key_record["key_prefix"] if key_record else None,
+        "widget_name":       key_record["widget_name"] if key_record else None,
+        "allowed_origins":   key_record["allowed_origins"] if key_record else [],
+        "logo_url":          key_record["logo_url"] if key_record else None,
+        "theme":             key_record["theme"] if key_record else "light",
+        "max_input_chars":   key_record["max_input_chars"] if key_record else 2000,
+        "max_output_tokens": key_record["max_output_tokens"] if key_record else 500,
+        "created_at":        key_record["created_at"] if key_record else None,
+        "last_used_at":      key_record["last_used_at"] if key_record else None,
     }
 
 
 # ── Public endpoint ───────────────────────────────────────────────────────────
 
+@router.get("/public/info")
+async def public_info(request: Request):
+    """Returns widget name for the API key — called by embed.js on load."""
+    raw_key = request.headers.get("X-Archelon-Key")
+    if not raw_key:
+        raise HTTPException(status_code=401, detail="Missing API key.")
+    key_record = await validate_api_key(raw_key)
+    if not key_record:
+        raise HTTPException(status_code=403, detail="Invalid API key.")
+    return {
+      "name":     key_record.get("widget_name") or "Assistant",
+      "logo_url": key_record.get("logo_url") or "",
+      "theme":    key_record.get("theme") or "light",
+    }
+
+
 class PublicChatRequest(BaseModel):
     message:  str
     agent_id: str
-    name:     str = ""
 
 
 @router.post("/public/chat")
@@ -143,13 +168,15 @@ async def public_chat(request: Request, body: PublicChatRequest):
     if balance["tokens_remaining"] <= 0:
         raise HTTPException(status_code=402, detail="Token limit reached.")
 
-    # 7. Message length check
-    message = body.message.strip()[:2000]
+    # 7. Message length check — use key's max_input_chars
+    max_chars = key_record.get("max_input_chars") or 2000
+    message = body.message.strip()[:max_chars]
     if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty.")
 
     # 8. Run pipeline
-    agent_name = key_record.get("widget_name") or body.name or "Assistant"
+    agent_name = key_record.get("widget_name") or "Assistant"
+    max_output = key_record.get("max_output_tokens") or 500
 
     classified = await classify_intent(user_message=message, system_instructions="")
     intent = classified.get("intent", "single")
@@ -187,6 +214,7 @@ async def public_chat(request: Request, body: PublicChatRequest):
         agent_name=agent_name,
         agent_instructions="",
         search_queries=search_queries,
+        max_output_tokens=max_output,
     )
 
     await insert_query_event(
