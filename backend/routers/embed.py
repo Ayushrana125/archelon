@@ -199,7 +199,7 @@ async def public_chat(request: Request, body: PublicChatRequest):
             user_message=message,
             agent_response=answer,
         )
-        return {"answer": answer, "sources": []}
+        return {"answer": answer, "intent": "smalltalk", "sources": []}
 
     analysed = await analyse_query(message, intent=intent)
     search_queries = analysed.get("search_queries") or [message]
@@ -229,4 +229,4 @@ async def public_chat(request: Request, body: PublicChatRequest):
         agent_response=result["answer"],
     )
 
-    return {"answer": result["answer"], "sources": result["sources"]}
+    return {"answer": result["answer"], "intent": intent, "sources": result["sources"]}

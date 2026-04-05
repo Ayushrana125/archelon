@@ -508,7 +508,8 @@
     // Bold and italic
     html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<b><em>$1</em></b>');
     html = html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
-    html = html.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+    // Only match italic if surrounded by spaces or start/end — avoids false matches
+    html = html.replace(/(^|\s)\*([^\s*][^*]*)\*($|\s)/gm, '$1<em>$2</em>$3');
     // Unordered lists
     html = html.replace(/^[\-\*] (.+)$/gm, '<div style="display:flex;gap:6px;margin:2px 0;"><span style="color:#9ca3af;flex-shrink:0;">•</span><span>$1</span></div>');
     // Ordered lists
@@ -727,16 +728,7 @@
     input.style.height = 'auto';
     setInputEnabled(false);
     addUserMessage(text);
-
-    // Show dots for small talk, steps for RAG — backend returns intent in response
-    // Start with dots, upgrade to steps if backend takes > 1.5s (RAG query)
-    let thinkingEl = showDots();
-    let upgradedToSteps = false;
-    const upgradeTimer = setTimeout(() => {
-      removeThinking();
-      thinkingEl = showThinking();
-      upgradedToSteps = true;
-    }, 400);
+    showDots();
 
     try {
       const res = await fetch(`${API_BASE}/api/public/chat`, {
@@ -748,7 +740,6 @@
         body: JSON.stringify({ message: text, agent_id: AGENT_ID }),
       });
 
-      clearTimeout(upgradeTimer);
       removeThinking();
 
       if (res.status === 429) {
@@ -759,10 +750,15 @@
         addBotMessage('Something went wrong. Try again in a moment.');
       } else {
         const data = await res.json();
+        // If RAG query, briefly show steps before answer for context
+        if (data.intent && data.intent !== 'smalltalk') {
+          showThinking();
+          await new Promise(r => setTimeout(r, 600));
+          removeThinking();
+        }
         addBotMessage(data.answer || "I couldn't find an answer. Try rephrasing your question.");
       }
     } catch {
-      clearTimeout(upgradeTimer);
       removeThinking();
       addBotMessage("Couldn't reach the server. Try again in a moment.");
     }
