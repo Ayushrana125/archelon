@@ -50,16 +50,16 @@
       letter-spacing: 0.01em;
     }
     #archelon-window {
-      position: fixed; bottom: 92px; right: 24px; z-index: 99998;
+      position: fixed; z-index: 99998;
       width: 360px; height: 540px; border-radius: 20px;
       background: #fff; box-shadow: 0 8px 40px rgba(0,0,0,0.18);
       display: flex; flex-direction: column; overflow: hidden;
       border: 1px solid #e5e7eb;
-      transform: scale(0.95) translateY(10px); opacity: 0;
+      transform: scale(0.95); opacity: 0;
       transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), opacity 0.25s ease;
       pointer-events: none;
     }
-    #archelon-window.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
+    #archelon-window.open { transform: scale(1); opacity: 1; pointer-events: all; }
     #archelon-header {
       padding: 14px 16px; display: flex; align-items: center; gap: 10px;
       background: linear-gradient(135deg, #0d0d0d, #1a1a1a); flex-shrink: 0;
@@ -572,9 +572,49 @@
     sendBtn.classList.toggle('active', enabled && input.value.trim().length > 0);
   }
 
+  // ── Smart window positioning ─────────────────────────────────────────────
+  function positionWindow() {
+    const GAP = 10;
+    const WIN_W = 360;
+    const WIN_H = 540;
+    const fab_rect = fab.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Horizontal: align with FAB right edge, clamp so window doesn't go off screen
+    let left = fab_rect.right - WIN_W;
+    if (left < 8) left = 8;
+    if (left + WIN_W > vw - 8) left = vw - WIN_W - 8;
+
+    // Vertical: prefer opening above FAB, fall back to below if not enough space
+    const spaceAbove = fab_rect.top;
+    const spaceBelow = vh - fab_rect.bottom;
+
+    let top;
+    if (spaceAbove >= WIN_H + GAP) {
+      // Enough room above — open above FAB
+      top = fab_rect.top - WIN_H - GAP;
+    } else if (spaceBelow >= WIN_H + GAP) {
+      // Not enough above — open below FAB
+      top = fab_rect.bottom + GAP;
+    } else {
+      // Neither fits perfectly — pick whichever side has more space, clamp to viewport
+      if (spaceAbove >= spaceBelow) {
+        top = Math.max(8, fab_rect.top - WIN_H - GAP);
+      } else {
+        top = fab_rect.bottom + GAP;
+        if (top + WIN_H > vh - 8) top = vh - WIN_H - 8;
+      }
+    }
+
+    win.style.left = left + 'px';
+    win.style.top  = top  + 'px';
+  }
+
   // ── Toggle chat ───────────────────────────────────────────────────────────
   function toggleChat() {
     isOpen = !isOpen;
+    if (isOpen) positionWindow();
     win.classList.toggle('open', isOpen);
     fabLogo.style.display = isOpen ? 'none' : 'flex';
     fab.style.paddingLeft = isOpen ? '20px' : '8px';
@@ -652,6 +692,10 @@
 
   document.addEventListener('click', (e) => {
     if (isOpen && !root.contains(e.target)) toggleChat();
+  });
+
+  window.addEventListener('resize', () => {
+    if (isOpen) positionWindow();
   });
 
 })();
