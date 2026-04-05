@@ -54,16 +54,15 @@ async def validate_api_key(raw_key: str) -> dict | None:
     return record
 
 
-async def update_key_settings(agent_id: str, widget_name: str = None, allowed_origins: list = None, logo_url: str = None):
-    """Update widget name, allowed origins, and logo without regenerating the key."""
+async def update_key_settings(agent_id: str, widget_name: str = None, allowed_origins: list = None, logo_url: str = None, theme: str = None, max_input_chars: int = None, max_output_tokens: int = None):
     db = get_supabase()
     updates = {}
-    if widget_name is not None:
-        updates["widget_name"] = widget_name
-    if allowed_origins is not None:
-        updates["allowed_origins"] = allowed_origins
-    if logo_url is not None:
-        updates["logo_url"] = logo_url
+    if widget_name is not None:      updates["widget_name"]      = widget_name
+    if allowed_origins is not None:  updates["allowed_origins"]  = allowed_origins
+    if logo_url is not None:         updates["logo_url"]         = logo_url
+    if theme is not None:            updates["theme"]            = theme
+    if max_input_chars is not None:  updates["max_input_chars"]  = max_input_chars
+    if max_output_tokens is not None: updates["max_output_tokens"] = max_output_tokens
     if updates:
         db.table("api_keys").update(updates).eq("agent_id", agent_id).execute()
 

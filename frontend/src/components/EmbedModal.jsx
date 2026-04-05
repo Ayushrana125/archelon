@@ -114,6 +114,32 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
     }
   };
 
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const handleSaveSettings = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/embed/${agentId}/settings`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({
+          widget_name:       savedName || agentName,
+          allowed_origins:   domains,
+          theme,
+          max_input_chars:   maxInputChars,
+          max_output_tokens: maxOutputTokens,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to save');
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -277,7 +303,7 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
                       <div className="px-4 py-3 flex items-center gap-2.5" style={{ background: `linear-gradient(135deg, #0d0d0d, #1a1a1a)` }}>
                         <div className="relative flex-shrink-0">
                           <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: `${TEAL}25` }}>
-                            <img src="/Archelon_logo.png" alt="" className="w-5 h-5 object-contain" />
+                            <img src={logoUrl || '/Archelon_logo.png'} alt="" className="w-5 h-5 object-contain" />
                           </div>
                           <div className="absolute bottom-0 right-0 w-2 h-2 rounded-full border border-gray-900" style={{ background: '#22c55e' }} />
                         </div>
@@ -572,6 +598,21 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
                     </div>
                   </div>
                 </div>
+
+                {/* Save Changes button */}
+                {apiKey && (
+                  <div className="flex items-center gap-3 py-2 border-t border-gray-100 dark:border-gray-800">
+                    <button
+                      onClick={handleSaveSettings}
+                      disabled={loading}
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60 transition-opacity hover:opacity-90"
+                      style={{ background: `linear-gradient(135deg, ${TEAL}, #1A73E8)` }}
+                    >
+                      {loading ? 'Saving...' : saveSuccess ? '✓ Saved' : 'Save Changes'}
+                    </button>
+                    <p className="text-xs text-gray-400">Updates widget name, domains, theme and limits</p>
+                  </div>
+                )}
 
                 {/* Script snippet */}
                 <div>

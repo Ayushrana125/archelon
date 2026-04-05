@@ -51,8 +51,11 @@ class GenerateKeyRequest(BaseModel):
 
 
 class UpdateSettingsRequest(BaseModel):
-    widget_name:     str = None
-    allowed_origins: list[str] = None
+    widget_name:       str = None
+    allowed_origins:   list[str] = None
+    theme:             str = None
+    max_input_chars:   int = None
+    max_output_tokens: int = None
 
 
 @router.post("/embed/{agent_id}/generate")
@@ -79,7 +82,7 @@ async def update_settings(agent_id: str, body: UpdateSettingsRequest, current_us
     agent = await agents_db.get_agent_by_id(agent_id, current_user["user_id"])
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
-    await update_key_settings(agent_id, body.widget_name, body.allowed_origins)
+    await update_key_settings(agent_id, body.widget_name, body.allowed_origins, theme=body.theme, max_input_chars=body.max_input_chars, max_output_tokens=body.max_output_tokens)
     return {"ok": True}
 
 
