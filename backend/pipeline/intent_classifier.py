@@ -46,7 +46,7 @@ Rules for thinking:
 async def classify_intent(user_message: str, system_instructions: str = "") -> dict:
     try:
         llm = ChatMistralAI(
-            model="mistral-large-latest",
+            model="mistral-small-latest",
             api_key=os.getenv("MISTRAL_API_KEY_1"),
         )
         prompt = f"{system_instructions}\n\n{_SYSTEM_PROMPT}".strip() if system_instructions else _SYSTEM_PROMPT

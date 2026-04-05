@@ -40,7 +40,7 @@ async def handle_smalltalk(
 ) -> str:
     try:
         llm = ChatMistralAI(
-            model="mistral-large-latest",
+            model="mistral-small-latest",
             api_key=os.getenv("MISTRAL_API_KEY_1"),
         )
 
