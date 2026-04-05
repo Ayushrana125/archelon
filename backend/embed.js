@@ -69,13 +69,14 @@
     #archelon-avatar {
       width: 36px; height: 36px; border-radius: 50%; position: relative; flex-shrink: 0;
       background: rgba(0,201,177,0.2); display: flex; align-items: center; justify-content: center;
-      overflow: hidden;
+      overflow: visible;
     }
     #archelon-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     #archelon-online {
-      position: absolute; bottom: 1px; right: 1px;
-      width: 9px; height: 9px; border-radius: 50%;
+      position: absolute; bottom: -1px; right: -1px;
+      width: 10px; height: 10px; border-radius: 50%;
       background: #22c55e; border: 2px solid #0d0d0d;
+      z-index: 1;
     }
     #archelon-header-info { flex: 1; min-width: 0; }
     #archelon-header-name { font-size: 13px; font-weight: 600; color: #fff; }
@@ -115,13 +116,11 @@
     .arch-bot-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     /* Message actions */
     .arch-msg-actions {
-      display: flex; align-items: center; gap: 4px; margin-top: 4px; margin-left: 30px;
-      opacity: 0; transition: opacity 0.15s;
+      display: flex; align-items: center; gap: 6px; margin-top: 6px; margin-left: 30px;
     }
-    .arch-msg.bot:hover .arch-msg-actions { opacity: 1; }
     .arch-action-btn {
-      background: none; border: none; cursor: pointer; padding: 3px 5px;
-      border-radius: 5px; font-size: 11px; color: #9ca3af;
+      background: none; border: none; cursor: pointer; padding: 4px 6px;
+      border-radius: 6px; font-size: 11px; color: #9ca3af;
       display: flex; align-items: center; gap: 3px;
       transition: background 0.15s, color 0.15s;
     }
@@ -177,8 +176,8 @@
     }
     #archelon-input {
       flex: 1; border: 1px solid #e5e7eb; border-radius: 12px;
-      padding: 9px 12px; font-size: 13px; resize: none; outline: none;
-      max-height: 100px; min-height: 38px; line-height: 1.4;
+      padding: 11px 14px; font-size: 13px; resize: none; outline: none;
+      max-height: 120px; min-height: 52px; line-height: 1.5;
       font-family: inherit; color: #111827; background: #f9fafb;
       transition: border-color 0.15s;
     }
@@ -193,13 +192,23 @@
     #archelon-send.active { opacity: 1; }
     #archelon-send svg { width: 16px; height: 16px; color: white; }
     #archelon-footer {
-      padding: 5px 14px 9px; text-align: center; font-size: 10px;
-      color: #9ca3af; background: #fff; flex-shrink: 0;
+      padding: 7px 14px 10px; text-align: center; font-size: 11px;
+      color: #6b7280; background: #fff; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
     }
-    #archelon-footer a { color: ${TEAL}; text-decoration: none; font-weight: 500; }
+    #archelon-footer a {
+      color: ${TEAL}; text-decoration: none; font-weight: 600;
+      display: flex; align-items: center; gap: 4px;
+    }
     #archelon-footer a:hover { text-decoration: underline; }
+    #archelon-footer-logo { width: 14px; height: 14px; object-fit: contain; }
+    #archelon-widget-root.dark #archelon-footer { background: #1a1a1a; color: #6b7280; }
     @media (max-width: 480px) {
-      #archelon-window { width: calc(100vw - 24px); right: 12px; bottom: 80px; height: 70vh; }
+      #archelon-window {
+        width: 100% !important; height: 100dvh !important;
+        top: 0 !important; left: 0 !important;
+        border-radius: 0; border: none;
+      }
       #archelon-fab { bottom: 16px; right: 16px; }
     }
     /* Pre-chat screen */
@@ -260,7 +269,6 @@
     #archelon-widget-root.dark #archelon-input-area { background: #1a1a1a; border-color: #2a2a2a; }
     #archelon-widget-root.dark #archelon-input { background: #2a2a2a; border-color: #333; color: #e5e7eb; }
     #archelon-widget-root.dark #archelon-input:focus { border-color: ${TEAL}; background: #2a2a2a; }
-    #archelon-widget-root.dark #archelon-footer { background: #1a1a1a; }
     #archelon-widget-root.dark pre { background: #2a2a2a !important; }
     #archelon-widget-root.dark code { background: #2a2a2a !important; color: #e5e7eb; }
   `;
@@ -283,6 +291,11 @@
         <button id="archelon-header-close" aria-label="Close" style="background:none;border:none;cursor:pointer;color:#6b7280;padding:4px;border-radius:6px;display:flex;align-items:center;justify-content:center;">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+        <button id="archelon-new-chat" aria-label="New conversation" title="New conversation" style="background:none;border:none;cursor:pointer;color:#6b7280;padding:4px;border-radius:6px;display:flex;align-items:center;justify-content:center;">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
           </svg>
         </button>
       </div>
@@ -319,7 +332,7 @@
           </svg>
         </button>
       </div>
-      <div id="archelon-footer">Powered by <a href="https://archelon.cloud" target="_blank">Archelon</a></div>
+      <div id="archelon-footer">Powered by <a href="https://archelon.cloud" target="_blank"><img id="archelon-footer-logo" src="${API_BASE}/Archelon_logo.png" alt="" />Archelon</a></div>
     </div>
     <button id="archelon-fab" aria-label="Open chat">
       <div id="archelon-fab-logo"></div>
@@ -338,6 +351,7 @@
   const sendBtn    = document.getElementById('archelon-send');
   const closeBtn       = document.getElementById('archelon-close');
   const headerCloseBtn = document.getElementById('archelon-header-close');
+  const newChatBtn     = document.getElementById('archelon-new-chat');
   const header     = document.getElementById('archelon-header');
   const headerName = document.getElementById('archelon-header-name');
   const disclaimer = document.getElementById('archelon-disclaimer');
@@ -360,6 +374,49 @@
   let isLoading = false;
   let greeted   = false;
   let chatStarted = false;
+  let fabClickCount = 0;
+  let easterEggTooltip = null;
+
+  const EASTER_EGGS = [
+    { at: 5,  msg: "Hmm... I see what you\'re doing 🤔" },
+    { at: 8,  msg: "Still going? Bold move." },
+    { at: 12, msg: "You cannot do this all day long..." },
+    { at: 16, msg: "Okay I\'m impressed. But seriously, ask me something." },
+    { at: 20, msg: "Fine. I\'ll be here. 🙏" },
+  ];
+
+  function showFabTooltip(msg) {
+    if (easterEggTooltip) easterEggTooltip.remove();
+    const tip = document.createElement('div');
+    tip.style.cssText = `
+      position: fixed; z-index: 100000;
+      background: #111827; color: #fff;
+      font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 7px 12px; border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      white-space: nowrap; pointer-events: none;
+      opacity: 0; transition: opacity 0.2s;
+    `;
+    tip.textContent = msg;
+    document.body.appendChild(tip);
+    easterEggTooltip = tip;
+
+    // Position above the FAB
+    const rect = fab.getBoundingClientRect();
+    tip.style.left = (rect.right - tip.offsetWidth) + 'px';
+    tip.style.top  = (rect.top - tip.offsetHeight - 10) + 'px';
+    // Recalc after paint since offsetWidth is 0 before render
+    requestAnimationFrame(() => {
+      tip.style.left = (rect.right - tip.offsetWidth) + 'px';
+      tip.style.top  = (rect.top - tip.offsetHeight - 10) + 'px';
+      tip.style.opacity = '1';
+    });
+
+    setTimeout(() => {
+      tip.style.opacity = '0';
+      setTimeout(() => { if (tip.parentNode) tip.remove(); if (easterEggTooltip === tip) easterEggTooltip = null; }, 300);
+    }, 2500);
+  }
 
   // ── Rotating greetings ────────────────────────────────────────────────────
   const GREETINGS = [
@@ -483,20 +540,34 @@
     wrap.innerHTML = `
       <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
       <div style="display:flex;flex-direction:column;max-width:78%;">
-        <div class="arch-bubble" style="max-width:100%;">${parseMarkdown(text)}</div>
+        <div class="arch-bubble" style="max-width:100%;"></div>
         <div class="arch-msg-actions">
           <button class="arch-action-btn arch-thumb-up" title="Good response">
-            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
+            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
           </button>
           <button class="arch-action-btn arch-thumb-down" title="Bad response">
-            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 10v2a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"/></svg>
+            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 10v2a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"/></svg>
           </button>
           <button class="arch-action-btn arch-copy" title="Copy">
-            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
           </button>
         </div>
       </div>
     `;
+    const bubble = wrap.querySelector('.arch-bubble');
+    msgs.appendChild(wrap);
+    scrollToBottom();
+
+    // Typewriter — reveal word by word
+    const words = text.split(' ');
+    let i = 0;
+    const tick = setInterval(() => {
+      i++;
+      bubble.innerHTML = parseMarkdown(words.slice(0, i).join(' '));
+      scrollToBottom();
+      if (i >= words.length) clearInterval(tick);
+    }, 30);
+
     wrap.querySelector('.arch-thumb-up').addEventListener('click', function() {
       this.classList.toggle('active');
       wrap.querySelector('.arch-thumb-down').classList.remove('active');
@@ -507,13 +578,11 @@
     });
     wrap.querySelector('.arch-copy').addEventListener('click', function() {
       navigator.clipboard.writeText(rawText);
-      this.innerHTML = '<svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+      this.innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
       setTimeout(() => {
-        this.innerHTML = '<svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
+        this.innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
       }, 1500);
     });
-    msgs.appendChild(wrap);
-    scrollToBottom();
   }
 
   function addUserMessage(text) {
@@ -558,17 +627,19 @@
     msgs.appendChild(el);
     scrollToBottom();
 
+    // Advance through steps but STOP at the last one — keep it pulsing until answer arrives
     let current = 0;
     const interval = setInterval(() => {
       const prev = el.querySelector(`#arch-step-${current}`);
+      const next = el.querySelector(`#arch-step-${current + 1}`);
+      if (!next) {
+        // At last step — stop advancing, keep it active and pulsing forever
+        clearInterval(interval);
+        return;
+      }
       if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
       current++;
-      if (current < STEPS.length) {
-        const next = el.querySelector(`#arch-step-${current}`);
-        if (next) next.classList.add('active');
-      } else {
-        clearInterval(interval);
-      }
+      next.classList.add('active');
     }, 1200);
 
     el._interval = interval;
@@ -634,6 +705,10 @@
     if (isOpen) {
       positionWindow();
       if (!chatStarted) setRandomGreeting();
+    } else {
+      fabClickCount++;
+      const egg = EASTER_EGGS.find(e => e.at === fabClickCount);
+      if (egg) showFabTooltip(egg.msg);
     }
     win.classList.toggle('open', isOpen);
     fabLogo.style.display = isOpen ? 'none' : 'flex';
@@ -661,7 +736,16 @@
     input.style.height = 'auto';
     setInputEnabled(false);
     addUserMessage(text);
-    showThinking();
+
+    // Show dots for small talk, steps for RAG — backend returns intent in response
+    // Start with dots, upgrade to steps if backend takes > 1.5s (RAG query)
+    let thinkingEl = showDots();
+    let upgradedToSteps = false;
+    const upgradeTimer = setTimeout(() => {
+      removeThinking();
+      thinkingEl = showThinking();
+      upgradedToSteps = true;
+    }, 1500);
 
     try {
       const res = await fetch(`${API_BASE}/api/public/chat`, {
@@ -673,21 +757,23 @@
         body: JSON.stringify({ message: text, agent_id: AGENT_ID }),
       });
 
+      clearTimeout(upgradeTimer);
       removeThinking();
 
       if (res.status === 429) {
-        addBotMessage("You're sending messages too quickly. Please slow down.");
+        addBotMessage("You're sending messages too fast. Give it a moment.");
       } else if (res.status === 402) {
-        addBotMessage('This agent has reached its usage limit. Please try again later.');
+        addBotMessage("This agent has reached its usage limit for now. Try again later.");
       } else if (!res.ok) {
-        addBotMessage('Something went wrong. Please try again.');
+        addBotMessage('Something went wrong. Try again in a moment.');
       } else {
         const data = await res.json();
-        addBotMessage(data.answer || "I couldn't find an answer. Please try rephrasing.");
+        addBotMessage(data.answer || "I couldn't find an answer. Try rephrasing your question.");
       }
     } catch {
+      clearTimeout(upgradeTimer);
       removeThinking();
-      addBotMessage('Could not connect. Please check your internet connection.');
+      addBotMessage("Couldn't reach the server. Try again in a moment.");
     }
 
     isLoading = false;
@@ -696,6 +782,16 @@
   }
 
   // ── Events ────────────────────────────────────────────────────────────────
+  newChatBtn.addEventListener('click', () => {
+    msgs.innerHTML = '';
+    chatStarted = false;
+    header.classList.remove('visible');
+    prechat.style.display = 'flex';
+    msgs.style.display = 'none';
+    disclaimer.style.display = 'none';
+    setRandomGreeting();
+  });
+
   fab.addEventListener('click', toggleChat);
   closeBtn.addEventListener('click', toggleChat);
   headerCloseBtn.addEventListener('click', toggleChat);
