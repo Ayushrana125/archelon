@@ -69,15 +69,9 @@
     #archelon-avatar {
       width: 36px; height: 36px; border-radius: 50%; position: relative; flex-shrink: 0;
       background: rgba(0,201,177,0.2); display: flex; align-items: center; justify-content: center;
-      overflow: visible;
+      overflow: hidden;
     }
     #archelon-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-    #archelon-online {
-      position: absolute; bottom: -1px; right: -1px;
-      width: 10px; height: 10px; border-radius: 50%;
-      background: #22c55e; border: 2px solid #0d0d0d;
-      z-index: 1;
-    }
     #archelon-header-info { flex: 1; min-width: 0; }
     #archelon-header-name { font-size: 13px; font-weight: 600; color: #fff; }
     #archelon-header-sub { font-size: 11px; color: #9ca3af; margin-top: 1px; }
@@ -282,7 +276,6 @@
       <div id="archelon-header">
         <div id="archelon-avatar">
           <img id="archelon-avatar-img" src="" alt="" style="opacity:0;transition:opacity 0.2s;" />
-          <div id="archelon-online"></div>
         </div>
         <div id="archelon-header-info">
           <div id="archelon-header-name">...</div>
@@ -558,14 +551,19 @@
     msgs.appendChild(wrap);
     scrollToBottom();
 
-    // Typewriter — reveal word by word
+    // Typewriter — reveal word by word, apply markdown only at the end
     const words = text.split(' ');
     let i = 0;
     const tick = setInterval(() => {
       i++;
-      bubble.innerHTML = parseMarkdown(words.slice(0, i).join(' '));
+      const partial = words.slice(0, i).join(' ');
+      if (i >= words.length) {
+        bubble.innerHTML = parseMarkdown(partial);
+        clearInterval(tick);
+      } else {
+        bubble.textContent = partial;
+      }
       scrollToBottom();
-      if (i >= words.length) clearInterval(tick);
     }, 30);
 
     wrap.querySelector('.arch-thumb-up').addEventListener('click', function() {
@@ -745,7 +743,7 @@
       removeThinking();
       thinkingEl = showThinking();
       upgradedToSteps = true;
-    }, 1500);
+    }, 800);
 
     try {
       const res = await fetch(`${API_BASE}/api/public/chat`, {
