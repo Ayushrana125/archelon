@@ -108,7 +108,7 @@ CONTEXT BLOCK — answer only from what is written here:
         total_tokens   = system_tokens + query_tokens
 
         llm = ChatMistralAI(
-            model="mistral-small-latest",    #mistral-small-latest   #mistral-large-latest
+            model="mistral-large-latest",    #mistral-small-latest   #mistral-large-latest
             api_key=os.getenv("MISTRAL_API_KEY_1"),
             max_tokens=max_output_tokens if max_output_tokens else None,
         )
