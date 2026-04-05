@@ -27,6 +27,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
   const [chatBusy, setChatBusy] = useState(false);
   const [pendingAgent, setPendingAgent] = useState(null);
   const [deployFocusId, setDeployFocusId] = useState(null);
+  const [embedStatuses, setEmbedStatuses] = useState({});
 
   const refreshTokenBalance = () => {
     if (!user) return;
@@ -38,13 +39,33 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
       .catch(() => {});
   };
 
-  useEffect(() => { refreshTokenBalance(); }, [user?.id]);
-
+  // Prefetch everything on login in parallel
   useEffect(() => {
-    fetchAgents(true)
-      .then(agents => setSavedAgents(agents))
-      .catch(() => setSavedAgents([]));
-  }, []);
+    if (!user) return;
+    Promise.all([
+      fetch(`${import.meta.env.VITE_API_URL}/api/chat/balance`, {
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      }).then(r => r.json()).catch(() => null),
+      fetchAgents(true).catch(() => []),
+    ]).then(([balance, agents]) => {
+      if (balance) setTokenBalance(balance);
+      const list = agents || [];
+      setSavedAgents(list);
+      // Fetch embed status for all non-system agents in parallel
+      const deployable = list.filter(a => !a.is_system);
+      Promise.all(
+        deployable.map(a =>
+          fetch(`${import.meta.env.VITE_API_URL}/api/embed/${a.id}`, {
+            headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          }).then(r => r.json()).then(d => [a.id, d]).catch(() => [a.id, null])
+        )
+      ).then(results => {
+        const map = {};
+        results.forEach(([id, d]) => { if (d) map[id] = d; });
+        setEmbedStatuses(map);
+      });
+    });
+  }, [user?.id]);
 
   useEffect(() => {
     if (!agentData?.id) { setAgentDocuments([]); return; }
@@ -203,6 +224,8 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
           user={user}
           onDashboard={() => setMode('dashboard')}
           tokenBalance={tokenBalance}
+          embedStatuses={embedStatuses}
+          onEmbedStatusChange={(agentId, status) => setEmbedStatuses(prev => ({ ...prev, [agentId]: status }))}
         />
         <div className="flex">
           <div className={`${sidebarCollapsed ? 'w-14' : 'w-64'} flex-shrink-0 transition-all duration-300`} />

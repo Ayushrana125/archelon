@@ -24,14 +24,31 @@
     #archelon-widget-root * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
     #archelon-fab {
       position: fixed; bottom: 24px; right: 24px; z-index: 99999;
-      width: 56px; height: 56px; border-radius: 50%;
-      background: linear-gradient(135deg, ${TEAL}, ${BLUE});
-      border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(0,201,177,0.4);
-      display: flex; align-items: center; justify-content: center;
-      transition: transform 0.2s, box-shadow 0.2s;
+      height: 52px; padding: 0 18px 0 8px;
+      border-radius: 999px;
+      background: #0a0a0a;
+      border: 1.5px solid rgba(255,255,255,0.18);
+      cursor: pointer;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.55), 0 1px 8px rgba(0,0,0,0.4);
+      display: flex; align-items: center; gap: 10px;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+      opacity: 0; pointer-events: none; white-space: nowrap;
     }
-    #archelon-fab:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(0,201,177,0.5); }
-    #archelon-fab svg { width: 24px; height: 24px; color: white; }
+    #archelon-fab.ready { opacity: 1; pointer-events: all; }
+    #archelon-fab:hover {
+      transform: scale(1.04);
+      box-shadow: 0 6px 32px rgba(0,0,0,0.65), 0 2px 12px rgba(0,0,0,0.5);
+      border-color: rgba(255,255,255,0.28);
+    }
+    #archelon-fab-logo {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
+    }
+    #archelon-fab-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    #archelon-fab-text {
+      font-size: 13px; font-weight: 500; color: #fff;
+      letter-spacing: 0.01em;
+    }
     #archelon-window {
       position: fixed; bottom: 92px; right: 24px; z-index: 99998;
       width: 360px; height: 540px; border-radius: 20px;
@@ -202,7 +219,7 @@
     <div id="archelon-window">
       <div id="archelon-header">
         <div id="archelon-avatar">
-          <img src="${API_BASE}/Archelon_logo.png" alt="" onerror="this.style.display='none'" />
+          <img id="archelon-avatar-img" src="" alt="" style="opacity:0;transition:opacity 0.2s;" />
           <div id="archelon-online"></div>
         </div>
         <div id="archelon-header-info">
@@ -228,10 +245,8 @@
       <div id="archelon-footer">Powered by <a href="https://archelon.cloud" target="_blank">Archelon</a></div>
     </div>
     <button id="archelon-fab" aria-label="Open chat">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-      </svg>
+      <div id="archelon-fab-logo"></div>
+      <span id="archelon-fab-text">Ask ...</span>
     </button>
   `;
   document.body.appendChild(root);
@@ -239,6 +254,8 @@
   // ── DOM refs ──────────────────────────────────────────────────────────────
   const win        = document.getElementById('archelon-window');
   const fab        = document.getElementById('archelon-fab');
+  const fabLogo    = document.getElementById('archelon-fab-logo');
+  const fabText    = document.getElementById('archelon-fab-text');
   const msgs       = document.getElementById('archelon-messages');
   const input      = document.getElementById('archelon-input');
   const sendBtn    = document.getElementById('archelon-send');
@@ -276,20 +293,39 @@
         }
         if (d.logo_url) {
           LOGO = d.logo_url;
-          const avatarImg = document.querySelector('#archelon-avatar img');
-          if (avatarImg) avatarImg.src = LOGO;
-          // Replace FAB icon with custom logo
-          fab.innerHTML = `<img src="${d.logo_url}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:50%;" onerror="this.style.display='none'" />`;
+        }
+        // Set FAB logo
+        fabLogo.innerHTML = `<img src="${LOGO}" alt="" />`;
+        fabText.textContent = `Ask ${NAME}`;
+        fab.setAttribute('aria-label', `Ask ${NAME}`);
+        // Always set header avatar to resolved logo
+        const avatarImg = document.getElementById('archelon-avatar-img');
+        if (avatarImg) {
+          avatarImg.src = LOGO;
+          avatarImg.onload = () => { avatarImg.style.opacity = '1'; };
+          avatarImg.onerror = () => { avatarImg.style.opacity = '1'; };
         }
         if (d.theme === 'dark') {
           THEME = 'dark';
           root.classList.add('dark');
         }
       } else {
+        fabLogo.innerHTML = `<img src="${LOGO}" alt="" />`;
+        fabText.textContent = `Ask ${NAME}`;
+        const avatarImg = document.getElementById('archelon-avatar-img');
+        if (avatarImg) { avatarImg.src = LOGO; avatarImg.style.opacity = '1'; }
         headerName.textContent = NAME;
       }
+      fab.classList.add('ready');
     })
-    .catch(() => { headerName.textContent = NAME; });
+    .catch(() => {
+      fabLogo.innerHTML = `<img src="${LOGO}" alt="" />`;
+      fabText.textContent = `Ask ${NAME}`;
+      const avatarImg = document.getElementById('archelon-avatar-img');
+      if (avatarImg) { avatarImg.src = LOGO; avatarImg.style.opacity = '1'; }
+      headerName.textContent = NAME;
+      fab.classList.add('ready');
+    });
 
   // ── Markdown parser — bold only ───────────────────────────────────────────
   function parseMarkdown(text) {
@@ -306,14 +342,9 @@
     const msg = document.createElement('div');
     msg.className = 'arch-msg bot';
     msg.innerHTML = `
-      <div class="arch-bot-avatar">
-        <img src="${API_BASE}/Archelon_logo.png" alt="" onerror="this.style.display='none'" />
-      </div>
+      <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
       <div class="arch-bubble">${parseMarkdown(text)}</div>
     `;
-    // Update avatar with dynamic logo after creation
-    const img = msg.querySelector('img');
-    if (img) img.src = LOGO;
     msgs.appendChild(msg);
     scrollToBottom();
   }
@@ -331,17 +362,11 @@
     el.className = 'arch-msg bot';
     el.id = 'arch-thinking';
     el.innerHTML = `
-      <div class="arch-bot-avatar">
-        <img src="${API_BASE}/Archelon_logo.png" alt="" onerror="this.style.display='none'" />
-      </div>
+      <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
       <div class="arch-bubble" style="padding:10px 16px;">
-        <span class="arch-dots">
-          <span></span><span></span><span></span>
-        </span>
+        <span class="arch-dots"><span></span><span></span><span></span></span>
       </div>
     `;
-    const img = el.querySelector('img');
-    if (img) img.src = LOGO;
     msgs.appendChild(el);
     scrollToBottom();
     return el;
@@ -360,9 +385,7 @@
     `).join('');
 
     el.innerHTML = `
-      <div class="arch-bot-avatar">
-        <img src="${API_BASE}/Archelon_logo.png" alt="" onerror="this.style.display='none'" />
-      </div>
+      <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
       <div class="arch-thinking-wrap">${stepsHtml}</div>
     `;
     msgs.appendChild(el);
@@ -403,6 +426,7 @@
   function toggleChat() {
     isOpen = !isOpen;
     win.classList.toggle('open', isOpen);
+    fabText.textContent = isOpen ? 'Close' : `Ask ${NAME}`;
     if (isOpen && !greeted) {
       greeted = true;
       addBotMessage(`Hi there! 👋 I'm ${NAME}. How can I help you today?`);

@@ -65,7 +65,7 @@ function BugReportModal({ onClose }) {
   );
 }
 
-function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, onEditAgent, user, onDashboard, tokenBalance, onDeploy }) {
+function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, onEditAgent, user, onDashboard, tokenBalance, onDeploy, embedStatuses, onEmbedStatusChange }) {
   const [showEmbed, setShowEmbed] = useState(false);
   const [showBug, setShowBug] = useState(false);
 
@@ -152,7 +152,7 @@ function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, 
         </div>
       </div>
     </nav>
-    {showEmbed && <EmbedModal agentId={agentData?.id} agentName={agentData?.name} user={user} onClose={() => setShowEmbed(false)} />}
+    {showEmbed && <EmbedModal agentId={agentData?.id} agentName={agentData?.name} user={user} prefetchedStatus={embedStatuses?.[agentData?.id]} onStatusChange={onEmbedStatusChange} onClose={() => setShowEmbed(false)} />}
     {showBug && <BugReportModal onClose={() => setShowBug(false)} />}
     </>
   );

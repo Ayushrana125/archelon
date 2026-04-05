@@ -25,23 +25,21 @@ function CopyButton({ text, label = 'Copy' }) {
   );
 }
 
-function EmbedModal({ agentId, agentName, onClose, user }) {
+function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onStatusChange }) {
   const [enabled, setEnabled] = useState(false);
 
-  // Persistent state — survives toggle off/on
   const savedNameRef = useRef('');
-  const apiKeyRef = useRef(null); // null = not generated, string = generated
+  const apiKeyRef = useRef(null);
   const domainsRef = useRef([]);
 
   const [savedName, setSavedName] = useState('');
   const [editingName, setEditingName] = useState(false);
   const [shortName, setShortName] = useState('');
-  const [apiKey, setApiKey] = useState(null); // null = not generated
+  const [apiKey, setApiKey] = useState(null);
   const [keyJustGenerated, setKeyJustGenerated] = useState(false);
   const [domains, setDomains] = useState([]);
   const [domainInput, setDomainInput] = useState('');
   const [showSteps, setShowSteps] = useState(false);
-
   const [fetchDone, setFetchDone] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [showDisableConfirm, setShowDisableConfirm] = useState(false);
@@ -51,8 +49,23 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
   const [logoUploading, setLogoUploading] = useState(false);
   const [maxInputChars, setMaxInputChars] = useState(2000);
   const [maxOutputTokens, setMaxOutputTokens] = useState(500);
-
+  // Use prefetched data if available, else fetch
   useEffect(() => {
+    if (prefetchedStatus) {
+      const d = prefetchedStatus;
+      if (d.enabled) {
+        setEnabled(true);
+        setSavedName(d.widget_name || '');
+        setDomains(d.allowed_origins || []);
+        setApiKey('masked');
+        setTheme(d.theme || 'light');
+        setLogoUrl(d.logo_url || '');
+        setMaxInputChars(d.max_input_chars || 2000);
+        setMaxOutputTokens(d.max_output_tokens || 500);
+      }
+      setFetchDone(true);
+      return;
+    }
     fetch(`${import.meta.env.VITE_API_URL}/api/embed/${agentId}`, {
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
     })
@@ -94,6 +107,7 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
     setKeyJustGenerated(false);
     setShowDisableConfirm(false);
     setLoading(false);
+    onStatusChange?.(agentId, { enabled: false });
   };
 
   const displayName = savedName || agentName || 'Assistant';
@@ -110,6 +124,7 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
       if (!res.ok) throw new Error(data.detail || 'Failed to generate key');
       setApiKey(data.raw_key);
       setKeyJustGenerated(true);
+      onStatusChange?.(agentId, { enabled: true, widget_name: savedName || agentName, allowed_origins: domains, theme, max_input_chars: maxInputChars, max_output_tokens: maxOutputTokens });
     } catch (err) {
       alert(err.message);
     } finally {
@@ -373,12 +388,21 @@ function EmbedModal({ agentId, agentName, onClose, user }) {
                       </div>
                     </div>
 
-                    {/* Launcher FAB */}
-                    <div className="w-11 h-11 rounded-full shadow-xl flex items-center justify-center overflow-hidden" style={{ background: `linear-gradient(135deg, ${TEAL}, #1A73E8)` }}>
-                      {logoUrl
-                        ? <img src={logoUrl} alt="" className="w-full h-full object-cover" />
-                        : <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                      }
+                    {/* Launcher FAB — pill shape */}
+                    <div
+                      className="flex items-center gap-2 px-3 rounded-full shadow-xl"
+                      style={{
+                        height: '44px',
+                        background: '#0a0a0a',
+                        border: '1.5px solid rgba(255,255,255,0.18)',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.55)',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0">
+                        <img src={logoUrl || '/Archelon_logo.png'} alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <span className="text-xs font-medium text-white pr-1">Ask {displayName}</span>
                     </div>
                   </div>
                 </div>
