@@ -24,12 +24,12 @@
     #archelon-widget-root * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
     #archelon-fab {
       position: fixed; bottom: 24px; right: 24px; z-index: 99999;
-      height: 52px; padding: 0 18px 0 8px;
+      height: 52px; padding: 0 20px 0 8px;
       border-radius: 999px;
-      background: #0a0a0a;
-      border: 1.5px solid rgba(255,255,255,0.18);
+      background: #ffffff;
+      border: 1.5px solid #e5e7eb;
       cursor: pointer;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.55), 0 1px 8px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12), 0 1px 6px rgba(0,0,0,0.08);
       display: flex; align-items: center; gap: 10px;
       transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
       opacity: 0; pointer-events: none; white-space: nowrap;
@@ -37,8 +37,8 @@
     #archelon-fab.ready { opacity: 1; pointer-events: all; }
     #archelon-fab:hover {
       transform: scale(1.04);
-      box-shadow: 0 6px 32px rgba(0,0,0,0.65), 0 2px 12px rgba(0,0,0,0.5);
-      border-color: rgba(255,255,255,0.28);
+      box-shadow: 0 6px 28px rgba(0,0,0,0.16), 0 2px 10px rgba(0,0,0,0.1);
+      border-color: #d1d5db;
     }
     #archelon-fab-logo {
       width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
@@ -46,7 +46,7 @@
     }
     #archelon-fab-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     #archelon-fab-text {
-      font-size: 13px; font-weight: 500; color: #fff;
+      font-size: 13px; font-weight: 500; color: #111827;
       letter-spacing: 0.01em;
     }
     #archelon-window {
@@ -111,6 +111,21 @@
       overflow: hidden;
     }
     .arch-bot-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    /* Message actions */
+    .arch-msg-actions {
+      display: flex; align-items: center; gap: 4px; margin-top: 4px; margin-left: 30px;
+      opacity: 0; transition: opacity 0.15s;
+    }
+    .arch-msg.bot:hover .arch-msg-actions { opacity: 1; }
+    .arch-action-btn {
+      background: none; border: none; cursor: pointer; padding: 3px 5px;
+      border-radius: 5px; font-size: 11px; color: #9ca3af;
+      display: flex; align-items: center; gap: 3px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .arch-action-btn:hover { background: #f3f4f6; color: #374151; }
+    .arch-action-btn.active { color: ${TEAL}; }
+    #archelon-widget-root.dark .arch-action-btn:hover { background: #2a2a2a; color: #e5e7eb; }
 
     /* Thinking steps */
     .arch-thinking-wrap {
@@ -185,6 +200,33 @@
       #archelon-window { width: calc(100vw - 24px); right: 12px; bottom: 80px; height: 70vh; }
       #archelon-fab { bottom: 16px; right: 16px; }
     }
+    /* Pre-chat screen */
+    #archelon-prechat {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 24px 20px; background: #f9fafb;
+      gap: 0;
+    }
+    #archelon-prechat-name {
+      position: absolute; top: 16px; left: 16px;
+      font-size: 13px; font-weight: 600; color: #111827;
+    }
+    #archelon-prechat-logo {
+      width: 64px; height: 64px; border-radius: 50%; overflow: hidden;
+      margin-bottom: 16px; flex-shrink: 0;
+    }
+    #archelon-prechat-logo img { width: 100%; height: 100%; object-fit: cover; }
+    #archelon-prechat-greeting {
+      font-size: 15px; font-weight: 500; color: #111827;
+      text-align: center; margin-bottom: 6px;
+      min-height: 24px;
+    }
+    #archelon-prechat-sub {
+      font-size: 12px; color: #6b7280; text-align: center;
+    }
+    #archelon-widget-root.dark #archelon-prechat { background: #141414; }
+    #archelon-widget-root.dark #archelon-prechat-name { color: #e5e7eb; }
+    #archelon-widget-root.dark #archelon-prechat-greeting { color: #e5e7eb; }
+    #archelon-widget-root.dark #archelon-prechat-sub { color: #6b7280; }
     .arch-dots { display: inline-flex; align-items: center; gap: 4px; }
     .arch-dots span {
       width: 6px; height: 6px; border-radius: 50%; background: #9ca3af;
@@ -209,6 +251,8 @@
     #archelon-widget-root.dark #archelon-input { background: #2a2a2a; border-color: #333; color: #e5e7eb; }
     #archelon-widget-root.dark #archelon-input:focus { border-color: ${TEAL}; background: #2a2a2a; }
     #archelon-widget-root.dark #archelon-footer { background: #1a1a1a; }
+    #archelon-widget-root.dark pre { background: #2a2a2a !important; }
+    #archelon-widget-root.dark code { background: #2a2a2a !important; color: #e5e7eb; }
   `;
   document.head.appendChild(style);
 
@@ -231,9 +275,19 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
+        <button id="archelon-theme-toggle" aria-label="Toggle theme" style="background:none;border:none;cursor:pointer;color:#6b7280;padding:4px;border-radius:6px;display:flex;align-items:center;justify-content:center;margin-left:-2px;">
+          <svg id="archelon-theme-icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          <svg id="archelon-theme-icon-sun" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+        </button>
       </div>
-      <div id="archelon-messages"></div>
-      <div id="archelon-disclaimer">Can make mistakes. Verify important information.</div>
+      <div id="archelon-prechat">
+        <div id="archelon-prechat-name">...</div>
+        <div id="archelon-prechat-logo"><img id="archelon-prechat-logo-img" src="" alt="" style="opacity:0;transition:opacity 0.2s;" /></div>
+        <div id="archelon-prechat-greeting"></div>
+        <div id="archelon-prechat-sub">How can I help you today?</div>
+      </div>
+      <div id="archelon-messages" style="display:none;"></div>
+      <div id="archelon-disclaimer" style="display:none;">Can make mistakes. Verify important information.</div>
       <div id="archelon-input-area">
         <textarea id="archelon-input" placeholder="Ask a question..." rows="1"></textarea>
         <button id="archelon-send" aria-label="Send">
@@ -262,10 +316,45 @@
   const closeBtn   = document.getElementById('archelon-close');
   const headerName = document.getElementById('archelon-header-name');
   const disclaimer = document.getElementById('archelon-disclaimer');
+  const prechat        = document.getElementById('archelon-prechat');
+  const prechatName    = document.getElementById('archelon-prechat-name');
+  const prechatLogoImg = document.getElementById('archelon-prechat-logo-img');
+  const prechatGreeting = document.getElementById('archelon-prechat-greeting');
+  const themeToggle    = document.getElementById('archelon-theme-toggle');
+  const themeIconMoon  = document.getElementById('archelon-theme-icon-moon');
+  const themeIconSun   = document.getElementById('archelon-theme-icon-sun');
+
+  themeToggle.addEventListener('click', () => {
+    THEME = THEME === 'light' ? 'dark' : 'light';
+    root.classList.toggle('dark', THEME === 'dark');
+    themeIconMoon.style.display = THEME === 'dark' ? 'none' : 'block';
+    themeIconSun.style.display  = THEME === 'dark' ? 'block' : 'none';
+  });
 
   let isOpen    = false;
   let isLoading = false;
   let greeted   = false;
+  let chatStarted = false;
+
+  // ── Rotating greetings ────────────────────────────────────────────────────
+  const GREETINGS = [
+    'Hey there! 👋',
+    'Hello! Great to see you.',
+    'Hi! Ask me anything.',
+    'Welcome! I\'m here to help.',
+    'Good to have you here! 👋',
+  ];
+  let greetingInterval = null;
+  function startGreetingRotation() {
+    const pick = () => {
+      prechatGreeting.textContent = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+    };
+    pick();
+    greetingInterval = setInterval(pick, 3000);
+  }
+  function stopGreetingRotation() {
+    if (greetingInterval) { clearInterval(greetingInterval); greetingInterval = null; }
+  }
 
   // ── Thinking steps ────────────────────────────────────────────────────────
   const STEPS = [
@@ -305,6 +394,12 @@
           avatarImg.onload = () => { avatarImg.style.opacity = '1'; };
           avatarImg.onerror = () => { avatarImg.style.opacity = '1'; };
         }
+        // Populate pre-chat screen
+        prechatName.textContent = NAME;
+        prechatLogoImg.src = LOGO;
+        prechatLogoImg.onload = () => { prechatLogoImg.style.opacity = '1'; };
+        prechatLogoImg.onerror = () => { prechatLogoImg.style.opacity = '1'; };
+        startGreetingRotation();
         if (d.theme === 'dark') {
           THEME = 'dark';
           root.classList.add('dark');
@@ -315,6 +410,10 @@
         const avatarImg = document.getElementById('archelon-avatar-img');
         if (avatarImg) { avatarImg.src = LOGO; avatarImg.style.opacity = '1'; }
         headerName.textContent = NAME;
+        prechatName.textContent = NAME;
+        prechatLogoImg.src = LOGO;
+        prechatLogoImg.style.opacity = '1';
+        startGreetingRotation();
       }
       fab.classList.add('ready');
     })
@@ -324,28 +423,79 @@
       const avatarImg = document.getElementById('archelon-avatar-img');
       if (avatarImg) { avatarImg.src = LOGO; avatarImg.style.opacity = '1'; }
       headerName.textContent = NAME;
+      prechatName.textContent = NAME;
+      prechatLogoImg.src = LOGO;
+      prechatLogoImg.style.opacity = '1';
+      startGreetingRotation();
       fab.classList.add('ready');
     });
 
-  // ── Markdown parser — bold only ───────────────────────────────────────────
+  // ── Markdown parser ────────────────────────────────────────────────────────
   function parseMarkdown(text) {
-    return text
+    // Escape HTML first
+    let html = text
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-      .replace(/\n/g, '<br>');
+      .replace(/>/g, '&gt;');
+    // Code blocks (```...```)
+    html = html.replace(/```([\s\S]*?)```/g, '<pre style="background:#f3f4f6;border-radius:8px;padding:10px 12px;font-size:12px;overflow-x:auto;margin:6px 0;"><code>$1</code></pre>');
+    // Inline code
+    html = html.replace(/`([^`]+)`/g, '<code style="background:#f3f4f6;border-radius:4px;padding:1px 5px;font-size:12px;">$1</code>');
+    // Headers
+    html = html.replace(/^### (.+)$/gm, '<div style="font-size:13px;font-weight:700;margin:8px 0 3px;">$1</div>');
+    html = html.replace(/^## (.+)$/gm,  '<div style="font-size:14px;font-weight:700;margin:8px 0 3px;">$1</div>');
+    html = html.replace(/^# (.+)$/gm,   '<div style="font-size:15px;font-weight:700;margin:8px 0 4px;">$1</div>');
+    // Bold and italic
+    html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<b><em>$1</em></b>');
+    html = html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    // Unordered lists
+    html = html.replace(/^[\-\*] (.+)$/gm, '<div style="display:flex;gap:6px;margin:2px 0;"><span style="color:#9ca3af;flex-shrink:0;">•</span><span>$1</span></div>');
+    // Ordered lists
+    html = html.replace(/^\d+\. (.+)$/gm, '<div style="display:flex;gap:6px;margin:2px 0;"><span style="color:#9ca3af;flex-shrink:0;min-width:14px;">·</span><span>$1</span></div>');
+    // Line breaks
+    html = html.replace(/\n/g, '<br>');
+    return html;
   }
 
   // ── Message helpers ───────────────────────────────────────────────────────
   function addBotMessage(text) {
-    const msg = document.createElement('div');
-    msg.className = 'arch-msg bot';
-    msg.innerHTML = `
+    const wrap = document.createElement('div');
+    wrap.className = 'arch-msg bot';
+    const rawText = text;
+    wrap.innerHTML = `
       <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
-      <div class="arch-bubble">${parseMarkdown(text)}</div>
+      <div style="display:flex;flex-direction:column;max-width:78%;">
+        <div class="arch-bubble" style="max-width:100%;">${parseMarkdown(text)}</div>
+        <div class="arch-msg-actions">
+          <button class="arch-action-btn arch-thumb-up" title="Good response">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
+          </button>
+          <button class="arch-action-btn arch-thumb-down" title="Bad response">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 10v2a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"/></svg>
+          </button>
+          <button class="arch-action-btn arch-copy" title="Copy">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          </button>
+        </div>
+      </div>
     `;
-    msgs.appendChild(msg);
+    wrap.querySelector('.arch-thumb-up').addEventListener('click', function() {
+      this.classList.toggle('active');
+      wrap.querySelector('.arch-thumb-down').classList.remove('active');
+    });
+    wrap.querySelector('.arch-thumb-down').addEventListener('click', function() {
+      this.classList.toggle('active');
+      wrap.querySelector('.arch-thumb-up').classList.remove('active');
+    });
+    wrap.querySelector('.arch-copy').addEventListener('click', function() {
+      navigator.clipboard.writeText(rawText);
+      this.innerHTML = '<svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+      setTimeout(() => {
+        this.innerHTML = '<svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
+      }, 1500);
+    });
+    msgs.appendChild(wrap);
     scrollToBottom();
   }
 
@@ -426,11 +576,9 @@
   function toggleChat() {
     isOpen = !isOpen;
     win.classList.toggle('open', isOpen);
+    fabLogo.style.display = isOpen ? 'none' : 'flex';
+    fab.style.paddingLeft = isOpen ? '20px' : '8px';
     fabText.textContent = isOpen ? 'Close' : `Ask ${NAME}`;
-    if (isOpen && !greeted) {
-      greeted = true;
-      addBotMessage(`Hi there! 👋 I'm ${NAME}. How can I help you today?`);
-    }
     if (isOpen) setTimeout(() => input.focus(), 300);
   }
 
@@ -438,6 +586,15 @@
   async function sendMessage() {
     const text = input.value.trim();
     if (!text || isLoading) return;
+
+    // First message — transition from pre-chat to chat view
+    if (!chatStarted) {
+      chatStarted = true;
+      stopGreetingRotation();
+      prechat.style.display = 'none';
+      msgs.style.display = 'flex';
+      disclaimer.style.display = 'block';
+    }
 
     isLoading = true;
     input.value = '';

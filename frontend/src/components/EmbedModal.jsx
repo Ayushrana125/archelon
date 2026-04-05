@@ -390,19 +390,19 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
 
                     {/* Launcher FAB — pill shape */}
                     <div
-                      className="flex items-center gap-2 px-3 rounded-full shadow-xl"
+                      className="flex items-center gap-2 px-3 rounded-full shadow-lg"
                       style={{
                         height: '44px',
-                        background: '#0a0a0a',
-                        border: '1.5px solid rgba(255,255,255,0.18)',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.55)',
+                        background: '#ffffff',
+                        border: '1.5px solid #e5e7eb',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
                         whiteSpace: 'nowrap',
                       }}
                     >
                       <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0">
                         <img src={logoUrl || '/Archelon_logo.png'} alt="" className="w-full h-full object-cover" />
                       </div>
-                      <span className="text-xs font-medium text-white pr-1">Ask {displayName}</span>
+                      <span className="text-xs font-medium text-gray-900 pr-1">Ask {displayName}</span>
                     </div>
                   </div>
                 </div>
