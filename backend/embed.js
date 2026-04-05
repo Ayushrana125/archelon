@@ -63,7 +63,9 @@
     #archelon-header {
       padding: 14px 16px; display: flex; align-items: center; gap: 10px;
       background: linear-gradient(135deg, #0d0d0d, #1a1a1a); flex-shrink: 0;
+      display: none;
     }
+    #archelon-header.visible { display: flex; }
     #archelon-avatar {
       width: 36px; height: 36px; border-radius: 50%; position: relative; flex-shrink: 0;
       background: rgba(0,201,177,0.2); display: flex; align-items: center; justify-content: center;
@@ -203,30 +205,38 @@
     /* Pre-chat screen */
     #archelon-prechat {
       flex: 1; display: flex; flex-direction: column; align-items: center;
-      justify-content: center; padding: 24px 20px; background: #f9fafb;
-      gap: 0;
+      justify-content: center; padding: 32px 24px 24px; background: #fff;
+      position: relative;
     }
-    #archelon-prechat-name {
-      position: absolute; top: 16px; left: 16px;
-      font-size: 13px; font-weight: 600; color: #111827;
+    #archelon-prechat-actions {
+      position: absolute; top: 12px; right: 12px;
+      display: flex; align-items: center; gap: 2px;
     }
     #archelon-prechat-logo {
-      width: 64px; height: 64px; border-radius: 50%; overflow: hidden;
-      margin-bottom: 16px; flex-shrink: 0;
+      width: 72px; height: 72px; border-radius: 50%; overflow: hidden;
+      margin-bottom: 14px; flex-shrink: 0; position: relative;
     }
     #archelon-prechat-logo img { width: 100%; height: 100%; object-fit: cover; }
+    #archelon-prechat-online {
+      position: absolute; bottom: 3px; right: 3px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: #22c55e; border: 2.5px solid #fff;
+    }
+    #archelon-prechat-name {
+      font-size: 16px; font-weight: 700; color: #111827;
+      margin-bottom: 4px; text-align: center;
+    }
+    #archelon-prechat-status {
+      font-size: 11px; color: #22c55e; font-weight: 500;
+      margin-bottom: 16px; display: flex; align-items: center; gap: 4px;
+    }
     #archelon-prechat-greeting {
-      font-size: 15px; font-weight: 500; color: #111827;
-      text-align: center; margin-bottom: 6px;
-      min-height: 24px;
+      font-size: 13px; color: #6b7280; text-align: center; line-height: 1.5;
     }
-    #archelon-prechat-sub {
-      font-size: 12px; color: #6b7280; text-align: center;
-    }
-    #archelon-widget-root.dark #archelon-prechat { background: #141414; }
-    #archelon-widget-root.dark #archelon-prechat-name { color: #e5e7eb; }
-    #archelon-widget-root.dark #archelon-prechat-greeting { color: #e5e7eb; }
-    #archelon-widget-root.dark #archelon-prechat-sub { color: #6b7280; }
+    #archelon-widget-root.dark #archelon-prechat { background: #1a1a1a; }
+    #archelon-widget-root.dark #archelon-prechat-name { color: #f3f4f6; }
+    #archelon-widget-root.dark #archelon-prechat-online { border-color: #1a1a1a; }
+    #archelon-widget-root.dark #archelon-prechat-greeting { color: #9ca3af; }
     .arch-dots { display: inline-flex; align-items: center; gap: 4px; }
     .arch-dots span {
       width: 6px; height: 6px; border-radius: 50%; background: #9ca3af;
@@ -270,21 +280,34 @@
           <div id="archelon-header-name">...</div>
           <div id="archelon-header-sub">Typically replies instantly</div>
         </div>
-        <button id="archelon-close" aria-label="Close">
+        <button id="archelon-header-close" aria-label="Close" style="background:none;border:none;cursor:pointer;color:#6b7280;padding:4px;border-radius:6px;display:flex;align-items:center;justify-content:center;">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
-        <button id="archelon-theme-toggle" aria-label="Toggle theme" style="background:none;border:none;cursor:pointer;color:#6b7280;padding:4px;border-radius:6px;display:flex;align-items:center;justify-content:center;margin-left:-2px;">
-          <svg id="archelon-theme-icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-          <svg id="archelon-theme-icon-sun" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
-        </button>
       </div>
       <div id="archelon-prechat">
+        <div id="archelon-prechat-actions">
+          <button id="archelon-theme-toggle" aria-label="Toggle theme" style="background:none;border:none;cursor:pointer;color:#9ca3af;padding:5px;border-radius:6px;display:flex;align-items:center;justify-content:center;">
+            <svg id="archelon-theme-icon-moon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            <svg id="archelon-theme-icon-sun" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+          </button>
+          <button id="archelon-close" aria-label="Close" style="background:none;border:none;cursor:pointer;color:#9ca3af;padding:5px;border-radius:6px;display:flex;align-items:center;justify-content:center;">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div id="archelon-prechat-logo">
+          <img id="archelon-prechat-logo-img" src="" alt="" style="opacity:0;transition:opacity 0.2s;" />
+          <div id="archelon-prechat-online"></div>
+        </div>
         <div id="archelon-prechat-name">...</div>
-        <div id="archelon-prechat-logo"><img id="archelon-prechat-logo-img" src="" alt="" style="opacity:0;transition:opacity 0.2s;" /></div>
-        <div id="archelon-prechat-greeting"></div>
-        <div id="archelon-prechat-sub">How can I help you today?</div>
+        <div id="archelon-prechat-status">
+          <span style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
+          Online
+        </div>
+        <div id="archelon-prechat-greeting">How can I help you today?</div>
       </div>
       <div id="archelon-messages" style="display:none;"></div>
       <div id="archelon-disclaimer" style="display:none;">Can make mistakes. Verify important information.</div>
@@ -313,7 +336,9 @@
   const msgs       = document.getElementById('archelon-messages');
   const input      = document.getElementById('archelon-input');
   const sendBtn    = document.getElementById('archelon-send');
-  const closeBtn   = document.getElementById('archelon-close');
+  const closeBtn       = document.getElementById('archelon-close');
+  const headerCloseBtn = document.getElementById('archelon-header-close');
+  const header     = document.getElementById('archelon-header');
   const headerName = document.getElementById('archelon-header-name');
   const disclaimer = document.getElementById('archelon-disclaimer');
   const prechat        = document.getElementById('archelon-prechat');
@@ -338,22 +363,14 @@
 
   // ── Rotating greetings ────────────────────────────────────────────────────
   const GREETINGS = [
-    'Hey there! 👋',
-    'Hello! Great to see you.',
-    'Hi! Ask me anything.',
-    'Welcome! I\'m here to help.',
-    'Good to have you here! 👋',
+    'How can I help you today?',
+    'What can I help you with?',
+    'Got a question? Ask away.',
+    'What\'s on your mind?',
+    'Ask me anything.',
   ];
-  let greetingInterval = null;
-  function startGreetingRotation() {
-    const pick = () => {
-      prechatGreeting.textContent = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
-    };
-    pick();
-    greetingInterval = setInterval(pick, 3000);
-  }
-  function stopGreetingRotation() {
-    if (greetingInterval) { clearInterval(greetingInterval); greetingInterval = null; }
+  function setRandomGreeting() {
+    prechatGreeting.textContent = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
   }
 
   // ── Thinking steps ────────────────────────────────────────────────────────
@@ -399,7 +416,7 @@
         prechatLogoImg.src = LOGO;
         prechatLogoImg.onload = () => { prechatLogoImg.style.opacity = '1'; };
         prechatLogoImg.onerror = () => { prechatLogoImg.style.opacity = '1'; };
-        startGreetingRotation();
+        setRandomGreeting();
         if (d.theme === 'dark') {
           THEME = 'dark';
           root.classList.add('dark');
@@ -413,7 +430,7 @@
         prechatName.textContent = NAME;
         prechatLogoImg.src = LOGO;
         prechatLogoImg.style.opacity = '1';
-        startGreetingRotation();
+        setRandomGreeting();
       }
       fab.classList.add('ready');
     })
@@ -426,7 +443,7 @@
       prechatName.textContent = NAME;
       prechatLogoImg.src = LOGO;
       prechatLogoImg.style.opacity = '1';
-      startGreetingRotation();
+      setRandomGreeting();
       fab.classList.add('ready');
     });
 
@@ -614,7 +631,10 @@
   // ── Toggle chat ───────────────────────────────────────────────────────────
   function toggleChat() {
     isOpen = !isOpen;
-    if (isOpen) positionWindow();
+    if (isOpen) {
+      positionWindow();
+      if (!chatStarted) setRandomGreeting();
+    }
     win.classList.toggle('open', isOpen);
     fabLogo.style.display = isOpen ? 'none' : 'flex';
     fab.style.paddingLeft = isOpen ? '20px' : '8px';
@@ -630,8 +650,8 @@
     // First message — transition from pre-chat to chat view
     if (!chatStarted) {
       chatStarted = true;
-      stopGreetingRotation();
       prechat.style.display = 'none';
+      header.classList.add('visible');
       msgs.style.display = 'flex';
       disclaimer.style.display = 'block';
     }
@@ -678,6 +698,7 @@
   // ── Events ────────────────────────────────────────────────────────────────
   fab.addEventListener('click', toggleChat);
   closeBtn.addEventListener('click', toggleChat);
+  headerCloseBtn.addEventListener('click', toggleChat);
   sendBtn.addEventListener('click', sendMessage);
 
   input.addEventListener('keydown', (e) => {
