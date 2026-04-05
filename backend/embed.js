@@ -265,6 +265,8 @@
           LOGO = d.logo_url;
           const avatarImg = document.querySelector('#archelon-avatar img');
           if (avatarImg) avatarImg.src = LOGO;
+          // Replace FAB icon with custom logo
+          fab.innerHTML = `<img src="${d.logo_url}" alt="" style="width:32px;height:32px;object-fit:contain;border-radius:50%;" onerror="this.style.display='none'" />`;
         }
         if (d.theme === 'dark') {
           THEME = 'dark';
