@@ -14,9 +14,9 @@ Before streaming, the full pipeline ran sequentially and the frontend received o
 classify (1s) → analyse (0.8s) → vector search (0.5s) → Mistral generates full answer (2-4s) → sendd
 ```
 
-User stared at a spinner for 4-6 seconds before anything appeared. Perceived wait time was 10-12 seconds...
+User stared at a spinner for 4-6 seconds before anything appeared. Perceived wait time was 10-12 seconds....
 
-With streaming, the first token appears ~2.5 seconds after the user sends a message. Words appear as Mistral generates them. Perceived wait dropped to 3-5 seconds.
+With streaming, the first token appears ~2.5 seconds after the user sends a message. Words appear as Mistral generates them. Perceived wait dropped to 3-5 seconds..
 
 ---
 
