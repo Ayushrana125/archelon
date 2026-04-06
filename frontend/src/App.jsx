@@ -125,8 +125,50 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
 
     // Auto-send "Hi" only if this agent has no chat history yet
     setChatHistories(prev => {
-      if (prev[agent.id]) return prev; // already has history, skip
-      return { ...prev, [agent.id]: [] }; // empty array triggers greeting in ChatView
+      if (prev[agent.id]) return prev;
+      // Fire greeting directly — not via useEffect, immune to StrictMode
+      fetch(`${import.meta.env.VITE_API_URL}/api/chat/stream`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({
+          message: 'Hi',
+          agent_id: agent.id.toString(),
+          session_id: 'session_1',
+          agent_name: agent.name ?? '',
+          agent_description: agent.description ?? '',
+          agent_instructions: agent.instructions ?? '',
+        }),
+      }).then(async res => {
+        if (!res.ok) return;
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = ''; let full = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n'); buffer = lines.pop();
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            try {
+              const ev = JSON.parse(line.slice(6).trim());
+              if (ev.type === 'token') full += ev.token;
+              if (ev.type === 'done') {
+                setChatHistories(h => ({
+                  ...h,
+                  [agent.id]: [{ role: 'smalltalk', content: full, sources: [], id: Date.now(), skipAnimation: false }],
+                }));
+              }
+            } catch {}
+          }
+        }
+      }).catch(() => {
+        setChatHistories(h => ({
+          ...h,
+          [agent.id]: [{ role: 'assistant', content: `Hi! I'm ${agent.name}. How can I help you?`, id: Date.now() }],
+        }));
+      });
+      return { ...prev, [agent.id]: [] };
     });
   };
 

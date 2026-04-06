@@ -74,7 +74,10 @@
     #archelon-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     #archelon-header-info { flex: 1; min-width: 0; }
     #archelon-header-name { font-size: 13px; font-weight: 600; color: #fff; }
-    #archelon-header-sub { font-size: 11px; color: #9ca3af; margin-top: 1px; }
+    #archelon-header-sub { font-size: 10px; color: #22c55e; margin-top: 1px; font-weight: 500;
+      display: flex; align-items: center; gap: 4px; }
+    #archelon-header-sub::before { content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: #22c55e; display: inline-block; flex-shrink: 0; }
     #archelon-close {
       background: none; border: none; cursor: pointer; color: #6b7280;
       padding: 4px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
@@ -140,42 +143,82 @@
     #archelon-widget-root.dark #arch-scroll-down { background: rgba(30,30,30,0.8); border-color: #444; }
     #archelon-widget-root.dark #arch-scroll-down svg { color: #e5e7eb; }
 
-    /* Thinking steps */
-    .arch-thinking-wrap {
-      display: flex; flex-direction: column; gap: 6px;
-      padding: 10px 13px; background: #fff;
-      border: 1px solid #e5e7eb; border-radius: 18px 18px 18px 4px;
-      max-width: 78%;
+    /* ── Thinking steps above input ─────────────────────────────────────── */
+    #arch-steps-overlay {
+      padding: 8px 14px 4px; background: transparent;
+      display: none; flex-direction: column; gap: 4px;
+      flex-shrink: 0;
     }
-    .arch-thinking-step {
+    #arch-steps-overlay.visible { display: flex; }
+    .arch-step-row {
       display: flex; align-items: center; gap: 8px;
+      opacity: 0; transform: translateY(6px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
       font-size: 12px; color: #6b7280;
-      transition: color 0.3s;
     }
-    .arch-thinking-step.active { color: #374151; }
-    .arch-thinking-step.done { color: #9ca3af; }
-    .arch-step-icon {
-      width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      border: 1.5px solid #e5e7eb; background: #fff;
-      transition: all 0.3s;
+    .arch-step-row.show { opacity: 1; transform: translateY(0); }
+    .arch-step-row.done { opacity: 0.4; }
+    .arch-step-row.active .arch-step-label {
+      background: linear-gradient(90deg, #6b7280 0%, #111827 40%, #6b7280 80%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: arch-shimmer 1.8s linear infinite;
+      font-weight: 500;
     }
-    .arch-thinking-step.active .arch-step-icon {
-      border-color: #22c55e; background: #f0fdf4;
+    #archelon-widget-root.dark .arch-step-row.active .arch-step-label {
+      background: linear-gradient(90deg, #9ca3af 0%, #f3f4f6 40%, #9ca3af 80%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: arch-shimmer 1.8s linear infinite;
     }
-    .arch-thinking-step.active .arch-step-icon::after {
+    @keyframes arch-shimmer {
+      0% { background-position: 200% center; }
+      100% { background-position: -200% center; }
+    }
+    .arch-step-dot {
+      width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+      background: #d1d5db; transition: background 0.3s;
+    }
+    .arch-step-row.active .arch-step-dot { background: #22c55e; animation: arch-pulse 1s ease-in-out infinite; }
+    .arch-step-row.done .arch-step-dot { background: #22c55e; animation: none; }
+    .arch-step-dots {
+      display: inline-flex; gap: 2px; margin-left: 2px;
+    }
+    .arch-step-dots span {
+      width: 3px; height: 3px; border-radius: 50%; background: currentColor;
+      animation: arch-dot-fade 1.2s ease-in-out infinite;
+      display: inline-block;
+    }
+    .arch-step-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .arch-step-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes arch-dot-fade {
+      0%, 100% { opacity: 0.3; } 50% { opacity: 1; }
+    }
+    /* Send button ring animation when loading */
+    #archelon-send.loading {
+      background: transparent;
+      border: 2.5px solid #e5e7eb;
+      border-top-color: #111827;
+      animation: arch-spin 0.7s linear infinite;
+      opacity: 1;
+    }
+    #archelon-widget-root.dark #archelon-send.loading {
+      border-color: #333;
+      border-top-color: #e5e7eb;
+    }
+    @keyframes arch-spin { to { transform: rotate(360deg); } }
+    /* Online indicator in header */
+    #archelon-header-online {
+      font-size: 10px; color: #22c55e; font-weight: 500;
+      display: flex; align-items: center; gap: 4px; margin-top: 1px;
+    }
+    #archelon-header-online::before {
       content: ''; width: 6px; height: 6px; border-radius: 50%;
-      background: #22c55e; animation: arch-pulse 1s ease-in-out infinite;
-    }
-    .arch-thinking-step.done .arch-step-icon {
-      border-color: #d1d5db; background: #f9fafb;
-    }
-    .arch-thinking-step.done .arch-step-icon::after {
-      content: '✓'; font-size: 9px; color: #9ca3af; font-weight: 700;
-    }
-    @keyframes arch-pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.3); opacity: 0.6; }
+      background: #22c55e; display: inline-block; flex-shrink: 0;
     }
 
     #archelon-disclaimer {
@@ -306,7 +349,7 @@
         </div>
         <div id="archelon-header-info">
           <div id="archelon-header-name">...</div>
-          <div id="archelon-header-sub">Typically replies in a few seconds</div>
+          <div id="archelon-header-sub">Online</div>
         </div>
         <button id="archelon-header-close" aria-label="Close" style="background:none;border:none;cursor:pointer;color:#6b7280;padding:4px;border-radius:6px;display:flex;align-items:center;justify-content:center;">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
@@ -348,6 +391,7 @@
         </button>
       </div>
       <div id="archelon-disclaimer" style="display:none;">Can make mistakes. Verify important information.</div>
+      <div id="arch-steps-overlay"></div>
       <div id="archelon-input-area">
         <textarea id="archelon-input" placeholder="Ask a question..." rows="1"></textarea>
         <button id="archelon-send" aria-label="Send">
@@ -411,46 +455,60 @@
     prechatGreeting.textContent = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
   }
 
-  // ── Thinking steps ────────────────────────────────────────────────────────
+  // ── Thinking steps overlay above input ─────────────────────────────────
+  const STEPS_SMALLTALK = ['Analyzing your request'];
   const STEPS_RAG = [
-    'Let me look into that...',
-    'Searching in Knowledge Base...',
-    'Almost there...',
+    'Analyzing your request',
+    'Identifying key details',
+    'Finding relevant information',
+    'Reviewing gathered information',
   ];
 
-  function showThinking(ragMode) {
-    const el = document.createElement('div');
-    el.className = 'arch-msg bot';
-    el.id = 'arch-thinking';
-    const steps = ragMode ? STEPS_RAG : ['Let me look into that...'];
-    const stepsHtml = steps.map((label, i) => `
-      <div class="arch-thinking-step ${i === 0 ? 'active' : ''}" id="arch-step-${i}">
-        <div class="arch-step-icon"></div>
-        <span>${label}</span>
-      </div>
-    `).join('');
-    el.innerHTML = `
-      <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
-      <div class="arch-thinking-wrap">${stepsHtml}</div>
-    `;
-    msgs.appendChild(el);
-    scrollToBottom();
+  const stepsOverlay = document.getElementById('arch-steps-overlay');
+  let stepsInterval = null;
+  let stepsRows = [];
+
+  function showSteps(ragMode) {
+    clearSteps();
+    const steps = ragMode ? STEPS_RAG : STEPS_SMALLTALK;
+    stepsOverlay.innerHTML = '';
+    stepsRows = steps.map((label, i) => {
+      const row = document.createElement('div');
+      row.className = 'arch-step-row';
+      row.innerHTML = `<span class="arch-step-dot"></span><span class="arch-step-label">${label}<span class="arch-step-dots"><span></span><span></span><span></span></span></span>`;
+      stepsOverlay.appendChild(row);
+      // Stagger entrance
+      setTimeout(() => row.classList.add('show'), i * 50);
+      return row;
+    });
+    stepsOverlay.classList.add('visible');
+    // Activate first step
+    stepsRows[0].classList.add('active');
+    // Send button ring
+    sendBtn.innerHTML = '';
+    sendBtn.classList.add('loading');
+    sendBtn.classList.remove('active');
     if (ragMode) {
-      // Step timings: step 1 active at 0ms, step 2 at 800ms, step 3 at 1600ms
-      // Step 3 stays pulsing until minShowTime is reached
-      const STEP_INTERVAL = 800;
       let current = 0;
-      const interval = setInterval(() => {
-        const prev = el.querySelector(`#arch-step-${current}`);
-        const next = el.querySelector(`#arch-step-${current + 1}`);
-        if (!next) { clearInterval(interval); return; }
-        if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
-        current++;
-        next.classList.add('active');
-      }, STEP_INTERVAL);
-      el._interval = interval;
+      stepsInterval = setInterval(() => {
+        if (current < stepsRows.length - 1) {
+          stepsRows[current].classList.remove('active');
+          stepsRows[current].classList.add('done');
+          current++;
+          stepsRows[current].classList.add('active');
+        }
+      }, 900);
     }
-    return el;
+  }
+
+  function clearSteps() {
+    if (stepsInterval) { clearInterval(stepsInterval); stepsInterval = null; }
+    stepsOverlay.classList.remove('visible');
+    stepsOverlay.innerHTML = '';
+    stepsRows = [];
+    // Restore send button
+    sendBtn.classList.remove('loading');
+    sendBtn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>`;
   }
 
   // ── Fetch info + sample questions in parallel ────────────────────────────
@@ -744,10 +802,8 @@
     setInputEnabled(false);
     addUserMessage(text);
 
-    // Show "Let me look into that..." immediately for every query
-    let thinkingEl = showThinking(false);
-    thinkingEl._showTime = Date.now();
-    let streamBubble = null;
+    // Show steps immediately above input
+    showSteps(false);
     let streamBubbleContent = '';
 
     try {
@@ -761,17 +817,17 @@
       });
 
       if (res.status === 429) {
-        if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); thinkingEl = null; }
+        clearSteps();
         addBotMessage("You're sending messages too fast. Give it a moment.");
         isLoading = false; setInputEnabled(true); input.focus(); return;
       }
       if (res.status === 402) {
-        if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); thinkingEl = null; }
+        clearSteps();
         addBotMessage('Our assistant is temporarily unavailable. Please try again later.');
         isLoading = false; setInputEnabled(true); input.focus(); return;
       }
       if (!res.ok) {
-        if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); thinkingEl = null; }
+        clearSteps();
         addBotMessage('Something went wrong. Try again in a moment.');
         isLoading = false; setInputEnabled(true); input.focus(); return;
       }
@@ -796,28 +852,16 @@
 
           if (event.type === 'meta') {
             if (event.intent !== 'smalltalk') {
-              // Upgrade to full 3-step thinking for RAG
-              if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); }
-              thinkingEl = showThinking(true);
-              thinkingEl._showTime = Date.now();
+              showSteps(true);
             }
-            // smalltalk: keep single step as-is
           }
 
           if (event.type === 'token') {
-            const token = event.token;
-            if (!streamBubble) {
-              // Remove thinking and show stream bubble on first token
-              // Accumulate tokens silently — no bubble shown during streaming
-              streamBubbleContent += token;
-            } else {
-              // Keep accumulating
-              streamBubbleContent += token;
-            }
+            streamBubbleContent += event.token;
           }
 
           if (event.type === 'done') {
-            if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); thinkingEl = null; }
+            clearSteps();
             if (streamBubbleContent) {
               const wrap = document.createElement('div');
               wrap.className = 'arch-msg bot';
@@ -832,15 +876,13 @@
               msgs.appendChild(wrap);
               wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
               buildActionButtons(wrap, rawText);
-              streamBubble = null;
               streamBubbleContent = '';
             }
           }
         }
       }
     } catch {
-      if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); }
-      if (streamBubble) streamBubble.remove();
+      clearSteps();
       addBotMessage("Couldn't reach the server. Try again in a moment.");
     }
 
@@ -852,6 +894,7 @@
   // ── Events ────────────────────────────────────────────────────────────────
   newChatBtn.addEventListener('click', () => {
     msgs.innerHTML = '';
+    clearSteps();
     chatStarted = false;
     header.classList.remove('visible');
     prechat.style.display = 'flex';

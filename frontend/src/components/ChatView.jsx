@@ -259,13 +259,6 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
   const [agentTotalTokens, setAgentTotalTokens] = useState(0);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  // Auto-send greeting when agent chat opens for the first time
-  useEffect(() => {
-    if (agentData && messages.length === 0) {
-      handleSend('Hi', true);
-    }
-  }, [agentData?.id]);
-
   useEffect(() => {
     if (!agentData?.id) return;
     setSessionTokens(0);
@@ -290,7 +283,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
   const isArex = !agentData;
   const agentName = agentData ? agentData.name : 'Arex';
   const defaultPlaceholder = isArex ? 'Ask Arex...' : `Ask ${agentName}...`;
-  const isBusy = isTyping || !!streamingMsg || isProcessingDoc || isGreetingLoading;
+  const isBusy = isTyping || !!streamingMsg || isProcessingDoc;
   const { resetIdle } = useAnimatedPlaceholder(isArex && !input && !isBusy, textareaRef, defaultPlaceholder);
   const canUpload = agentData && !agentData.is_system;
 
