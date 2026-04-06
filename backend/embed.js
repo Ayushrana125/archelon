@@ -101,7 +101,9 @@
       background: #111827;
       color: #fff; border-radius: 18px 18px 4px 18px;
     }
-    .arch-bubble b { font-weight: 600; }
+    .arch-bubble a { color: #111827; text-decoration: underline; text-underline-offset: 2px; }
+    .arch-bubble a:hover { color: #374151; }
+    #archelon-widget-root.dark .arch-bubble a { color: #e5e7eb; }
     .arch-bot-avatar {
       width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
       background: #f3f4f6; display: flex; align-items: center; justify-content: center;
@@ -143,7 +145,7 @@
       transition: all 0.3s;
     }
     .arch-thinking-step.active .arch-step-icon {
-      border-color: ${TEAL}; background: ${TEAL}15;
+      border-color: ${TEAL}; background: #e6faf8;
     }
     .arch-thinking-step.active .arch-step-icon::after {
       content: ''; width: 6px; height: 6px; border-radius: 50%;
@@ -251,7 +253,7 @@
     #archelon-widget-root.dark .arch-msg.bot .arch-bubble { background: #2a2a2a; color: #e5e7eb; border-color: #333; }
     #archelon-widget-root.dark .arch-thinking-wrap { background: #2a2a2a; border-color: #333; }
     #archelon-widget-root.dark .arch-thinking-step { color: #9ca3af; }
-    #archelon-widget-root.dark .arch-thinking-step.active { color: ${TEAL}; }
+    #archelon-widget-root.dark .arch-thinking-step.active { color: #e5e7eb; }
     #archelon-widget-root.dark .arch-step-icon { background: #1a1a1a; border-color: #444; }
     #archelon-widget-root.dark #archelon-disclaimer { background: #141414; color: #6b7280; }
     #archelon-widget-root.dark #archelon-input-area { background: #1a1a1a; border-color: #2a2a2a; }
