@@ -174,7 +174,7 @@ async def _validate_public_request(request: Request, body: PublicChatRequest):
     agent_row = await agents_db.get_agent_by_id(body.agent_id, key_record["user_id"])
     agent_instructions = agent_row.get("instructions", "") if agent_row else ""
     agent_name         = key_record.get("widget_name") or (agent_row.get("name") if agent_row else "Assistant") or "Assistant"
-    max_output         = key_record.get("max_output_tokens") or 500
+    max_output         = None
 
     return key_record, message, agent_name, agent_instructions, max_output
 
