@@ -213,7 +213,7 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
 
         {/* Left — branding when disabled, widget preview when enabled */}
         <div
-          className="hidden md:flex flex-col w-[38%] relative overflow-hidden flex-shrink-0"
+          className="hidden md:flex flex-col w-[34%] relative overflow-hidden flex-shrink-0"
           style={{ background: enabled ? '#0f0f0f' : 'linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%)' }}
         >
           <div className="absolute inset-0 pointer-events-none" aria-hidden>
@@ -287,8 +287,9 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
                 {apiKey && apiKey !== 'masked' ? (
                   <iframe
                     key={`${agentId}-${apiKey}`}
-                    srcDoc={`<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;background:#f8fafc;font-family:sans-serif;padding:20px;}h2{color:#374151;font-size:14px;}p{color:#9ca3af;font-size:12px;}</style></head><body><h2>Your website</h2><p>The widget appears in the bottom-right corner.</p><p>Click the button to test it.</p><script>window.ArchelonConfig={agentId:"${agentId}",apiKey:"${apiKey}"};</script><script src="https://api.archelon.cloud/embed.js" async></script></body></html>`}
+                    srcDoc={`<!DOCTYPE html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#0a0a0a;font-family:sans-serif;padding:20px;}h2{color:#374151;font-size:14px;}p{color:#6b7280;font-size:12px;line-height:1.6;}</style></head><body><h2 style="color:#9ca3af;margin-bottom:8px;">Your website</h2><p>The widget appears in the bottom-right corner.</p><p>Click the button to test it.</p><script>window.ArchelonConfig={agentId:"${agentId}",apiKey:"${apiKey}"};</script><script src="https://api.archelon.cloud/embed.js" async></script></body></html>`}
                     className="w-full h-full border-0"
+                    style={{ background: '#0a0a0a' }}
                     title="Widget Preview"
                   />
                 ) : (
