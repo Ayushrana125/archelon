@@ -16,7 +16,7 @@ After the retrieval pipeline was working and validated, the focus shifted to mak
 
 The first real product question was: how do we track tokens?
 
-The initial instinct was to track per-agent — store a running total on the agent row. Simple, fast, one column update per query.
+The initial instinct was to track per-agent — store a running total on the agent row. Simple, fast, one column update per query..
 
 But then the system agent problem came up. System agents are shared across all users. If you only track by `agent_id`, you can't tell which user consumed what. Two users chatting with the same system agent would have their usage mixed together.
 
