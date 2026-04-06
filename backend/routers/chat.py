@@ -14,8 +14,7 @@ from collections import defaultdict
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, validator
-from pipeline.intent_classifier import classify_intent
-from pipeline.query_analyser import analyse_query
+from pipeline.intent_and_query import classify_and_analyse
 from pipeline.smalltalk_agent import handle_smalltalk
 from pipeline.retrieval.vector_search import vector_search
 from pipeline.retrieval.reranker import rerank, SINGLE_BUDGET, MULTI_BUDGET
@@ -95,12 +94,13 @@ async def chat(body: ChatRequest, current_user: dict = Depends(verify_token)):
     if balance["tokens_remaining"] <= 0:
         raise HTTPException(status_code=402, detail="Token limit reached. Upgrade your plan to continue.")
 
-    # ── Step 1: Classify intent ──────────────────────────────────────────────
-    classified = await classify_intent(
+    # ── Step 1: Classify intent + extract search queries (single LLM call) ────
+    analysed       = await classify_and_analyse(
         user_message=safe_message,
         system_instructions=body.agent_instructions,
     )
-    intent = classified.get("intent", "single")
+    intent         = analysed.get("intent", "single")
+    search_queries = analysed.get("search_queries") or [safe_message]
 
     # ── Step 2: Smalltalk — no retrieval needed ──────────────────────────────
     if intent == "smalltalk":
@@ -128,10 +128,6 @@ async def chat(body: ChatRequest, current_user: dict = Depends(verify_token)):
             "sources":        [],
             "token_usage":    {"input_tokens": input_tokens, "output_tokens": output_tokens, "total": input_tokens + output_tokens},
         }
-
-    # ── Step 3: Analyse query → extract search terms ─────────────────────────
-    analysed      = await analyse_query(safe_message, intent=intent)
-    search_queries = analysed.get("search_queries") or [safe_message]
 
     # ── Step 4: Vector search — parallel fan-out for multi queries ───────────
     search_tasks = [
@@ -170,7 +166,7 @@ async def chat(body: ChatRequest, current_user: dict = Depends(verify_token)):
 
     return {
         "intent":          intent,
-        "thinking":        classified.get("thinking", ""),
+        "thinking":        analysed.get("thinking", ""),
         "search_thinking": analysed.get("search_thinking", ""),
         "search_queries":  search_queries,
         "answer":          result["answer"],
@@ -190,11 +186,12 @@ async def chat_stream(body: ChatRequest, current_user: dict = Depends(verify_tok
         raise HTTPException(status_code=402, detail="Token limit reached. Upgrade your plan to continue.")
 
     # Steps 1-5 run before streaming starts (same as /chat)
-    classified = await classify_intent(
+    analysed       = await classify_and_analyse(
         user_message=safe_message,
         system_instructions=body.agent_instructions,
     )
-    intent = classified.get("intent", "single")
+    intent         = analysed.get("intent", "single")
+    search_queries = analysed.get("search_queries") or [safe_message]
 
     # Smalltalk — no retrieval, stream the smalltalk answer directly
     if intent == "smalltalk":
@@ -224,9 +221,6 @@ async def chat_stream(body: ChatRequest, current_user: dict = Depends(verify_tok
         return StreamingResponse(smalltalk_stream(), media_type="text/event-stream",
                                  headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
-    analysed       = await analyse_query(safe_message, intent=intent)
-    search_queries = analysed.get("search_queries") or [safe_message]
-
     search_tasks  = [vector_search(q, body.agent_id, match_count=15) for q in search_queries]
     all_results   = await asyncio.gather(*search_tasks)
     merged        = [m for result in all_results for m in result]
@@ -235,7 +229,7 @@ async def chat_stream(body: ChatRequest, current_user: dict = Depends(verify_tok
 
     async def rag_stream():
         # Send metadata so frontend can render ThinkingSteps before tokens arrive
-        yield f"data: {json.dumps({'type': 'meta', 'intent': intent, 'thinking': classified.get('thinking', ''), 'search_thinking': analysed.get('search_thinking', ''), 'search_queries': search_queries})}\n\n"
+        yield f"data: {json.dumps({'type': 'meta', 'intent': intent, 'thinking': analysed.get('thinking', ''), 'search_thinking': analysed.get('search_thinking', ''), 'search_queries': search_queries})}\n\n"
 
         full_response = ""
         final_event   = None
