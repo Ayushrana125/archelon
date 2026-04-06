@@ -232,7 +232,20 @@
     }
     #archelon-prechat-greeting {
       font-size: 13px; color: #6b7280; text-align: center; line-height: 1.5;
+      margin-bottom: 16px;
     }
+    #archelon-prechat-chips {
+      display: flex; flex-direction: column; gap: 8px; width: 100%; padding: 0 4px;
+    }
+    .arch-chip {
+      width: 100%; text-align: left; background: #fff; border: 1px solid #e5e7eb;
+      border-radius: 12px; padding: 10px 14px; font-size: 12px; color: #374151;
+      cursor: pointer; transition: background 0.15s, border-color 0.15s;
+      font-family: inherit; line-height: 1.4;
+    }
+    .arch-chip:hover { background: #f9fafb; border-color: #d1d5db; }
+    #archelon-widget-root.dark .arch-chip { background: #2a2a2a; border-color: #333; color: #e5e7eb; }
+    #archelon-widget-root.dark .arch-chip:hover { background: #333; border-color: #444; }
     #archelon-widget-root.dark #archelon-prechat { background: #1a1a1a; }
     #archelon-widget-root.dark #archelon-prechat-name { color: #f3f4f6; }
     #archelon-widget-root.dark #archelon-prechat-greeting { color: #9ca3af; }
@@ -311,6 +324,7 @@
           Online
         </div>
         <div id="archelon-prechat-greeting">How can I help you today?</div>
+        <div id="archelon-prechat-chips"></div>
       </div>
       <div id="archelon-messages" style="display:none;"></div>
       <div id="archelon-disclaimer" style="display:none;">Can make mistakes. Verify important information.</div>
@@ -462,71 +476,92 @@
     return el;
   }
 
-  // ── Fetch agent name from backend ─────────────────────────────────────────
-  fetch(`${API_BASE}/api/public/info`, {
-    headers: { 'X-Archelon-Key': API_KEY },
-  })
-    .then(r => r.ok ? r.json() : null)
-    .then(d => {
-      if (d) {
-        if (d.name) {
-          NAME = d.name;
-          headerName.textContent = NAME;
-          input.placeholder = `Ask ${NAME}...`;
-          disclaimer.textContent = `${NAME} can make mistakes. Verify important information.`;
-          fab.setAttribute('aria-label', `Chat with ${NAME}`);
-        } else {
-          headerName.textContent = NAME;
-        }
-        if (d.logo_url) {
-          LOGO = d.logo_url;
-        }
-        // Set FAB logo
-        fabLogo.innerHTML = `<img src="${LOGO}" alt="" />`;
-        fabText.textContent = `Ask ${NAME}`;
-        fab.setAttribute('aria-label', `Ask ${NAME}`);
-        // Always set header avatar to resolved logo
-        const avatarImg = document.getElementById('archelon-avatar-img');
-        if (avatarImg) {
-          avatarImg.src = LOGO;
-          avatarImg.onload = () => { avatarImg.style.opacity = '1'; };
-          avatarImg.onerror = () => { avatarImg.style.opacity = '1'; };
-        }
-        // Populate pre-chat screen
-        prechatName.textContent = NAME;
-        prechatLogoImg.src = LOGO;
-        prechatLogoImg.onload = () => { prechatLogoImg.style.opacity = '1'; };
-        prechatLogoImg.onerror = () => { prechatLogoImg.style.opacity = '1'; };
-        setRandomGreeting();
-        if (d.theme === 'dark') {
-          THEME = 'dark';
-          root.classList.add('dark');
-        }
-      } else {
-        fabLogo.innerHTML = `<img src="${LOGO}" alt="" />`;
-        fabText.textContent = `Ask ${NAME}`;
-        const avatarImg = document.getElementById('archelon-avatar-img');
-        if (avatarImg) { avatarImg.src = LOGO; avatarImg.style.opacity = '1'; }
-        headerName.textContent = NAME;
-        prechatName.textContent = NAME;
-        prechatLogoImg.src = LOGO;
-        prechatLogoImg.style.opacity = '1';
-        setRandomGreeting();
-      }
-      fab.classList.add('ready');
-    })
-    .catch(() => {
-      fabLogo.innerHTML = `<img src="${LOGO}" alt="" />`;
-      fabText.textContent = `Ask ${NAME}`;
-      const avatarImg = document.getElementById('archelon-avatar-img');
-      if (avatarImg) { avatarImg.src = LOGO; avatarImg.style.opacity = '1'; }
+  // ── Fetch info + sample questions in parallel ────────────────────────────
+  const prechatChips = document.getElementById('archelon-prechat-chips');
+
+  function applyInfo(d) {
+    if (d && d.name) {
+      NAME = d.name;
       headerName.textContent = NAME;
-      prechatName.textContent = NAME;
-      prechatLogoImg.src = LOGO;
-      prechatLogoImg.style.opacity = '1';
-      setRandomGreeting();
-      fab.classList.add('ready');
+      input.placeholder = `Ask ${NAME}...`;
+      disclaimer.textContent = `${NAME} can make mistakes. Verify important information.`;
+    } else {
+      headerName.textContent = NAME;
+    }
+    if (d && d.logo_url) LOGO = d.logo_url;
+    fabLogo.innerHTML = `<img src="${LOGO}" alt="" />`;
+    fabText.textContent = `Ask ${NAME}`;
+    const avatarImg = document.getElementById('archelon-avatar-img');
+    if (avatarImg) { avatarImg.src = LOGO; avatarImg.onload = () => { avatarImg.style.opacity = '1'; }; avatarImg.onerror = () => { avatarImg.style.opacity = '1'; }; }
+    prechatName.textContent = NAME;
+    prechatLogoImg.src = LOGO;
+    prechatLogoImg.onload = () => { prechatLogoImg.style.opacity = '1'; };
+    prechatLogoImg.onerror = () => { prechatLogoImg.style.opacity = '1'; };
+    setRandomGreeting();
+    if (d && d.theme === 'dark') { THEME = 'dark'; root.classList.add('dark'); themeIconMoon.style.display = 'none'; themeIconSun.style.display = 'block'; }
+  }
+
+  function renderChips(questions) {
+    prechatChips.innerHTML = '';
+    questions.forEach(q => {
+      const btn = document.createElement('button');
+      btn.className = 'arch-chip';
+      btn.textContent = q;
+      btn.addEventListener('click', () => {
+        input.value = q;
+        sendMessage();
+      });
+      prechatChips.appendChild(btn);
     });
+  }
+
+  async function fetchSampleQuestions() {
+    try {
+      const res = await fetch(`${API_BASE}/api/public/chat/stream`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Archelon-Key': API_KEY },
+        body: JSON.stringify({
+          message: 'Generate 3 sample questions users mostly ask from documents. Give in "","","" format',
+          agent_id: AGENT_ID,
+        }),
+      });
+      if (!res.ok) return;
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = ''; let full = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n'); buffer = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const raw = line.slice(6).trim();
+          if (!raw) continue;
+          try {
+            const ev = JSON.parse(raw);
+            if (ev.type === 'token') full += ev.token;
+          } catch {}
+        }
+      }
+      // Parse "q1","q2","q3" format
+      const matches = full.match(/"([^"]+)"/g);
+      if (matches && matches.length >= 3) {
+        renderChips(matches.slice(0, 3).map(m => m.replace(/"/g, '')));
+      }
+    } catch {}
+  }
+
+  // Fire both in parallel — FAB shows only after both complete
+  let infoDone = false; let questionsDone = false;
+  function checkReady() { if (infoDone && questionsDone) fab.classList.add('ready'); }
+
+  fetch(`${API_BASE}/api/public/info`, { headers: { 'X-Archelon-Key': API_KEY } })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => { applyInfo(d); infoDone = true; checkReady(); })
+    .catch(() => { applyInfo(null); infoDone = true; checkReady(); });
+
+  fetchSampleQuestions().then(() => { questionsDone = true; checkReady(); });
 
   // ── Markdown parser ────────────────────────────────────────────────────────
   function parseMarkdown(text) {
