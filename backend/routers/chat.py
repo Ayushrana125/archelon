@@ -8,16 +8,18 @@ Smalltalk:     direct LLM response, no retrieval
 """
 
 import asyncio
+import json
 import time
 from collections import defaultdict
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, validator
 from pipeline.intent_classifier import classify_intent
 from pipeline.query_analyser import analyse_query
 from pipeline.smalltalk_agent import handle_smalltalk
 from pipeline.retrieval.vector_search import vector_search
 from pipeline.retrieval.reranker import rerank, SINGLE_BUDGET, MULTI_BUDGET
-from pipeline.synthesizer import synthesize
+from pipeline.synthesizer import synthesize, synthesize_stream
 from jwt_handler import verify_token
 from db.token_usage_db import insert_query_event, get_user_token_balance, get_agent_total_tokens
 
@@ -175,3 +177,95 @@ async def chat(body: ChatRequest, current_user: dict = Depends(verify_token)):
         "sources":         result["sources"],
         "token_usage":     result["token_usage"],
     }
+
+
+@router.post("/chat/stream")
+async def chat_stream(body: ChatRequest, current_user: dict = Depends(verify_token)):
+
+    check_rate_limit(current_user["user_id"])
+    safe_message = sanitize_message(body.message)
+
+    balance = await get_user_token_balance(current_user["user_id"])
+    if balance["tokens_remaining"] <= 0:
+        raise HTTPException(status_code=402, detail="Token limit reached. Upgrade your plan to continue.")
+
+    # Steps 1-5 run before streaming starts (same as /chat)
+    classified = await classify_intent(
+        user_message=safe_message,
+        system_instructions=body.agent_instructions,
+    )
+    intent = classified.get("intent", "single")
+
+    # Smalltalk — no retrieval, stream the smalltalk answer directly
+    if intent == "smalltalk":
+        answer = await handle_smalltalk(
+            user_message=safe_message,
+            agent_name=body.agent_name or "Assistant",
+            agent_description=body.agent_description,
+            agent_instructions=body.agent_instructions,
+        )
+        input_tokens  = len(safe_message) // 4
+        output_tokens = len(answer) // 4
+        await insert_query_event(
+            agent_id=body.agent_id,
+            user_id=current_user["user_id"],
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            user_message=safe_message,
+            agent_response=answer,
+        )
+
+        async def smalltalk_stream():
+            # Send metadata first so frontend can show ThinkingSteps
+            yield f"data: {json.dumps({'type': 'meta', 'intent': intent, 'thinking': '', 'search_thinking': '', 'search_queries': []})}\n\n"
+            yield f"data: {json.dumps({'type': 'token', 'token': answer})}\n\n"
+            yield f"data: {json.dumps({'type': 'done', 'sources': [], 'token_usage': {'input_tokens': input_tokens, 'output_tokens': output_tokens, 'total': input_tokens + output_tokens}})}\n\n"
+
+        return StreamingResponse(smalltalk_stream(), media_type="text/event-stream",
+                                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+    analysed       = await analyse_query(safe_message, intent=intent)
+    search_queries = analysed.get("search_queries") or [safe_message]
+
+    search_tasks  = [vector_search(q, body.agent_id, match_count=15) for q in search_queries]
+    all_results   = await asyncio.gather(*search_tasks)
+    merged        = [m for result in all_results for m in result]
+    budget        = MULTI_BUDGET if intent == "multi" else SINGLE_BUDGET
+    context_chunks = rerank(merged, budget=budget)
+
+    async def rag_stream():
+        # Send metadata so frontend can render ThinkingSteps before tokens arrive
+        yield f"data: {json.dumps({'type': 'meta', 'intent': intent, 'thinking': classified.get('thinking', ''), 'search_thinking': analysed.get('search_thinking', ''), 'search_queries': search_queries})}\n\n"
+
+        full_response = ""
+        final_event   = None
+
+        async for chunk in synthesize_stream(
+            user_message=safe_message,
+            context_chunks=context_chunks,
+            agent_name=body.agent_name or "Assistant",
+            agent_instructions=body.agent_instructions,
+            search_queries=search_queries,
+        ):
+            # synthesize_stream yields raw SSE strings — parse and re-emit with type field
+            raw = chunk.removeprefix("data: ").strip()
+            if raw.startswith("[DONE]"):
+                final_event = json.loads(raw[7:])
+                token_usage = final_event["token_usage"]
+                await insert_query_event(
+                    agent_id=body.agent_id,
+                    user_id=current_user["user_id"],
+                    input_tokens=token_usage.get("input_tokens", 0),
+                    output_tokens=token_usage.get("output_tokens", 0),
+                    user_message=safe_message,
+                    agent_response=full_response,
+                )
+                yield f"data: {json.dumps({'type': 'done', 'sources': final_event['sources'], 'token_usage': token_usage})}\n\n"
+            else:
+                parsed = json.loads(raw)
+                token  = parsed.get("token", "")
+                full_response += token
+                yield f"data: {json.dumps({'type': 'token', 'token': token})}\n\n"
+
+    return StreamingResponse(rag_stream(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})

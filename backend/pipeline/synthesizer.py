@@ -40,30 +40,61 @@ def _build_sources(chunks: list[dict]) -> list[str]:
     return sources
 
 
-async def synthesize(
+async def synthesize_stream(
     user_message:       str,
     context_chunks:     list[dict],
     agent_name:         str = "Assistant",
     agent_instructions: str = "",
     search_queries:     list[str] = None,
     max_output_tokens:  int = None,
-) -> dict:
+):
     """
-    Generate a grounded answer from context chunks.
+    Async generator — yields tokens as SSE strings, then a final JSON event.
+    Yields:
+      'data: <token>\n\n'  for each token
+      'data: [DONE] <json>\n\n'  with sources + token_usage at the end
+    """
+    context_text = _build_context(context_chunks)
+    sources      = _build_sources(context_chunks)
+    search_hint  = ", ".join(search_queries) if search_queries else ""
 
-    Returns:
-      {
-        answer:       str,
-        sources:      list[str],   # unique document names
-        token_usage:  { context, system, query, total }
-      }
-    """
+    system_prompt = _build_system_prompt(agent_name, agent_instructions, context_text, search_hint)
+
+    system_tokens = _estimate_tokens(system_prompt)
+    query_tokens  = _estimate_tokens(user_message)
+    input_tokens  = system_tokens + query_tokens
+
+    llm = ChatMistralAI(
+        model="mistral-large-latest",
+        api_key=os.getenv("MISTRAL_API_KEY_1"),
+        max_tokens=max_output_tokens if max_output_tokens else None,
+    )
+
+    full_response = ""
     try:
-        context_text = _build_context(context_chunks)
-        sources      = _build_sources(context_chunks)
-        search_hint  = ", ".join(search_queries) if search_queries else ""
+        async for chunk in llm.astream([
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=user_message),
+        ]):
+            token = chunk.content
+            if token:
+                full_response += token
+                import json
+                yield f"data: {json.dumps({'token': token})}\n\n"
 
-        system_prompt = f"""You are {agent_name}, an AI assistant.
+        output_tokens = _estimate_tokens(full_response)
+        import json
+        yield f"data: [DONE] {json.dumps({'sources': sources, 'token_usage': {'input_tokens': input_tokens, 'output_tokens': output_tokens, 'total': input_tokens + output_tokens}})}\n\n"
+
+    except Exception as e:
+        print(f"[synthesizer_stream] ERROR: {e}")
+        import json
+        yield f"data: {json.dumps({'token': 'I encountered an error generating a response. Please try again.'})}\n\n"
+        yield f"data: [DONE] {json.dumps({'sources': [], 'token_usage': {'input_tokens': input_tokens, 'output_tokens': 0, 'total': input_tokens}})}\n\n"
+
+
+def _build_system_prompt(agent_name: str, agent_instructions: str, context_text: str, search_hint: str) -> str:
+    prompt = f"""You are {agent_name}, an AI assistant.
 
 {agent_instructions}
 
@@ -97,9 +128,34 @@ Formatting rules:
 
 CONTEXT BLOCK — answer only from what is written here:
 {context_text}"""
+    if search_hint:
+        prompt += f"\n\nSearch focus: {search_hint}"
+    return prompt
 
-        if search_hint:
-            system_prompt += f"\n\nSearch focus: {search_hint}"
+
+async def synthesize(
+    user_message:       str,
+    context_chunks:     list[dict],
+    agent_name:         str = "Assistant",
+    agent_instructions: str = "",
+    search_queries:     list[str] = None,
+    max_output_tokens:  int = None,
+) -> dict:
+    """
+    Generate a grounded answer from context chunks.
+
+    Returns:
+      {
+        answer:       str,
+        sources:      list[str],   # unique document names
+        token_usage:  { context, system, query, total }
+      }
+    """
+    try:
+        context_text = _build_context(context_chunks)
+        sources      = _build_sources(context_chunks)
+        search_hint  = ", ".join(search_queries) if search_queries else ""
+        system_prompt = _build_system_prompt(agent_name, agent_instructions, context_text, search_hint)
 
         # Token usage estimation
         context_tokens = _estimate_tokens(context_text)

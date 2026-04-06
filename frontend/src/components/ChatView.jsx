@@ -244,7 +244,9 @@ function ModelSelector({ selected, onChange }) {
 function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoading, onDocumentsUpdated, onTokensUsed, onRequestBusy }) {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [streamingMsg, setStreamingMsg] = useState(null);
+  const [streamingMsg, setStreamingMsg] = useState(null);  // { id, content, sources }
+  const streamingIdRef = useRef(null);
+  const streamDoneRef = useRef(false);
   const [resumeFlow, setResumeFlow] = useState(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -379,7 +381,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
     setIsTyping(true);
     onRequestBusy?.(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/chat`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/chat/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({
@@ -397,33 +399,81 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
         setShowUpgradeModal(true);
         return;
       }
-      const data = await res.json();
-      onRequestBusy?.(false);
-      const { intent, thinking, search_thinking, search_queries } = data;
 
-      if (intent === 'single' || intent === 'multi') {
-        const tid = Date.now();
-        const usage = data.token_usage ?? {};
-        const inputTokens = usage.input_tokens ?? 0;
-        const outputTokens = usage.output_tokens ?? 0;
-        if (inputTokens + outputTokens > 0) {
-          setSessionInputTokens(prev => prev + inputTokens);
-          setSessionOutputTokens(prev => prev + outputTokens);
-          setSessionTokens(prev => prev + inputTokens + outputTokens);
-          setAgentTotalTokens(prev => prev + inputTokens + outputTokens);
-          onTokensUsed?.();
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let thinkingId = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // keep incomplete line
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const raw = line.slice(6).trim();
+          if (!raw) continue;
+          let event;
+          try { event = JSON.parse(raw); } catch { continue; }
+
+          if (event.type === 'meta') {
+            setIsTyping(false);
+            onRequestBusy?.(false);
+            const { intent, thinking, search_thinking, search_queries } = event;
+            if (intent === 'single' || intent === 'multi') {
+              thinkingId = Date.now();
+              setMessages(prev => [...prev, {
+                role: 'thinking', id: thinkingId,
+                query: thinking,
+                searchThinking: search_thinking,
+                sources: [],
+                isSmallTalk: false,
+              }]);
+            }
+            // smalltalk meta — no thinking steps, tokens arrive directly
+          }
+
+          if (event.type === 'token') {
+            const token = event.token;
+            if (!streamingIdRef.current) {
+              const sid = Date.now();
+              streamingIdRef.current = sid;
+              setStreamingMsg({ id: sid, content: token, sources: [] });
+            } else {
+              setStreamingMsg(prev => prev ? { ...prev, content: prev.content + token } : prev);
+            }
+          }
+
+          if (event.type === 'done') {
+            const { sources, token_usage } = event;
+            setStreamingMsg(prev => prev ? { ...prev, sources } : prev);
+            if (thinkingId) {
+              setMessages(prev => prev.map(m => m.id === thinkingId ? { ...m, sources } : m));
+            }
+            const inputTokens  = token_usage?.input_tokens ?? 0;
+            const outputTokens = token_usage?.output_tokens ?? 0;
+            if (inputTokens + outputTokens > 0) {
+              setSessionInputTokens(prev => prev + inputTokens);
+              setSessionOutputTokens(prev => prev + outputTokens);
+              setSessionTokens(prev => prev + inputTokens + outputTokens);
+              setAgentTotalTokens(prev => prev + inputTokens + outputTokens);
+              onTokensUsed?.();
+            }
+            // Commit streaming bubble to messages after a short delay so final render settles
+            setTimeout(() => {
+              setStreamingMsg(current => {
+                if (!current) return null;
+                setMessages(prev => [...prev, { role: 'assistant', content: current.content, sources: current.sources, id: current.id }]);
+                streamingIdRef.current = null;
+                resetIdle();
+                return null;
+              });
+            }, 120);
+          }
         }
-        setPendingResponse(prev => ({ ...prev, [tid]: { response: data.answer ?? 'No answer returned.', sources: data.sources ?? [] } }));
-        setIsTyping(false);
-        setMessages(prev => [...prev, {
-          role: 'thinking', id: tid,
-          query: thinking,
-          searchThinking: search_thinking,
-          sources: data.sources ?? [],
-          isSmallTalk: intent !== 'single' && intent !== 'multi',
-        }]);
-      } else {
-        addAssistantMsg(data.answer ?? 'User query successfully processed.');
       }
     } catch {
       setIsTyping(false);
@@ -436,6 +486,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
     if (!streamingMsg) return;
     setMessages(prev => [...prev, { role: 'assistant', content: streamingMsg.content, sources: streamingMsg.sources, id: streamingMsg.id }]);
     setStreamingMsg(null);
+    streamingIdRef.current = null;
     resetIdle();
   };
 
@@ -465,14 +516,8 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
                     agentName={agentName}
                     sources={msg.sources}
                     isSmallTalk={msg.isSmallTalk}
-                    isHistorical={!pendingResponse[msg.id]}
-                    onComplete={() => {
-                      const pending = pendingResponse[msg.id];
-                      if (pending) {
-                        addAssistantMsg(pending.response, pending.sources);
-                        setPendingResponse(prev => { const n = { ...prev }; delete n[msg.id]; return n; });
-                      }
-                    }}
+                    isHistorical={!streamingMsg && !messages.slice(msgIdx + 1).some(m => m.role === 'assistant')}
+                    onComplete={() => {}}
                   />
                 ) : msg.role === 'processing' ? (
                   <ProcessingSteps
@@ -509,13 +554,12 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
 
           {streamingMsg && (
             <div className="flex justify-start">
-              <div className="max-w-[80%]">
-                <TypewriterMessage
-                  key={streamingMsg.id}
-                  content={streamingMsg.content}
-                  sources={streamingMsg.sources}
-                  onComplete={handleStreamComplete}
-                />
+              <div className="max-w-[80%] px-1">
+                <div className="text-[17px]">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{streamingMsg.content}</ReactMarkdown>
+                </div>
+                {streamingMsg.sources?.length > 0 && <SourceBadges sources={streamingMsg.sources} />}
+                <img src="/Archelon_logo.png" alt="" className="block w-7 h-7 object-contain opacity-50 mt-2 animate-spin-slow" />
               </div>
             </div>
           )}
