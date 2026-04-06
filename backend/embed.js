@@ -418,6 +418,44 @@
 
   // ── Thinking steps ────────────────────────────────────────────────────────
   const STEPS_RAG = [
+    'Let me look into that...',
+    'Searching in Knowledge Base...',
+    'Almost there...',
+  ];
+
+  function showThinking(ragMode) {
+    const el = document.createElement('div');
+    el.className = 'arch-msg bot';
+    el.id = 'arch-thinking';
+    const steps = ragMode ? STEPS_RAG : ['Let me look into that...'];
+    const stepsHtml = steps.map((label, i) => `
+      <div class="arch-thinking-step ${i === 0 ? 'active' : ''}" id="arch-step-${i}">
+        <div class="arch-step-icon"></div>
+        <span>${label}</span>
+      </div>
+    `).join('');
+    el.innerHTML = `
+      <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
+      <div class="arch-thinking-wrap">${stepsHtml}</div>
+    `;
+    msgs.appendChild(el);
+    scrollToBottom();
+    if (ragMode) {
+      let current = 0;
+      const interval = setInterval(() => {
+        const prev = el.querySelector(`#arch-step-${current}`);
+        const next = el.querySelector(`#arch-step-${current + 1}`);
+        if (!next) { clearInterval(interval); return; }
+        if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
+        current++;
+        next.classList.add('active');
+      }, 1200);
+      el._interval = interval;
+    }
+    return el;
+  }
+
+  // ── Fetch agent name from backend ─────────────────────────────────────────
   fetch(`${API_BASE}/api/public/info`, {
     headers: { 'X-Archelon-Key': API_KEY },
   })
@@ -576,48 +614,6 @@
     msg.innerHTML = `<div class="arch-bubble">${parseMarkdown(text)}</div>`;
     msgs.appendChild(msg);
     scrollToBottom();
-  }
-
-  const STEPS_RAG = [
-    'Let me look into that...',
-    'Searching in Knowledge Base...',
-    'Almost there...',
-  ];
-
-  function showThinking(ragMode) {
-    const el = document.createElement('div');
-    el.className = 'arch-msg bot';
-    el.id = 'arch-thinking';
-
-    const steps = ragMode ? STEPS_RAG : ['Let me look into that...'];
-    const stepsHtml = steps.map((label, i) => `
-      <div class="arch-thinking-step ${i === 0 ? 'active' : ''}" id="arch-step-${i}">
-        <div class="arch-step-icon"></div>
-        <span>${label}</span>
-      </div>
-    `).join('');
-
-    el.innerHTML = `
-      <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
-      <div class="arch-thinking-wrap">${stepsHtml}</div>
-    `;
-    msgs.appendChild(el);
-    scrollToBottom();
-
-    if (ragMode) {
-      let current = 0;
-      const interval = setInterval(() => {
-        const prev = el.querySelector(`#arch-step-${current}`);
-        const next = el.querySelector(`#arch-step-${current + 1}`);
-        if (!next) { clearInterval(interval); return; }
-        if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
-        current++;
-        next.classList.add('active');
-      }, 1200);
-      el._interval = interval;
-    }
-
-    return el;
   }
 
   function scrollToBottom() {
