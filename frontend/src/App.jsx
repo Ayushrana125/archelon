@@ -83,8 +83,8 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
   });
 
   const currentChatKey = activeAgentId ?? 'arex';
-  const currentMessages = chatHistories[currentChatKey] ?? [{ role: 'assistant', content: `Hi, I'm ${agentData?.name ?? 'Arex'}. How can I help you?`, id: 0 }];
-  const isGreetingLoading = activeAgentId && chatHistories[activeAgentId]?.length === 0;
+  const currentMessages = chatHistories[currentChatKey] ?? [];
+  const isGreetingLoading = !!(activeAgentId && (chatHistories[activeAgentId] === undefined || chatHistories[activeAgentId]?.length === 0));
 
   const setCurrentMessages = (updater) => {
     setChatHistories(prev => ({
@@ -111,6 +111,8 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
     setActiveAgentId(agent.id);
   };
 
+  const greetingFiredRef = React.useRef({});
+
   const handleSelectAgent = async (agent) => {
     if (chatBusy) {
       setPendingAgent(agent);
@@ -125,7 +127,8 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
 
     // Auto-send "Hi" only if this agent has no chat history yet
     setChatHistories(prev => {
-      if (prev[agent.id]) return prev;
+      if (prev[agent.id] || greetingFiredRef.current[agent.id]) return prev;
+      greetingFiredRef.current[agent.id] = true;
       // Fire greeting directly — not via useEffect, immune to StrictMode
       fetch(`${import.meta.env.VITE_API_URL}/api/chat/stream`, {
         method: 'POST',
@@ -154,10 +157,14 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
               const ev = JSON.parse(line.slice(6).trim());
               if (ev.type === 'token') full += ev.token;
               if (ev.type === 'done') {
-                setChatHistories(h => ({
-                  ...h,
-                  [agent.id]: [{ role: 'smalltalk', content: full, sources: [], id: Date.now(), skipAnimation: false }],
-                }));
+                setChatHistories(h => {
+                  // Only commit greeting if user hasn't sent any messages yet
+                  if (h[agent.id] && h[agent.id].length > 0) return h;
+                  return {
+                    ...h,
+                    [agent.id]: [{ role: 'smalltalk', content: full, sources: [], id: Date.now(), skipAnimation: false }],
+                  };
+                });
               }
             } catch {}
           }

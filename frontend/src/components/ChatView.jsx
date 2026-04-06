@@ -487,9 +487,15 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
               setStreamingMsg(current => {
                 if (!current) return null;
                 const role = thinkingId ? 'assistant' : 'smalltalk';
-                setMessages(prev => [...prev, { role, content: current.content, sources: current.sources, id: current.id, skipAnimation: false }]);
+                const committed = { role, content: current.content, sources: current.sources, id: current.id, skipAnimation: false };
                 streamingIdRef.current = null;
-                resetIdle();
+                setTimeout(() => {
+                  setMessages(prev => {
+                    if (prev.some(m => m.id === committed.id)) return prev;
+                    return [...prev, committed];
+                  });
+                  resetIdle();
+                }, 0);
                 return null;
               });
             }, 120);
@@ -583,6 +589,12 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
               </div>
             </div>
           ))}
+
+          {isGreetingLoading && messages.length === 0 && (
+            <div className="flex justify-start px-1">
+              <img src="/Archelon_logo.png" alt="" className="w-7 h-7 object-contain opacity-50 animate-spin-slow" />
+            </div>
+          )}
 
           {isTyping && (
             <div className="flex justify-start px-1">
