@@ -259,6 +259,8 @@
     #archelon-widget-root.dark #archelon-input-area { background: #1a1a1a; border-color: #2a2a2a; }
     #archelon-widget-root.dark #archelon-input { background: #2a2a2a; border-color: #333; color: #e5e7eb; }
     #archelon-widget-root.dark #archelon-input:focus { border-color: ${TEAL}; background: #2a2a2a; }
+    #archelon-widget-root.dark .arch-ol-num { color: #e5e7eb !important; }
+    #archelon-widget-root.dark #archelon-footer a { color: #e5e7eb; }
     #archelon-widget-root.dark pre { background: #2a2a2a !important; }
     #archelon-widget-root.dark code { background: #2a2a2a !important; color: #e5e7eb; }
   `;
@@ -549,7 +551,7 @@
     // Unordered lists
     html = html.replace(/^[\-\*] (.+)$/gm, '<div style="display:flex;gap:6px;margin:2px 0;"><span style="color:#9ca3af;flex-shrink:0;">•</span><span>$1</span></div>');
     // Ordered lists — preserve actual number
-    html = html.replace(/^(\d+)\. (.+)$/gm, '<div style="display:flex;gap:6px;margin:2px 0;"><span style="color:#6b7280;flex-shrink:0;min-width:14px;">$1.</span><span>$2</span></div>');
+    html = html.replace(/^(\d+)\. (.+)$/gm, '<div style="display:flex;gap:6px;margin:2px 0;"><span style="color:#111827;flex-shrink:0;min-width:14px;" class="arch-ol-num">$1.</span><span>$2</span></div>');
     // Links
     html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
     // Line breaks
