@@ -270,142 +270,33 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
               </div>
               <div className="px-4 py-3 rounded-xl border" style={{ borderColor: `${TEAL}30`, background: `${TEAL}08` }}>
                 <p className="text-xs leading-relaxed" style={{ color: `${TEAL}cc` }}>
-                  🚧 <span className="font-medium">Frontend preview.</span> API key generation and live widget are coming in the next release.
+                  Enable the widget on the right to generate your API key and get the embed script.
                 </p>
               </div>
             </div>
           ) : (
-            /* Widget preview panel */
+            /* Live widget preview in iframe */
             <div className="relative flex flex-col h-full" style={{ background: '#0a0a0a' }}>
-              <div className="px-6 pt-6 pb-3">
-                <p className="text-xs font-medium uppercase tracking-widest" style={{ color: TEAL }}>Widget Preview</p>
-                <p className="text-xs text-gray-600 mt-0.5">Live preview — updates as you configure</p>
+              <div className="px-6 pt-6 pb-3 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-widest" style={{ color: TEAL }}>Live Preview</p>
+                  <p className="text-xs text-gray-600 mt-0.5">Actual widget — test before deploying</p>
+                </div>
               </div>
-
-              {/* Mock browser chrome */}
-              <div className="flex-1 mx-6 mb-6 rounded-2xl overflow-hidden border border-gray-800 flex flex-col">
-                {/* Browser bar */}
-                <div className="flex items-center gap-2 px-3 py-2.5 border-b border-gray-800" style={{ background: '#111' }}>
-                  <div className="flex gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#ff5f57' }} />
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#febc2e' }} />
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#28c840' }} />
+              <div className="flex-1 mx-6 mb-6 rounded-2xl overflow-hidden border border-gray-800">
+                {apiKey && apiKey !== 'masked' ? (
+                  <iframe
+                    key={`${agentId}-${apiKey}`}
+                    srcDoc={`<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;background:#f8fafc;font-family:sans-serif;padding:20px;}h2{color:#374151;font-size:14px;}p{color:#9ca3af;font-size:12px;}</style></head><body><h2>Your website</h2><p>The widget appears in the bottom-right corner.</p><p>Click the button to test it.</p><script>window.ArchelonConfig={agentId:"${agentId}",apiKey:"${apiKey}"};</script><script src="https://api.archelon.cloud/embed.js" async></script></body></html>`}
+                    className="w-full h-full border-0"
+                    title="Widget Preview"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-3" style={{ background: '#111' }}>
+                    <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+                    <p className="text-xs text-gray-500 text-center px-6">Generate an API key to see the live preview</p>
                   </div>
-                  <div className="flex-1 mx-2 px-2.5 py-0.5 rounded text-[10px] text-gray-600 font-mono truncate" style={{ background: '#1a1a1a' }}>
-                    {domains[0] ? `https://${domains[0]}` : 'https://yourwebsite.com'}
-                  </div>
-                </div>
-
-                {/* Page + widget */}
-                <div className="flex-1 relative overflow-hidden" style={{ background: '#f8fafc' }}>
-                  {/* Fake page skeleton */}
-                  <div className="p-5 space-y-2.5">
-                    <div className="h-5 rounded-lg bg-gray-200 w-1/2" />
-                    <div className="h-3 rounded bg-gray-100 w-full" />
-                    <div className="h-3 rounded bg-gray-100 w-5/6" />
-                    <div className="h-3 rounded bg-gray-100 w-4/6" />
-                    <div className="h-7 rounded-lg bg-gray-200 w-1/3 mt-3" />
-                    <div className="h-3 rounded bg-gray-100 w-full mt-3" />
-                    <div className="h-3 rounded bg-gray-100 w-3/4" />
-                    <div className="h-3 rounded bg-gray-100 w-5/6" />
-                  </div>
-
-                  {/* Floating chat widget — bottom right */}
-                  <div className="absolute bottom-3 right-3 flex flex-col items-end gap-2">
-
-                    {/* Chat window */}
-                    <div className="w-60 rounded-2xl overflow-hidden shadow-2xl" style={{ background: '#fff', border: '1px solid #e5e7eb' }}>
-
-                      {/* Header */}
-                      <div className="px-4 py-3 flex items-center gap-2.5" style={{ background: `linear-gradient(135deg, #0d0d0d, #1a1a1a)` }}>
-                        <div className="relative flex-shrink-0">
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: `${TEAL}25` }}>
-                            <img src={logoUrl || '/Archelon_logo.png'} alt="" className="w-5 h-5 object-contain" />
-                          </div>
-                          <div className="absolute bottom-0 right-0 w-2 h-2 rounded-full border border-gray-900" style={{ background: '#22c55e' }} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-semibold text-white truncate">{displayName}</div>
-                          <div className="text-[10px] text-gray-400">Typically replies instantly</div>
-                        </div>
-                        <button className="text-gray-500 hover:text-gray-300">
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-                      </div>
-
-                      {/* Messages */}
-                      <div className="px-3 py-3 space-y-2" style={{ background: '#f9fafb', minHeight: '130px' }}>
-                        {/* Agent greeting */}
-                        <div className="flex gap-2 items-end">
-                          <div className="w-5 h-5 rounded-full flex-shrink-0" style={{ background: `${TEAL}20` }}>
-                            <img src={logoUrl || '/Archelon_logo.png'} alt="" className="w-full h-full object-contain p-0.5" />
-                          </div>
-                          <div className="flex flex-col gap-0.5">
-                            <div className="px-2.5 py-1.5 rounded-2xl rounded-bl-sm text-[10px] text-gray-800 max-w-[85%] leading-relaxed" style={{ background: '#fff', border: '1px solid #e5e7eb' }}>
-                              Hi {user?.first_name || 'there'}! 👋 I'm {displayName}. How can I help you today?
-                            </div>
-                            <span className="text-[9px] text-gray-400 ml-1">Just now</span>
-                          </div>
-                        </div>
-
-                        {/* User message */}
-                        <div className="flex justify-end">
-                          <div className="flex flex-col items-end gap-0.5">
-                            <div className="px-2.5 py-1.5 rounded-2xl rounded-br-sm text-[10px] text-white max-w-[85%] leading-relaxed" style={{ background: `linear-gradient(135deg, ${TEAL}, #1A73E8)` }}>
-                              What can you help me with?
-                            </div>
-                            <span className="text-[9px] text-gray-400 mr-1">Just now</span>
-                          </div>
-                        </div>
-
-                        {/* Agent reply */}
-                        <div className="flex gap-2 items-end">
-                          <div className="w-5 h-5 rounded-full flex-shrink-0" style={{ background: `${TEAL}20` }}>
-                            <img src={logoUrl || '/Archelon_logo.png'} alt="" className="w-full h-full object-contain p-0.5" />
-                          </div>
-                          <div className="px-2.5 py-1.5 rounded-2xl rounded-bl-sm text-[10px] text-gray-800 max-w-[85%] leading-relaxed" style={{ background: '#fff', border: '1px solid #e5e7eb' }}>
-                            I can answer questions based on the documents I've been trained on!
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Disclaimer */}
-                      <div className="px-3 pt-1.5" style={{ background: '#f9fafb' }}>
-                        <p className="text-[9px] text-gray-400 text-center">{displayName} can make mistakes. Verify important info.</p>
-                      </div>
-
-                      {/* Input */}
-                      <div className="px-3 py-2.5" style={{ background: '#fff', borderTop: '1px solid #f3f4f6' }}>
-                        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl" style={{ background: '#f3f4f6' }}>
-                          <span className="text-[10px] text-gray-400 flex-1">Ask {displayName}...</span>
-                          <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `linear-gradient(135deg, ${TEAL}, #1A73E8)` }}>
-                            <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 12h14M12 5l7 7-7 7" /></svg>
-                          </div>
-                        </div>
-                        <p className="text-center text-[9px] text-gray-400 mt-1.5">
-                          Powered by <span style={{ color: TEAL }} className="font-medium">Archelon</span>
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Launcher FAB — pill shape */}
-                    <div
-                      className="flex items-center gap-2 px-3 rounded-full shadow-lg"
-                      style={{
-                        height: '44px',
-                        background: '#ffffff',
-                        border: '1.5px solid #e5e7eb',
-                        boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0">
-                        <img src={logoUrl || '/Archelon_logo.png'} alt="" className="w-full h-full object-cover" />
-                      </div>
-                      <span className="text-xs font-medium text-gray-900 pr-1">Ask {displayName}</span>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           )}
