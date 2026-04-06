@@ -51,7 +51,7 @@
     }
     #archelon-window {
       position: fixed; z-index: 99998;
-      width: 360px; height: 540px; border-radius: 20px;
+      width: 360px; height: 600px; border-radius: 20px;
       background: #fff; box-shadow: 0 8px 40px rgba(0,0,0,0.18);
       display: flex; flex-direction: column; overflow: hidden;
       border: 1px solid #e5e7eb;
@@ -77,7 +77,8 @@
     #archelon-header-sub { font-size: 10px; color: #22c55e; margin-top: 1px; font-weight: 500;
       display: flex; align-items: center; gap: 4px; }
     #archelon-header-sub::before { content: ''; width: 6px; height: 6px; border-radius: 50%;
-      background: #22c55e; display: inline-block; flex-shrink: 0; }
+      background: #22c55e; display: inline-block; flex-shrink: 0;
+      animation: arch-pulse 1.5s ease-in-out infinite; }
     #archelon-close {
       background: none; border: none; cursor: pointer; color: #6b7280;
       padding: 4px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
@@ -348,7 +349,7 @@
         </div>
         <div id="archelon-prechat-name">...</div>
         <div id="archelon-prechat-status">
-          <span style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
+          <span style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;animation:arch-pulse 1.5s ease-in-out infinite;"></span>
           Online
         </div>
         <div id="archelon-prechat-greeting">How can I help you today?</div>
@@ -703,7 +704,7 @@
   function positionWindow() {
     const GAP = 10;
     const WIN_W = 360;
-    const WIN_H = 540;
+    const WIN_H = 600;
     const fab_rect = fab.getBoundingClientRect();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -746,9 +747,9 @@
       if (!chatStarted) setRandomGreeting();
     }
     win.classList.toggle('open', isOpen);
-    fabLogo.style.display = isOpen ? 'none' : 'flex';
-    fab.style.paddingLeft = isOpen ? '20px' : '8px';
-    fabText.textContent = isOpen ? 'Close' : `Ask ${NAME}`;
+    fab.style.opacity = isOpen ? '0' : '1';
+    fab.style.pointerEvents = isOpen ? 'none' : 'all';
+    fabText.textContent = `Ask ${NAME}`;
     if (isOpen) setTimeout(() => input.focus(), 300);
   }
 
