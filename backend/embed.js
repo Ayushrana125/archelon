@@ -418,10 +418,9 @@
 
   // ── Thinking steps ────────────────────────────────────────────────────────
   const STEPS = [
-    { label: 'Reading your message...' },
-    { label: 'Scanning through documents...' },
-    { label: 'Pulling the best answer...' },
-    { label: 'Almost ready...' },
+    { label: 'Let me look into that...' },
+    { label: 'Searching through our knowledge base...' },
+    { label: 'Putting together your answer...' },
   ];
 
   // ── Fetch agent name from backend ─────────────────────────────────────────
@@ -728,10 +727,13 @@
     input.style.height = 'auto';
     setInputEnabled(false);
     addUserMessage(text);
-    showDots();
+
+    let thinkingEl = null;
+    let streamBubble = null;
+    let streamBubbleContent = '';
 
     try {
-      const res = await fetch(`${API_BASE}/api/public/chat`, {
+      const res = await fetch(`${API_BASE}/api/public/chat/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -740,26 +742,78 @@
         body: JSON.stringify({ message: text, agent_id: AGENT_ID }),
       });
 
-      removeThinking();
-
       if (res.status === 429) {
         addBotMessage("You're sending messages too fast. Give it a moment.");
-      } else if (res.status === 402) {
+        isLoading = false; setInputEnabled(true); input.focus(); return;
+      }
+      if (res.status === 402) {
         addBotMessage("This agent has reached its usage limit for now. Try again later.");
-      } else if (!res.ok) {
+        isLoading = false; setInputEnabled(true); input.focus(); return;
+      }
+      if (!res.ok) {
         addBotMessage('Something went wrong. Try again in a moment.');
-      } else {
-        const data = await res.json();
-        // If RAG query, briefly show steps before answer for context
-        if (data.intent && data.intent !== 'smalltalk') {
-          showThinking();
-          await new Promise(r => setTimeout(r, 600));
-          removeThinking();
+        isLoading = false; setInputEnabled(true); input.focus(); return;
+      }
+
+      const reader  = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const raw = line.slice(6).trim();
+          if (!raw) continue;
+          let event;
+          try { event = JSON.parse(raw); } catch { continue; }
+
+          if (event.type === 'meta') {
+            if (event.intent === 'smalltalk') {
+              // Dots only for smalltalk
+              thinkingEl = showDots();
+            } else {
+              // Real thinking steps for RAG
+              thinkingEl = showThinking();
+            }
+          }
+
+          if (event.type === 'token') {
+            const token = event.token;
+            if (!streamBubble) {
+              // First token — remove thinking, create live bubble
+              if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); thinkingEl = null; }
+              streamBubble = document.createElement('div');
+              streamBubble.className = 'arch-msg bot';
+              streamBubble.innerHTML = `
+                <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
+                <div style="display:flex;flex-direction:column;max-width:78%;">
+                  <div class="arch-bubble arch-stream-bubble" style="max-width:100%;"></div>
+                </div>
+              `;
+              msgs.appendChild(streamBubble);
+            }
+            streamBubbleContent += token;
+            streamBubble.querySelector('.arch-stream-bubble').textContent = streamBubbleContent;
+            scrollToBottom();
+          }
+
+          if (event.type === 'done') {
+            // Replace plain text bubble with fully parsed markdown + actions
+            if (streamBubble) { streamBubble.remove(); streamBubble = null; }
+            addBotMessage(streamBubbleContent);
+            streamBubbleContent = '';
+          }
         }
-        addBotMessage(data.answer || "I couldn't find an answer. Try rephrasing your question.");
       }
     } catch {
-      removeThinking();
+      if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); }
+      if (streamBubble) streamBubble.remove();
       addBotMessage("Couldn't reach the server. Try again in a moment.");
     }
 

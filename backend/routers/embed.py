@@ -12,20 +12,21 @@ Public endpoint (API key auth):
 """
 
 import asyncio
+import json
 import time
 from collections import defaultdict
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from jwt_handler import verify_token
 from db.api_keys_db import generate_api_key, get_key_by_agent, validate_api_key, update_key_settings, delete_api_key
 from db import agents_db
 from db.token_usage_db import get_user_token_balance, insert_query_event
-from pipeline.intent_classifier import classify_intent
-from pipeline.query_analyser import analyse_query
+from pipeline.intent_and_query import classify_and_analyse
 from pipeline.smalltalk_agent import handle_smalltalk
 from pipeline.retrieval.vector_search import vector_search
 from pipeline.retrieval.reranker import rerank, SINGLE_BUDGET, MULTI_BUDGET
-from pipeline.synthesizer import synthesize
+from pipeline.synthesizer import synthesize_stream
 
 router = APIRouter()
 
@@ -138,24 +139,19 @@ class PublicChatRequest(BaseModel):
     agent_id: str
 
 
-@router.post("/public/chat")
-async def public_chat(request: Request, body: PublicChatRequest):
-
-    # 1. Extract API key from header
+async def _validate_public_request(request: Request, body: PublicChatRequest):
+    """Shared validation for public chat endpoints. Returns (key_record, message, agent_name, agent_instructions, max_output)."""
     raw_key = request.headers.get("X-Archelon-Key")
     if not raw_key:
         raise HTTPException(status_code=401, detail="Missing API key.")
 
-    # 2. Validate key
     key_record = await validate_api_key(raw_key)
     if not key_record:
         raise HTTPException(status_code=403, detail="Invalid API key.")
 
-    # 3. Verify key belongs to the requested agent
     if key_record["agent_id"] != body.agent_id:
         raise HTTPException(status_code=403, detail="API key does not match agent.")
 
-    # 4. Check origin whitelist
     origin = request.headers.get("origin", "")
     allowed = key_record.get("allowed_origins") or []
     if allowed:
@@ -163,70 +159,99 @@ async def public_chat(request: Request, body: PublicChatRequest):
         if not any(origin_clean == o.replace("https://", "").replace("http://", "").rstrip("/") for o in allowed):
             raise HTTPException(status_code=403, detail="Origin not allowed.")
 
-    # 5. Rate limit per key
     check_public_rate_limit(key_record["id"])
 
-    # 6. Token balance check
     balance = await get_user_token_balance(key_record["user_id"])
     if balance["tokens_remaining"] <= 0:
         raise HTTPException(status_code=402, detail="Token limit reached.")
 
-    # 7. Message length check — use key's max_input_chars
     max_chars = key_record.get("max_input_chars") or 2000
     message = body.message.strip()[:max_chars]
     if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty.")
 
-    # 8. Run pipeline
-    agent_name = key_record.get("widget_name") or "Assistant"
-    max_output = key_record.get("max_output_tokens") or 500
+    # Fetch real agent instructions from DB
+    agent_row = await agents_db.get_agent_by_id(body.agent_id, key_record["user_id"])
+    agent_instructions = agent_row.get("instructions", "") if agent_row else ""
+    agent_name         = key_record.get("widget_name") or (agent_row.get("name") if agent_row else "Assistant") or "Assistant"
+    max_output         = key_record.get("max_output_tokens") or 500
 
-    classified = await classify_intent(user_message=message, system_instructions="")
-    intent = classified.get("intent", "single")
+    return key_record, message, agent_name, agent_instructions, max_output
 
+
+@router.post("/public/chat/stream")
+async def public_chat_stream(request: Request, body: PublicChatRequest):
+    key_record, message, agent_name, agent_instructions, max_output = await _validate_public_request(request, body)
+
+    analysed       = await classify_and_analyse(user_message=message, system_instructions=agent_instructions)
+    intent         = analysed.get("intent", "single")
+    search_queries = analysed.get("search_queries") or [message]
+
+    # Smalltalk — stream answer directly with dots, no thinking steps
     if intent == "smalltalk":
         answer = await handle_smalltalk(
             user_message=message,
             agent_name=agent_name,
             agent_description="",
-            agent_instructions="",
+            agent_instructions=agent_instructions,
         )
+        input_tokens  = len(message) // 4
+        output_tokens = len(answer) // 4
         await insert_query_event(
             agent_id=body.agent_id,
             user_id=key_record["user_id"],
-            input_tokens=len(message) // 4,
-            output_tokens=len(answer) // 4,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
             user_message=message,
             agent_response=answer,
         )
-        return {"answer": answer, "intent": "smalltalk", "sources": []}
+        async def smalltalk_stream():
+            yield f"data: {json.dumps({'type': 'meta', 'intent': 'smalltalk'})}\n\n"
+            yield f"data: {json.dumps({'type': 'token', 'token': answer})}\n\n"
+            yield f"data: {json.dumps({'type': 'done', 'sources': [], 'token_usage': {'input_tokens': input_tokens, 'output_tokens': output_tokens}})}\n\n"
+        return StreamingResponse(smalltalk_stream(), media_type="text/event-stream",
+                                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
-    analysed = await analyse_query(message, intent=intent)
-    search_queries = analysed.get("search_queries") or [message]
-
+    # RAG — run retrieval then stream synthesizer
     all_results = await asyncio.gather(*[
         vector_search(q, body.agent_id, match_count=15) for q in search_queries
     ])
-    merged = [m for result in all_results for m in result]
-    budget = MULTI_BUDGET if intent == "multi" else SINGLE_BUDGET
+    merged         = [m for result in all_results for m in result]
+    budget         = MULTI_BUDGET if intent == "multi" else SINGLE_BUDGET
     context_chunks = rerank(merged, budget=budget)
 
-    result = await synthesize(
-        user_message=message,
-        context_chunks=context_chunks,
-        agent_name=agent_name,
-        agent_instructions="",
-        search_queries=search_queries,
-        max_output_tokens=max_output,
-    )
+    async def rag_stream():
+        yield f"data: {json.dumps({'type': 'meta', 'intent': intent})}\n\n"
 
-    await insert_query_event(
-        agent_id=body.agent_id,
-        user_id=key_record["user_id"],
-        input_tokens=result["token_usage"].get("input_tokens", 0),
-        output_tokens=result["token_usage"].get("output_tokens", 0),
-        user_message=message,
-        agent_response=result["answer"],
-    )
+        full_response = ""
+        final_event   = None
 
-    return {"answer": result["answer"], "intent": intent, "sources": result["sources"]}
+        async for chunk in synthesize_stream(
+            user_message=message,
+            context_chunks=context_chunks,
+            agent_name=agent_name,
+            agent_instructions=agent_instructions,
+            search_queries=search_queries,
+            max_output_tokens=max_output,
+        ):
+            raw = chunk.removeprefix("data: ").strip()
+            if raw.startswith("[DONE]"):
+                final_event = json.loads(raw[7:])
+                token_usage = final_event["token_usage"]
+                await insert_query_event(
+                    agent_id=body.agent_id,
+                    user_id=key_record["user_id"],
+                    input_tokens=token_usage.get("input_tokens", 0),
+                    output_tokens=token_usage.get("output_tokens", 0),
+                    user_message=message,
+                    agent_response=full_response,
+                )
+                yield f"data: {json.dumps({'type': 'done', 'sources': final_event['sources'], 'token_usage': token_usage})}\n\n"
+            else:
+                parsed = json.loads(raw)
+                token  = parsed.get("token", "")
+                full_response += token
+                yield f"data: {json.dumps({'type': 'token', 'token': token})}\n\n"
+
+    return StreamingResponse(rag_stream(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
