@@ -11,7 +11,7 @@ Author: Ayush Rana
 Before streaming, the full pipeline ran sequentially and the frontend received one complete JSON response at the end:
 
 ```
-classify (1s) → analyse (0.8s) → vector search (0.5s) → Mistral generates full answer (2-4s) → send
+classify (1s) → analyse (0.8s) → vector search (0.5s) → Mistral generates full answer (2-4s) → sendd
 ```
 
 User stared at a spinner for 4-6 seconds before anything appeared. Perceived wait time was 10-12 seconds.
