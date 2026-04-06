@@ -112,17 +112,33 @@
     .arch-bot-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     /* Message actions */
     .arch-msg-actions {
-      display: flex; align-items: center; gap: 6px; margin-top: 6px; margin-left: 30px;
+      display: flex; align-items: center; gap: 8px; margin-top: 8px;
     }
     .arch-action-btn {
-      background: none; border: none; cursor: pointer; padding: 4px 6px;
-      border-radius: 6px; font-size: 11px; color: #9ca3af;
-      display: flex; align-items: center; gap: 3px;
-      transition: background 0.15s, color 0.15s;
+      background: none; border: 1px solid #e5e7eb; cursor: pointer; padding: 5px 8px;
+      border-radius: 8px; font-size: 12px; color: #6b7280;
+      display: flex; align-items: center; gap: 4px;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
     }
     .arch-action-btn:hover { background: #f3f4f6; color: #374151; }
-    .arch-action-btn.active { color: ${TEAL}; }
+    .arch-action-btn.thumb-up.active { color: #16a34a; border-color: #16a34a; background: #f0fdf4; }
+    .arch-action-btn.thumb-down.active { color: #dc2626; border-color: #dc2626; background: #fef2f2; }
+    .arch-action-btn.locked { pointer-events: none; }
+    .arch-action-btn.copy.copied { color: #16a34a; border-color: #16a34a; background: #f0fdf4; }
+    #archelon-widget-root.dark .arch-action-btn { border-color: #333; color: #9ca3af; }
     #archelon-widget-root.dark .arch-action-btn:hover { background: #2a2a2a; color: #e5e7eb; }
+    /* Scroll to bottom button */
+    #arch-scroll-down {
+      position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+      width: 32px; height: 32px; border-radius: 50%; border: 1px solid #e5e7eb;
+      background: rgba(255,255,255,0.8); backdrop-filter: blur(4px);
+      cursor: pointer; display: none; align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 10;
+    }
+    #arch-scroll-down.visible { display: flex; }
+    #arch-scroll-down svg { width: 14px; height: 14px; color: #374151; }
+    #archelon-widget-root.dark #arch-scroll-down { background: rgba(30,30,30,0.8); border-color: #444; }
+    #archelon-widget-root.dark #arch-scroll-down svg { color: #e5e7eb; }
 
     /* Thinking steps */
     .arch-thinking-wrap {
@@ -290,7 +306,7 @@
         </div>
         <div id="archelon-header-info">
           <div id="archelon-header-name">...</div>
-          <div id="archelon-header-sub">Typically replies instantly</div>
+          <div id="archelon-header-sub">Typically replies in a few seconds</div>
         </div>
         <button id="archelon-header-close" aria-label="Close" style="background:none;border:none;cursor:pointer;color:#6b7280;padding:4px;border-radius:6px;display:flex;align-items:center;justify-content:center;">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
@@ -326,7 +342,11 @@
         <div id="archelon-prechat-greeting">How can I help you today?</div>
         <div id="archelon-prechat-chips"></div>
       </div>
-      <div id="archelon-messages" style="display:none;"></div>
+      <div id="archelon-messages" style="display:none;position:relative;">
+        <button id="arch-scroll-down" aria-label="Scroll to bottom">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+      </div>
       <div id="archelon-disclaimer" style="display:none;">Can make mistakes. Verify important information.</div>
       <div id="archelon-input-area">
         <textarea id="archelon-input" placeholder="Ask a question..." rows="1"></textarea>
@@ -495,8 +515,8 @@
     if (avatarImg) { avatarImg.src = LOGO; avatarImg.onload = () => { avatarImg.style.opacity = '1'; }; avatarImg.onerror = () => { avatarImg.style.opacity = '1'; }; }
     prechatName.textContent = NAME;
     prechatLogoImg.src = LOGO;
-    prechatLogoImg.onload = () => { prechatLogoImg.style.opacity = '1'; };
-    prechatLogoImg.onerror = () => { prechatLogoImg.style.opacity = '1'; };
+    prechatLogoImg.onload = () => { prechatLogoImg.style.opacity = '1'; fab.classList.add('ready'); };
+    prechatLogoImg.onerror = () => { prechatLogoImg.style.opacity = '1'; fab.classList.add('ready'); };
     setRandomGreeting();
     if (d && d.theme === 'dark') { THEME = 'dark'; root.classList.add('dark'); themeIconMoon.style.display = 'none'; themeIconSun.style.display = 'block'; }
   }
@@ -555,7 +575,7 @@
   // Fire both in parallel — FAB shows when info is ready, chips appear when questions are ready
   fetch(`${API_BASE}/api/public/info`, { headers: { 'X-Archelon-Key': API_KEY } })
     .then(r => r.ok ? r.json() : null)
-    .then(d => { applyInfo(d); fab.classList.add('ready'); })
+    .then(d => { applyInfo(d); })
     .catch(() => { applyInfo(null); fab.classList.add('ready'); });
 
   fetchSampleQuestions();
@@ -592,6 +612,46 @@
   }
 
   // ── Message helpers ───────────────────────────────────────────────────────
+  function buildActionButtons(wrap, rawText) {
+    const actionsDiv = wrap.querySelector('.arch-msg-actions');
+    const thumbUp   = actionsDiv.querySelector('.arch-thumb-up');
+    const thumbDown = actionsDiv.querySelector('.arch-thumb-down');
+    const copyBtn   = actionsDiv.querySelector('.arch-copy');
+    thumbUp.addEventListener('click', function() {
+      if (this.classList.contains('locked')) return;
+      this.classList.add('active', 'locked');
+      thumbDown.classList.add('locked');
+    });
+    thumbDown.addEventListener('click', function() {
+      if (this.classList.contains('locked')) return;
+      this.classList.add('active', 'locked');
+      thumbUp.classList.add('locked');
+    });
+    copyBtn.addEventListener('click', function() {
+      navigator.clipboard.writeText(rawText);
+      this.classList.add('copied');
+      this.innerHTML = '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+      setTimeout(() => {
+        this.classList.remove('copied');
+        this.innerHTML = '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
+      }, 1500);
+    });
+  }
+
+  const ACTION_BUTTONS_HTML = `
+    <div class="arch-msg-actions">
+      <button class="arch-action-btn arch-thumb-up thumb-up" title="Good response">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
+      </button>
+      <button class="arch-action-btn arch-thumb-down thumb-down" title="Bad response">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 10v2a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"/></svg>
+      </button>
+      <button class="arch-action-btn arch-copy copy" title="Copy">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+      </button>
+    </div>
+  `;
+
   function addBotMessage(text) {
     const wrap = document.createElement('div');
     wrap.className = 'arch-msg bot';
@@ -600,24 +660,15 @@
       <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
       <div style="display:flex;flex-direction:column;max-width:78%;">
         <div class="arch-bubble" style="max-width:100%;"></div>
-        <div class="arch-msg-actions">
-          <button class="arch-action-btn arch-thumb-up" title="Good response">
-            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
-          </button>
-          <button class="arch-action-btn arch-thumb-down" title="Bad response">
-            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 10v2a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"/></svg>
-          </button>
-          <button class="arch-action-btn arch-copy" title="Copy">
-            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-          </button>
-        </div>
+        ${ACTION_BUTTONS_HTML}
       </div>
     `;
     const bubble = wrap.querySelector('.arch-bubble');
     msgs.appendChild(wrap);
-    scrollToBottom();
+    // Scroll to top of this new message
+    wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    buildActionButtons(wrap, rawText);
 
-    // Typewriter — reveal word by word, apply markdown only at the end
     const words = text.split(' ');
     let i = 0;
     const tick = setInterval(() => {
@@ -629,24 +680,7 @@
       } else {
         bubble.textContent = partial;
       }
-      scrollToBottom();
     }, 30);
-
-    wrap.querySelector('.arch-thumb-up').addEventListener('click', function() {
-      this.classList.toggle('active');
-      wrap.querySelector('.arch-thumb-down').classList.remove('active');
-    });
-    wrap.querySelector('.arch-thumb-down').addEventListener('click', function() {
-      this.classList.toggle('active');
-      wrap.querySelector('.arch-thumb-up').classList.remove('active');
-    });
-    wrap.querySelector('.arch-copy').addEventListener('click', function() {
-      navigator.clipboard.writeText(rawText);
-      this.innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
-      setTimeout(() => {
-        this.innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
-      }, 1500);
-    });
   }
 
   function addUserMessage(text) {
@@ -660,6 +694,20 @@
   function scrollToBottom() {
     msgs.scrollTop = msgs.scrollHeight;
   }
+
+  function scrollToTop() {
+    msgs.scrollTop = 0;
+  }
+
+  const scrollDownBtn = document.getElementById('arch-scroll-down');
+  msgs.addEventListener('scroll', () => {
+    const distFromBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight;
+    scrollDownBtn.classList.toggle('visible', distFromBottom > 80);
+  });
+  scrollDownBtn.addEventListener('click', () => {
+    msgs.scrollTop = msgs.scrollHeight;
+    scrollDownBtn.classList.remove('visible');
+  });
 
   function setInputEnabled(enabled) {
     input.disabled = !enabled;
@@ -822,36 +870,12 @@
                 <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
                 <div style="display:flex;flex-direction:column;max-width:78%;">
                   <div class="arch-bubble" style="max-width:100%;">${parseMarkdown(rawText)}</div>
-                  <div class="arch-msg-actions">
-                    <button class="arch-action-btn arch-thumb-up" title="Good response">
-                      <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
-                    </button>
-                    <button class="arch-action-btn arch-thumb-down" title="Bad response">
-                      <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 10v2a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"/></svg>
-                    </button>
-                    <button class="arch-action-btn arch-copy" title="Copy">
-                      <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                    </button>
-                  </div>
+                  ${ACTION_BUTTONS_HTML}
                 </div>
               `;
               msgs.appendChild(wrap);
-              wrap.querySelector('.arch-thumb-up').addEventListener('click', function() {
-                this.classList.toggle('active');
-                wrap.querySelector('.arch-thumb-down').classList.remove('active');
-              });
-              wrap.querySelector('.arch-thumb-down').addEventListener('click', function() {
-                this.classList.toggle('active');
-                wrap.querySelector('.arch-thumb-up').classList.remove('active');
-              });
-              wrap.querySelector('.arch-copy').addEventListener('click', function() {
-                navigator.clipboard.writeText(rawText);
-                this.innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
-                setTimeout(() => {
-                  this.innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
-                }, 1500);
-              });
-              scrollToBottom();
+              wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              buildActionButtons(wrap, rawText);
               streamBubble = null;
               streamBubbleContent = '';
             }
