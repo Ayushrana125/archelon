@@ -275,6 +275,8 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
   const processingStarted = useRef(false);
   const messagesEndRef = useRef(null);
 
+  const [userScrolledUp, setUserScrolledUp] = useState(false);
+  const scrollContainerRef = useRef(null);
   const isBusyRef = useRef(false);
 
   const textareaRef = useRef(null);
@@ -285,9 +287,19 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
   const { resetIdle } = useAnimatedPlaceholder(isArex && !input && !isBusy, textareaRef, defaultPlaceholder);
   const canUpload = agentData && !agentData.is_system;
 
+  // Auto-scroll only when user hasn't scrolled up
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, streamingMsg]);
+    if (!userScrolledUp) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, streamingMsg, userScrolledUp]);
+
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    setUserScrolledUp(distFromBottom > 100);
+  };
 
   const handleFileSelect = async (files) => {
     if (processingStarted.current) return;
@@ -356,6 +368,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
     if (showUpgradeModal) return;
     setInput('');
     resetIdle();
+    setUserScrolledUp(false);
 
     const userMessage = { role: 'user', content: text, id: Date.now() };
     setMessages(prev => [...prev, userMessage]);
@@ -441,7 +454,18 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
             if (!streamingIdRef.current) {
               const sid = Date.now();
               streamingIdRef.current = sid;
-              setStreamingMsg({ id: sid, content: token, sources: [] });
+              // For smalltalk the full answer arrives as one token — animate word by word
+              if (!thinkingId) {
+                const words = token.split(' ');
+                let i = 0;
+                const iv = setInterval(() => {
+                  i++;
+                  setStreamingMsg({ id: sid, content: words.slice(0, i).join(' '), sources: [], isSmallTalk: true });
+                  if (i >= words.length) clearInterval(iv);
+                }, 38);
+              } else {
+                setStreamingMsg({ id: sid, content: token, sources: [] });
+              }
             } else {
               setStreamingMsg(prev => prev ? { ...prev, content: prev.content + token } : prev);
             }
@@ -499,7 +523,21 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
 
   return (
     <div className="flex flex-col h-[calc(100vh-57px)]">
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto relative" ref={scrollContainerRef} onScroll={handleScroll}>
+        {userScrolledUp && (
+          <button
+            onClick={() => {
+              setUserScrolledUp(false);
+              messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="fixed bottom-36 right-8 z-20 w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-opacity"
+            style={{ background: 'rgba(30,30,30,0.55)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.15)' }}
+          >
+            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        )}
         <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
 
           {messages.map((msg, msgIdx) => (
