@@ -780,7 +780,7 @@
                 `;
                 msgs.appendChild(streamBubble);
                 streamBubbleContent += token;
-                streamBubble.querySelector('.arch-stream-bubble').innerHTML = parseMarkdown(streamBubbleContent);
+                streamBubble.querySelector('.arch-stream-bubble').textContent = streamBubbleContent;
                 scrollToBottom();
               };
               // Wait until all steps have shown before revealing answer
@@ -795,7 +795,7 @@
             } else {
               streamBubbleContent += token;
               if (streamBubble) {
-                streamBubble.querySelector('.arch-stream-bubble').innerHTML = parseMarkdown(streamBubbleContent);
+                streamBubble.querySelector('.arch-stream-bubble').textContent = streamBubbleContent;
                 scrollToBottom();
               }
             }
