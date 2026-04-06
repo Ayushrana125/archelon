@@ -103,6 +103,8 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
     }
   };
 
+  const displayName = savedName || agentName || 'Assistant';
+
   const handleConfirmDisable = async () => {
     setLoading(true);
     try {
