@@ -33,8 +33,6 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
   const domainsRef = useRef([]);
 
   const [savedName, setSavedName] = useState('');
-  const [editingName, setEditingName] = useState(false);
-  const [shortName, setShortName] = useState('');
   const [apiKey, setApiKey] = useState(null);
   const [keyJustGenerated, setKeyJustGenerated] = useState(false);
   const [domains, setDomains] = useState([]);
@@ -49,6 +47,17 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
   const [logoUploading, setLogoUploading] = useState(false);
   const [maxInputChars, setMaxInputChars] = useState(2000);
   const [maxOutputTokens, setMaxOutputTokens] = useState(500);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [originalSettings, setOriginalSettings] = useState(null);
+
+  const hasChanges = originalSettings !== null && (
+    savedName !== originalSettings.savedName ||
+    theme !== originalSettings.theme ||
+    logoUrl !== originalSettings.logoUrl ||
+    maxInputChars !== originalSettings.maxInputChars ||
+    maxOutputTokens !== originalSettings.maxOutputTokens ||
+    JSON.stringify(domains) !== JSON.stringify(originalSettings.domains)
+  );
   // Use prefetched data if available, else fetch
   useEffect(() => {
     if (prefetchedStatus) {
@@ -110,7 +119,19 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
     onStatusChange?.(agentId, { enabled: false });
   };
 
-  const displayName = savedName || agentName || 'Assistant';
+  const settingsCardRef = React.useRef(null);
+
+  useEffect(() => {
+    if (!editMode) return;
+    const handleClickOutside = (e) => {
+      if (settingsCardRef.current && !settingsCardRef.current.contains(e.target)) {
+        setEditMode(false);
+        setOriginalSettings(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [editMode]);
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -131,8 +152,6 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
       setLoading(false);
     }
   };
-
-  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const handleSaveSettings = async () => {
     setLoading(true);
@@ -284,7 +303,7 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
                 </div>
               </div>
               <div className="flex-1 mx-6 mb-6 rounded-2xl overflow-hidden border border-gray-800">
-                {apiKey && apiKey !== 'masked' ? (
+              {apiKey && apiKey !== 'masked' ? (
                   <iframe
                     key={`${agentId}-${apiKey}`}
                     srcDoc={`<!DOCTYPE html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#0a0a0a;font-family:sans-serif;padding:20px;}h2{color:#374151;font-size:14px;}p{color:#6b7280;font-size:12px;line-height:1.6;}</style></head><body><h2 style="color:#9ca3af;margin-bottom:8px;">Your website</h2><p>The widget appears in the bottom-right corner.</p><p>Click the button to test it.</p><script>window.ArchelonConfig={agentId:"${agentId}",apiKey:"${apiKey}"};</script><script src="https://api.archelon.cloud/embed.js" async></script></body></html>`}
@@ -293,9 +312,20 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
                     title="Widget Preview"
                   />
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center gap-3" style={{ background: '#111' }}>
-                    <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
-                    <p className="text-xs text-gray-500 text-center px-6">Generate an API key to see the live preview</p>
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-4 px-8" style={{ background: '#0f0f0f' }}>
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full relative" style={{ background: '#16a34a20' }}>
+                      <div className="w-3 h-3 rounded-full absolute animate-ping" style={{ background: '#22c55e', opacity: 0.4 }} />
+                      <div className="w-3 h-3 rounded-full" style={{ background: '#22c55e' }} />
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        <svg className="w-4 h-4" style={{ color: '#22c55e' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <p className="text-sm font-semibold text-white">{displayName} is live</p>
+                      </div>
+                      <p className="text-xs text-gray-500 leading-relaxed">Your widget is deployed and active.<br />Test it by visiting your website.</p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -347,215 +377,172 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
               <>
                 {/* Edit mode header */}
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-gray-400">{editMode ? 'Edit settings below, then save.' : 'Settings are read-only. Click Edit to make changes.'}</p>
-                  {!editMode ? (
+                  <p className="text-xs text-gray-400">
+                    {editMode ? 'Edit settings below, then save.' : 'Click any field to edit settings.'}
+                  </p>
+                  {editMode && (
                     <button
-                      onClick={() => setEditMode(true)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                      Edit
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setEditMode(false)}
+                      onClick={() => { setEditMode(false); setOriginalSettings(null); }}
                       className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-3 py-1.5"
                     >
                       Cancel
                     </button>
                   )}
                 </div>
-                {/* Widget name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Widget name <span className="text-gray-400 font-normal text-xs">(shown to visitors)</span>
-                  </label>
-                  {editMode && editingName ? (
-                    <div className="flex items-center gap-2">
-                      <input
-                        autoFocus
-                        value={shortName}
-                        onChange={e => setShortName(e.target.value)}
-                        placeholder="e.g. Arex, Mark, Cody..."
-                        maxLength={20}
-                        className="flex-1 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-sm focus:outline-none focus:ring-2 focus:ring-[#00C9B1]/40"
-                      />
-                      <button onClick={() => { setSavedName(shortName.trim()); setEditingName(false); }} disabled={!shortName.trim()} className="px-4 py-2.5 rounded-lg text-sm font-medium text-white disabled:opacity-40" style={{ background: TEAL }}>Save</button>
-                      <button onClick={() => setEditingName(false)} className="px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">Cancel</button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1a1a1a] text-sm text-gray-700 dark:text-gray-300">
-                        {savedName || <span className="text-gray-400">Not set — defaults to agent name</span>}
-                      </div>
-                      {editMode && (
-                        <button onClick={() => { setShortName(savedName); setEditingName(true); }} className="px-4 py-2.5 rounded-lg text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors">
-                          {savedName ? 'Edit' : 'Set name'}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Agent ID */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Agent ID</label>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1a1a1a] text-xs font-mono text-gray-600 dark:text-gray-400 truncate">
-                      {agentId}
+                {/* Agent ID + API Key — read only info */}
+                <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">Agent ID</p>
+                      <p className="text-xs font-mono text-gray-600 dark:text-gray-400 truncate max-w-[220px]">{agentId}</p>
                     </div>
                     <CopyButton text={agentId} />
                   </div>
-                </div>
-
-                {/* API Key */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">API Key</label>
-                  {!apiKey ? (
-                    <button
-                      onClick={handleGenerate}
-                      disabled={loading}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                      style={{ background: `linear-gradient(135deg, ${TEAL}, #1A73E8)` }}
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                      </svg>
-                      {loading ? 'Generating...' : 'Generate API Key'}
-                    </button>
-                  ) : (
-                    <div className="px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1a1a1a] text-xs font-mono text-gray-400 select-none">
-                      arch_live_••••••••••••••••••••••••••••••••
+                  <div className="px-5 py-4 flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">API Key</p>
+                      {!apiKey ? (
+                        <p className="text-xs text-gray-400">Not generated yet</p>
+                      ) : (
+                        <p className="text-xs font-mono text-gray-400">arch_live_••••••••••••••••</p>
+                      )}
                     </div>
-                  )}
-                </div>
-
-                {/* Allowed domains */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Allowed domains <span className="text-gray-400 font-normal text-xs">(whitelist — only these sites can use your key)</span>
-                  </label>
-                  {editMode && (
-                    <div className="flex items-center gap-2 mb-2">
-                      <input
-                        value={domainInput}
-                        onChange={e => setDomainInput(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleAddDomain()}
-                        placeholder="e.g. mywebsite.com"
-                        className="flex-1 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-sm focus:outline-none focus:ring-2 focus:ring-[#00C9B1]/40"
-                      />
+                    {!apiKey && (
                       <button
-                        onClick={handleAddDomain}
-                        disabled={!domainInput.trim()}
-                        className="px-4 py-2.5 rounded-lg text-sm font-medium text-white disabled:opacity-40"
-                        style={{ background: TEAL }}
-                      >Add</button>
+                        onClick={handleGenerate}
+                        disabled={loading}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white disabled:opacity-60"
+                        style={{ background: `linear-gradient(135deg, ${TEAL}, #1A73E8)` }}
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+                        {loading ? 'Generating...' : 'Generate'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div
+                  ref={settingsCardRef}
+                  className={`rounded-xl border overflow-hidden relative transition-all ${
+                    editMode
+                      ? 'border-[#00C9B1]/40 dark:border-[#00C9B1]/30 bg-gray-50/50 dark:bg-[#1a1a1a]'
+                      : 'border-gray-200 dark:border-gray-700 cursor-pointer hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                  onClick={() => { if (!editMode) { setEditMode(true); setOriginalSettings({ savedName, theme, logoUrl, maxInputChars, maxOutputTokens, domains: [...domains] }); } }}
+                >
+
+                  {/* Widget name */}
+                  <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Widget name <span className="font-normal">(shown to visitors)</span></label>
+                    <input
+                      value={savedName}
+                      onChange={e => setSavedName(e.target.value)}
+                      placeholder={agentName || 'Assistant'}
+                      maxLength={20}
+                      readOnly={!editMode}
+                      className={`w-full bg-transparent text-sm text-gray-900 dark:text-gray-100 focus:outline-none placeholder-gray-400 ${!editMode ? 'cursor-default' : ''}`}
+                    />
+                  </div>
+
+                  {/* Logo */}
+                  <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">Widget logo</p>
+                      <p className="text-xs text-gray-400">{logoUrl ? 'Custom logo set' : 'Using Archelon default'}</p>
                     </div>
-                  )}
-                  {domains.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {domains.map(d => (
-                        <span key={d} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-[#2a2a2a] text-xs text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                          {d}
-                          {editMode && (
-                            <button onClick={() => handleRemoveDomain(d)} className="text-gray-400 hover:text-red-400 transition-colors">
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                            </button>
-                          )}
-                        </span>
+                    <div className="flex items-center gap-2">
+                      {logoUrl && <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-contain border border-gray-200 dark:border-gray-700" />}
+                      {editMode && (
+                        <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs cursor-pointer border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                          {logoUploading ? 'Uploading...' : logoUrl ? 'Change' : 'Upload'}
+                          <input type="file" accept=".png,.jpg,.jpeg,.webp,.svg" className="hidden" onChange={handleLogoUpload} disabled={logoUploading} />
+                        </label>
+                      )}
+                      {editMode && logoUrl && (
+                        <button onClick={() => setLogoUrl('')} className="text-xs text-red-400 hover:text-red-500">Remove</button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Theme */}
+                  <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Theme</p>
+                    <div className="flex gap-2">
+                      {['light', 'dark'].map(t => (
+                        <button
+                          key={t}
+                          onClick={() => editMode && setTheme(t)}
+                          className={`px-3 py-1.5 rounded-lg text-xs border transition-all capitalize ${
+                            theme === t
+                              ? 'border-[#00C9B1] text-[#00C9B1] bg-[#00C9B1]/5'
+                              : 'border-gray-200 dark:border-gray-700 text-gray-400'
+                          } ${!editMode ? 'cursor-default opacity-70' : ''}`}
+                        >{t}</button>
                       ))}
                     </div>
-                  ) : (
-                    <p className="text-xs text-gray-400">No domains added — all origins allowed (not recommended for production).</p>
-                  )}
-                </div>
+                  </div>
 
-                {/* Widget logo */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Widget logo <span className="text-gray-400 font-normal text-xs">(shown in chat header — PNG, JPG, SVG, max 500KB)</span>
-                  </label>
-                  <div className="flex items-center gap-3">
-                    {logoUrl && (
-                      <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded-lg object-contain border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1a1a1a]" />
-                    )}
+                  {/* Allowed domains */}
+                  <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Allowed domains <span className="font-normal">(whitelist)</span></label>
                     {editMode && (
-                      <label className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm cursor-pointer border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        {logoUploading ? 'Uploading...' : logoUrl ? 'Change logo' : 'Upload logo'}
-                        <input type="file" accept=".png,.jpg,.jpeg,.webp,.svg" className="hidden" onChange={handleLogoUpload} disabled={logoUploading} />
-                      </label>
+                      <div className="flex items-center gap-2 mb-2">
+                        <input
+                          value={domainInput}
+                          onChange={e => setDomainInput(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && handleAddDomain()}
+                          placeholder="e.g. mywebsite.com"
+                          className="flex-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-sm focus:outline-none focus:ring-2 focus:ring-[#00C9B1]/40"
+                        />
+                        <button onClick={handleAddDomain} disabled={!domainInput.trim()} className="px-3 py-2 rounded-lg text-xs font-medium text-white disabled:opacity-40" style={{ background: TEAL }}>Add</button>
+                      </div>
                     )}
-                    {editMode && logoUrl && (
-                      <button onClick={() => setLogoUrl('')} className="text-xs text-red-400 hover:text-red-500 transition-colors">Remove</button>
+                    {domains.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {domains.map(d => (
+                          <span key={d} className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 dark:bg-[#2a2a2a] text-xs text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                            {d}
+                            {editMode && (
+                              <button onClick={() => handleRemoveDomain(d)} className="text-gray-400 hover:text-red-400 ml-0.5">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                              </button>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400">No domains — all origins allowed</p>
                     )}
-                    {!logoUrl && !editMode && <span className="text-xs text-gray-400">Not set — defaults to Archelon logo</span>}
                   </div>
-                  {!logoUrl && editMode && <p className="text-xs text-gray-400 mt-1.5">Not set — defaults to Archelon logo</p>}
-                </div>
 
-                {/* Theme toggle */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Widget theme</label>
-                  <div className="flex gap-3">
-                    {['light', 'dark'].map(t => (
-                      <button
-                        key={t}
-                        onClick={() => editMode && setTheme(t)}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm border transition-all capitalize ${
-                          theme === t
-                            ? 'border-[#00C9B1] text-[#00C9B1] bg-[#00C9B1]/5'
-                            : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400'
-                        } ${!editMode ? 'cursor-default opacity-70' : 'hover:bg-gray-50 dark:hover:bg-[#1a1a1a]'}`}
-                      >
-                        {t === 'light' ? (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" /></svg>
-                        ) : (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-                        )}
-                        {t}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Input/Output limits */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Response limits</label>
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* Response limits */}
+                  <div className="px-5 py-4 grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs text-gray-400 mb-1">Max input characters</label>
-                      <input
-                        type="number"
-                        min={100} max={4000} step={100}
-                        value={maxInputChars}
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Max input chars</label>
+                      <input type="number" min={100} max={4000} step={100} value={maxInputChars}
                         onChange={e => editMode && setMaxInputChars(Number(e.target.value))}
                         readOnly={!editMode}
                         className={`w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-sm focus:outline-none ${editMode ? 'focus:ring-2 focus:ring-[#00C9B1]/40' : 'cursor-default opacity-70'}`}
                       />
-                      <p className="text-[10px] text-gray-400 mt-1">How long a visitor's message can be</p>
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-400 mb-1">Max output tokens</label>
-                      <input
-                        type="number"
-                        min={100} max={2000} step={100}
-                        value={maxOutputTokens}
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Max output tokens</label>
+                      <input type="number" min={100} max={2000} step={100} value={maxOutputTokens}
                         onChange={e => editMode && setMaxOutputTokens(Number(e.target.value))}
                         readOnly={!editMode}
                         className={`w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-sm focus:outline-none ${editMode ? 'focus:ring-2 focus:ring-[#00C9B1]/40' : 'cursor-default opacity-70'}`}
                       />
-                      <p className="text-[10px] text-gray-400 mt-1">How long the agent's response can be</p>
                     </div>
                   </div>
+
                 </div>
 
                 {/* Save Changes button */}
                 {apiKey && editMode && (
                   <div className="flex items-center gap-3 py-2 border-t border-gray-100 dark:border-gray-800">
                     <button
-                      onClick={async () => { await handleSaveSettings(); setEditMode(false); }}
-                      disabled={loading}
+                      onClick={async () => { await handleSaveSettings(); setEditMode(false); setOriginalSettings(null); }}
+                      disabled={loading || !hasChanges}
                       className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60 transition-opacity hover:opacity-90"
                       style={{ background: `linear-gradient(135deg, ${TEAL}, #1A73E8)` }}
                     >
