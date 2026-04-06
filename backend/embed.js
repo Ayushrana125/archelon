@@ -398,49 +398,6 @@
   let isLoading = false;
   let greeted   = false;
   let chatStarted = false;
-  let fabClickCount = 0;
-  let easterEggTooltip = null;
-
-  const EASTER_EGGS = [
-    { at: 5,  msg: "Hmm... I see what you\'re doing 🤔" },
-    { at: 8,  msg: "Still going? Bold move." },
-    { at: 12, msg: "You cannot do this all day long..." },
-    { at: 16, msg: "Okay I\'m impressed. But seriously, ask me something." },
-    { at: 20, msg: "Fine. I\'ll be here. 🙏" },
-  ];
-
-  function showFabTooltip(msg) {
-    if (easterEggTooltip) easterEggTooltip.remove();
-    const tip = document.createElement('div');
-    tip.style.cssText = `
-      position: fixed; z-index: 100000;
-      background: #111827; color: #fff;
-      font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      padding: 7px 12px; border-radius: 8px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-      white-space: nowrap; pointer-events: none;
-      opacity: 0; transition: opacity 0.2s;
-    `;
-    tip.textContent = msg;
-    document.body.appendChild(tip);
-    easterEggTooltip = tip;
-
-    // Position above the FAB
-    const rect = fab.getBoundingClientRect();
-    tip.style.left = (rect.right - tip.offsetWidth) + 'px';
-    tip.style.top  = (rect.top - tip.offsetHeight - 10) + 'px';
-    // Recalc after paint since offsetWidth is 0 before render
-    requestAnimationFrame(() => {
-      tip.style.left = (rect.right - tip.offsetWidth) + 'px';
-      tip.style.top  = (rect.top - tip.offsetHeight - 10) + 'px';
-      tip.style.opacity = '1';
-    });
-
-    setTimeout(() => {
-      tip.style.opacity = '0';
-      setTimeout(() => { if (tip.parentNode) tip.remove(); if (easterEggTooltip === tip) easterEggTooltip = null; }, 300);
-    }, 2500);
-  }
 
   // ── Rotating greetings ────────────────────────────────────────────────────
   const GREETINGS = [
@@ -759,10 +716,6 @@
     if (isOpen) {
       positionWindow();
       if (!chatStarted) setRandomGreeting();
-    } else {
-      fabClickCount++;
-      const egg = EASTER_EGGS.find(e => e.at === fabClickCount);
-      if (egg) showFabTooltip(egg.msg);
     }
     win.classList.toggle('open', isOpen);
     fabLogo.style.display = isOpen ? 'none' : 'flex';
