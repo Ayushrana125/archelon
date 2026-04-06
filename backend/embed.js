@@ -417,13 +417,7 @@
   }
 
   // ── Thinking steps ────────────────────────────────────────────────────────
-  const STEPS = [
-    { label: 'Let me look into that...' },
-    { label: 'Searching through our knowledge base...' },
-    { label: 'Putting together your answer...' },
-  ];
-
-  // ── Fetch agent name from backend ─────────────────────────────────────────
+  const STEPS_RAG = [
   fetch(`${API_BASE}/api/public/info`, {
     headers: { 'X-Archelon-Key': API_KEY },
   })
@@ -584,30 +578,22 @@
     scrollToBottom();
   }
 
-  function showDots() {
-    const el = document.createElement('div');
-    el.className = 'arch-msg bot';
-    el.id = 'arch-thinking';
-    el.innerHTML = `
-      <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
-      <div class="arch-bubble" style="padding:10px 16px;">
-        <span class="arch-dots"><span></span><span></span><span></span></span>
-      </div>
-    `;
-    msgs.appendChild(el);
-    scrollToBottom();
-    return el;
-  }
+  const STEPS_RAG = [
+    'Let me look into that...',
+    'Searching in Knowledge Base...',
+    'Almost there...',
+  ];
 
-  function showThinking() {
+  function showThinking(ragMode) {
     const el = document.createElement('div');
     el.className = 'arch-msg bot';
     el.id = 'arch-thinking';
 
-    const stepsHtml = STEPS.map((s, i) => `
+    const steps = ragMode ? STEPS_RAG : ['Let me look into that...'];
+    const stepsHtml = steps.map((label, i) => `
       <div class="arch-thinking-step ${i === 0 ? 'active' : ''}" id="arch-step-${i}">
         <div class="arch-step-icon"></div>
-        <span>${s.label}</span>
+        <span>${label}</span>
       </div>
     `).join('');
 
@@ -618,28 +604,20 @@
     msgs.appendChild(el);
     scrollToBottom();
 
-    // Advance through steps but STOP at the last one — keep it pulsing until answer arrives
-    let current = 0;
-    const interval = setInterval(() => {
-      const prev = el.querySelector(`#arch-step-${current}`);
-      const next = el.querySelector(`#arch-step-${current + 1}`);
-      if (!next) {
-        // At last step — stop advancing, keep it active and pulsing forever
-        clearInterval(interval);
-        return;
-      }
-      if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
-      current++;
-      next.classList.add('active');
-    }, 1200);
+    if (ragMode) {
+      let current = 0;
+      const interval = setInterval(() => {
+        const prev = el.querySelector(`#arch-step-${current}`);
+        const next = el.querySelector(`#arch-step-${current + 1}`);
+        if (!next) { clearInterval(interval); return; }
+        if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
+        current++;
+        next.classList.add('active');
+      }, 1200);
+      el._interval = interval;
+    }
 
-    el._interval = interval;
     return el;
-  }
-
-  function removeThinking() {
-    const el = document.getElementById('arch-thinking');
-    if (el) { clearInterval(el._interval); el.remove(); }
   }
 
   function scrollToBottom() {
@@ -728,8 +706,8 @@
     setInputEnabled(false);
     addUserMessage(text);
 
-    // Show dots immediately — before meta event arrives
-    let thinkingEl = showDots();
+    // Show "Let me look into that..." immediately for every query
+    let thinkingEl = showThinking(false);
     thinkingEl._showTime = Date.now();
     let streamBubble = null;
     let streamBubbleContent = '';
@@ -777,17 +755,18 @@
 
           if (event.type === 'meta') {
             if (event.intent !== 'smalltalk') {
-              if (thinkingEl) { thinkingEl.remove(); }
-              thinkingEl = showThinking();
+              // Upgrade to full 3-step thinking for RAG
+              if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); }
+              thinkingEl = showThinking(true);
+              thinkingEl._showTime = Date.now();
             }
-            // smalltalk: keep dots, stamp show time for min-wait
-            thinkingEl._showTime = Date.now();
-            thinkingEl._isSmallTalk = (event.intent === 'smalltalk');
+            // smalltalk: keep single step as-is
           }
 
           if (event.type === 'token') {
             const token = event.token;
             if (!streamBubble) {
+              // Remove thinking and show stream bubble on first token
               const showBubble = () => {
                 if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); thinkingEl = null; }
                 streamBubble = document.createElement('div');
@@ -803,16 +782,11 @@
                 streamBubble.querySelector('.arch-stream-bubble').textContent = streamBubbleContent;
                 scrollToBottom();
               };
-              // Smalltalk: keep dots visible min 600ms. RAG: show immediately on first token.
-              const isSmallTalk = thinkingEl && thinkingEl._isSmallTalk;
-              if (isSmallTalk) {
-                const elapsed = Date.now() - (thinkingEl._showTime || Date.now());
-                const minWait = 600;
-                if (elapsed < minWait) {
-                  setTimeout(showBubble, minWait - elapsed);
-                } else {
-                  showBubble();
-                }
+              // Ensure thinking step is visible for at least 600ms before answer appears
+              const elapsed = Date.now() - (thinkingEl ? thinkingEl._showTime : Date.now());
+              const minWait = 600;
+              if (elapsed < minWait) {
+                setTimeout(showBubble, minWait - elapsed);
               } else {
                 showBubble();
               }
