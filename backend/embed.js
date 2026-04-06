@@ -454,8 +454,6 @@
         next.classList.add('active');
       }, STEP_INTERVAL);
       el._interval = interval;
-      // minShowTime = time until step 3 has been active for at least 400ms
-      el._minShowTime = Date.now() + (STEP_INTERVAL * (steps.length - 1)) + 400;
     }
     return el;
   }
@@ -783,15 +781,7 @@
                 streamBubble.querySelector('.arch-stream-bubble').textContent = streamBubbleContent;
                 scrollToBottom();
               };
-              // Wait until all steps have shown before revealing answer
-              const now = Date.now();
-              const waitUntil = thinkingEl ? (thinkingEl._minShowTime || thinkingEl._showTime || now) : now;
-              const delay = Math.max(0, waitUntil - now);
-              if (delay > 0) {
-                setTimeout(showBubble, delay);
-              } else {
-                showBubble();
-              }
+              showBubble();
             } else {
               streamBubbleContent += token;
               if (streamBubble) {
