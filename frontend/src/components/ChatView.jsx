@@ -50,7 +50,7 @@ function SourceBadges({ sources }) {
   );
 }
 
-function TypewriterMessage({ content, sources, onComplete, skip }) {
+function TypewriterMessage({ content, sources, onComplete, skip, isLatest }) {
   const [displayed, setDisplayed] = useState(skip ? content : '');
   const [done, setDone] = useState(!!skip);
   const idx = useRef(0);
@@ -81,11 +81,13 @@ function TypewriterMessage({ content, sources, onComplete, skip }) {
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{displayed}</ReactMarkdown>
       </div>
       {done && <SourceBadges sources={sources} />}
-      <img
-        src="/Archelon_logo.png"
-        alt=""
-        className={`block w-7 h-7 object-contain opacity-50 mt-2 ${!done ? 'animate-spin-slow' : ''}`}
-      />
+      {isLatest && (
+        <img
+          src="/Archelon_logo.png"
+          alt=""
+          className={`block w-7 h-7 object-contain opacity-50 mt-2 ${!done ? 'animate-spin-slow' : ''}`}
+        />
+      )}
     </div>
   );
 }
@@ -573,6 +575,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
                     content={msg.content}
                     sources={msg.sources}
                     skip={msg.skipAnimation}
+                    isLatest={msgIdx === messages.length - 1 && !streamingMsg}
                     onComplete={() => setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, skipAnimation: true } : m))}
                   />
                 ) : (
