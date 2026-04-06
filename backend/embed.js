@@ -812,7 +812,7 @@
         isLoading = false; setInputEnabled(true); input.focus(); return;
       }
       if (res.status === 402) {
-        addBotMessage("This agent has reached its usage limit for now. Try again later.");
+        addBotMessage('Our assistant is temporarily unavailable. Please try again later.');
         isLoading = false; setInputEnabled(true); input.focus(); return;
       }
       if (!res.ok) {
