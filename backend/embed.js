@@ -51,7 +51,7 @@
     }
     #archelon-window {
       position: fixed; z-index: 99998;
-      width: 360px; height: 600px; border-radius: 20px;
+      width: 400px; height: 600px; border-radius: 20px;
       background: #fff; box-shadow: 0 8px 40px rgba(0,0,0,0.18);
       display: flex; flex-direction: column; overflow: hidden;
       border: 1px solid #e5e7eb;
@@ -144,24 +144,21 @@
     #archelon-widget-root.dark #arch-scroll-down { background: rgba(30,30,30,0.8); border-color: #444; }
     #archelon-widget-root.dark #arch-scroll-down svg { color: #e5e7eb; }
 
-    /* ── Thinking step bubbles ─────────────────────────────────────────── */
-    .arch-step-bubble {
-      display: flex; gap: 8px; align-items: flex-end;
-      opacity: 0; transform: translateY(8px);
+    /* ── Thinking step rows (inline, not bubbles) ─────────────────────── */
+    .arch-step-row {
+      display: flex; align-items: center; gap: 7px;
+      opacity: 0; transform: translateY(6px);
       transition: opacity 0.3s ease, transform 0.3s ease;
+      padding: 2px 0;
     }
-    .arch-step-bubble.show { opacity: 1; transform: translateY(0); }
-    .arch-step-bubble-inner {
-      max-width: 78%; padding: 9px 13px; border-radius: 18px 18px 18px 4px;
-      background: #fff; border: 1px solid #e5e7eb;
-      font-size: 13px; color: #6b7280; line-height: 1.5;
-      display: flex; align-items: center; gap: 8px;
+    .arch-step-row.show { opacity: 1; transform: translateY(0); }
+    .arch-step-label {
+      font-size: 12px; color: #9ca3af;
     }
-    #archelon-widget-root.dark .arch-step-bubble-inner { background: #2a2a2a; border-color: #333; color: #9ca3af; }
-    .arch-step-bubble-inner.active { color: #111827; font-weight: 500; }
-    #archelon-widget-root.dark .arch-step-bubble-inner.active { color: #f3f4f6; }
-    .arch-step-bubble-inner.done { color: #9ca3af; font-weight: 400; }
-    #archelon-widget-root.dark .arch-step-bubble-inner.done { color: #6b7280; }
+    .arch-step-row.active .arch-step-label { color: #374151; font-weight: 500; }
+    #archelon-widget-root.dark .arch-step-row.active .arch-step-label { color: #e5e7eb; }
+    .arch-step-row.done .arch-step-label { color: #d1d5db; }
+    #archelon-widget-root.dark .arch-step-row.done .arch-step-label { color: #4b5563; }
     .arch-step-dot {
       width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
       background: #d1d5db; transition: background 0.3s;
@@ -185,10 +182,10 @@
       border: 2.5px solid #e5e7eb;
       border-top-color: #111827;
       animation: arch-spin 0.7s linear infinite;
-      opacity: 1 !important;
+      opacity: 1 !important; cursor: default;
     }
     #archelon-send.loading svg { display: none; }
-    #archelon-widget-root.dark #archelon-send.loading { border-color: #444; border-top-color: #e5e7eb; }
+    #archelon-widget-root.dark #archelon-send.loading { border-color: #333; border-top-color: #e5e7eb; }
     @keyframes arch-spin { to { transform: rotate(360deg); } }
 
     #archelon-disclaimer {
@@ -196,8 +193,16 @@
       text-align: center; background: #f9fafb; flex-shrink: 0;
     }
     #archelon-input-area {
-      padding: 12px 14px; background: #fff; border-top: 1px solid #f3f4f6;
-      display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0;
+      padding: 10px 14px 12px; background: #fff; border-top: 1px solid #f3f4f6;
+      display: flex; flex-direction: column; gap: 6px; flex-shrink: 0;
+    }
+    #arch-steps-inline {
+      display: flex; flex-direction: column; gap: 3px;
+      padding: 0 2px;
+    }
+    #arch-steps-inline:empty { display: none; }
+    #arch-input-row {
+      display: flex; gap: 8px; align-items: flex-end;
     }
     #archelon-input {
       flex: 1; border: 1px solid #e5e7eb; border-radius: 14px;
@@ -299,6 +304,8 @@
     #archelon-widget-root.dark .arch-step-icon { background: #1a1a1a; border-color: #444; }
     #archelon-widget-root.dark #archelon-disclaimer { background: #141414; color: #6b7280; }
     #archelon-widget-root.dark #archelon-input-area { background: #1a1a1a; border-color: #2a2a2a; }
+    #archelon-widget-root.dark #arch-steps-inline .arch-step-label { color: #6b7280; }
+    #archelon-widget-root.dark #arch-steps-inline .arch-step-row.active .arch-step-label { color: #e5e7eb; }
     #archelon-widget-root.dark #archelon-input { background: #2a2a2a; border-color: #333; color: #e5e7eb; }
     #archelon-widget-root.dark #archelon-input:focus { border-color: ${TEAL}; background: #2a2a2a; }
     #archelon-widget-root.dark .arch-ol-num { color: #e5e7eb !important; }
@@ -362,12 +369,15 @@
       </div>
       <div id="archelon-disclaimer" style="display:none;">Can make mistakes. Verify important information.</div>
       <div id="archelon-input-area">
-        <textarea id="archelon-input" placeholder="Ask a question..." rows="1"></textarea>
-        <button id="archelon-send" aria-label="Send">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5M5 12l7-7 7 7"/>
-          </svg>
-        </button>
+        <div id="arch-steps-inline"></div>
+        <div id="arch-input-row">
+          <textarea id="archelon-input" placeholder="Ask a question..." rows="1"></textarea>
+          <button id="archelon-send" aria-label="Send">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5M5 12l7-7 7 7"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <div id="archelon-footer">Powered by <a href="https://archelon.cloud" target="_blank"><img id="archelon-footer-logo" src="${API_BASE}/Archelon_logo.png" alt="" />Archelon</a></div>
     </div>
@@ -433,52 +443,48 @@
     'Reviewing gathered information',
   ];
 
+  const stepsInline = document.getElementById('arch-steps-inline');
   let stepsInterval = null;
-  let stepBubbles = [];
+  let stepRows = [];
 
-  function addStepBubble(label, active) {
-    const wrap = document.createElement('div');
-    wrap.className = 'arch-step-bubble';
-    wrap.innerHTML = `
-      <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
-      <div class="arch-step-bubble-inner ${active ? 'active' : ''}">
-        <span class="arch-step-dot"></span>
-        <span>${label}${active ? '<span class="arch-step-dots"><span></span><span></span><span></span></span>' : ''}</span>
-      </div>
+  function addStepRow(label, active) {
+    const row = document.createElement('div');
+    row.className = 'arch-step-row';
+    row.innerHTML = `
+      <span class="arch-step-dot"></span>
+      <span class="arch-step-label">${label}${active ? '<span class="arch-step-dots"><span></span><span></span><span></span></span>' : ''}</span>
     `;
-    msgs.appendChild(wrap);
-    msgs.scrollTop = msgs.scrollHeight;
-    setTimeout(() => wrap.classList.add('show'), 30);
-    return wrap;
+    if (active) row.classList.add('active');
+    stepsInline.appendChild(row);
+    setTimeout(() => row.classList.add('show'), 30);
+    return row;
   }
 
   function showSteps(ragMode) {
     clearSteps();
     sendBtn.classList.add('loading');
-    const firstBubble = addStepBubble(STEPS_RAG[0], true);
-    stepBubbles.push(firstBubble);
+    const firstRow = addStepRow(STEPS_RAG[0], true);
+    stepRows.push(firstRow);
     if (!ragMode) return;
     let current = 0;
     stepsInterval = setInterval(() => {
-      const inner = stepBubbles[current].querySelector('.arch-step-bubble-inner');
-      inner.classList.remove('active');
-      inner.classList.add('done');
-      inner.querySelector('.arch-step-dots')?.remove();
+      stepRows[current].classList.remove('active');
+      stepRows[current].classList.add('done');
+      stepRows[current].querySelector('.arch-step-dots')?.remove();
       current++;
       if (current < STEPS_RAG.length) {
-        const bubble = addStepBubble(STEPS_RAG[current], true);
-        stepBubbles.push(bubble);
+        const row = addStepRow(STEPS_RAG[current], true);
+        stepRows.push(row);
       } else {
-        clearInterval(stepsInterval);
-        stepsInterval = null;
+        clearInterval(stepsInterval); stepsInterval = null;
       }
     }, 1100);
   }
 
   function clearSteps() {
     if (stepsInterval) { clearInterval(stepsInterval); stepsInterval = null; }
-    stepBubbles.forEach(b => b.remove());
-    stepBubbles = [];
+    stepsInline.innerHTML = '';
+    stepRows = [];
     sendBtn.classList.remove('loading');
   }
 
@@ -703,7 +709,7 @@
   // ── Smart window positioning ─────────────────────────────────────────────
   function positionWindow() {
     const GAP = 10;
-    const WIN_W = 360;
+    const WIN_W = 400;
     const WIN_H = 600;
     const fab_rect = fab.getBoundingClientRect();
     const vw = window.innerWidth;
