@@ -441,6 +441,9 @@
     msgs.appendChild(el);
     scrollToBottom();
     if (ragMode) {
+      // Step timings: step 1 active at 0ms, step 2 at 800ms, step 3 at 1600ms
+      // Step 3 stays pulsing until minShowTime is reached
+      const STEP_INTERVAL = 800;
       let current = 0;
       const interval = setInterval(() => {
         const prev = el.querySelector(`#arch-step-${current}`);
@@ -449,8 +452,10 @@
         if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
         current++;
         next.classList.add('active');
-      }, 1200);
+      }, STEP_INTERVAL);
       el._interval = interval;
+      // minShowTime = time until step 3 has been active for at least 400ms
+      el._minShowTime = Date.now() + (STEP_INTERVAL * (steps.length - 1)) + 400;
     }
     return el;
   }
@@ -778,11 +783,12 @@
                 streamBubble.querySelector('.arch-stream-bubble').textContent = streamBubbleContent;
                 scrollToBottom();
               };
-              // Ensure thinking step is visible for at least 600ms before answer appears
-              const elapsed = Date.now() - (thinkingEl ? thinkingEl._showTime : Date.now());
-              const minWait = 600;
-              if (elapsed < minWait) {
-                setTimeout(showBubble, minWait - elapsed);
+              // Wait until all steps have shown before revealing answer
+              const now = Date.now();
+              const waitUntil = thinkingEl ? (thinkingEl._minShowTime || thinkingEl._showTime || now) : now;
+              const delay = Math.max(0, waitUntil - now);
+              if (delay > 0) {
+                setTimeout(showBubble, delay);
               } else {
                 showBubble();
               }
