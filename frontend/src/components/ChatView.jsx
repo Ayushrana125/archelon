@@ -290,7 +290,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
   const isArex = !agentData;
   const agentName = agentData ? agentData.name : 'Arex';
   const defaultPlaceholder = isArex ? 'Ask Arex...' : `Ask ${agentName}...`;
-  const isBusy = isTyping || !!streamingMsg || isProcessingDoc;
+  const isBusy = isTyping || !!streamingMsg || isProcessingDoc || isGreetingLoading;
   const { resetIdle } = useAnimatedPlaceholder(isArex && !input && !isBusy, textareaRef, defaultPlaceholder);
   const canUpload = agentData && !agentData.is_system;
 
