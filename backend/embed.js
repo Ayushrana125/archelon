@@ -145,11 +145,11 @@
       transition: all 0.3s;
     }
     .arch-thinking-step.active .arch-step-icon {
-      border-color: ${TEAL}; background: #e6faf8;
+      border-color: #22c55e; background: #f0fdf4;
     }
     .arch-thinking-step.active .arch-step-icon::after {
       content: ''; width: 6px; height: 6px; border-radius: 50%;
-      background: ${TEAL}; animation: arch-pulse 1s ease-in-out infinite;
+      background: #22c55e; animation: arch-pulse 1s ease-in-out infinite;
     }
     .arch-thinking-step.done .arch-step-icon {
       border-color: #d1d5db; background: #f9fafb;
@@ -772,67 +772,54 @@
             const token = event.token;
             if (!streamBubble) {
               // Remove thinking and show stream bubble on first token
-              const showBubble = () => {
-                if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); thinkingEl = null; }
-                streamBubble = document.createElement('div');
-                streamBubble.className = 'arch-msg bot';
-                streamBubble.innerHTML = `
-                  <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
-                  <div style="display:flex;flex-direction:column;max-width:78%;">
-                    <div class="arch-bubble arch-stream-bubble" style="max-width:100%;"></div>
-                  </div>
-                `;
-                msgs.appendChild(streamBubble);
-                streamBubbleContent += token;
-                streamBubble.querySelector('.arch-stream-bubble').textContent = streamBubbleContent;
-                scrollToBottom();
-              };
-              showBubble();
-            } else {
+              // Accumulate tokens silently — no bubble shown during streaming
               streamBubbleContent += token;
-              if (streamBubble) {
-                streamBubble.querySelector('.arch-stream-bubble').textContent = streamBubbleContent;
-                scrollToBottom();
-              }
+            } else {
+              // Keep accumulating
+              streamBubbleContent += token;
             }
           }
 
           if (event.type === 'done') {
-            // Swap plain-text stream bubble for fully parsed markdown + action buttons in place
-            if (streamBubble) {
-              const bubble = streamBubble.querySelector('.arch-stream-bubble');
-              if (bubble) bubble.innerHTML = parseMarkdown(streamBubbleContent);
-              // Add action buttons
-              const actionsDiv = document.createElement('div');
-              actionsDiv.className = 'arch-msg-actions';
+            if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); thinkingEl = null; }
+            if (streamBubbleContent) {
+              const wrap = document.createElement('div');
+              wrap.className = 'arch-msg bot';
               const rawText = streamBubbleContent;
-              actionsDiv.innerHTML = `
-                <button class="arch-action-btn arch-thumb-up" title="Good response">
-                  <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
-                </button>
-                <button class="arch-action-btn arch-thumb-down" title="Bad response">
-                  <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 10v2a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"/></svg>
-                </button>
-                <button class="arch-action-btn arch-copy" title="Copy">
-                  <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                </button>
+              wrap.innerHTML = `
+                <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
+                <div style="display:flex;flex-direction:column;max-width:78%;">
+                  <div class="arch-bubble" style="max-width:100%;">${parseMarkdown(rawText)}</div>
+                  <div class="arch-msg-actions">
+                    <button class="arch-action-btn arch-thumb-up" title="Good response">
+                      <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
+                    </button>
+                    <button class="arch-action-btn arch-thumb-down" title="Bad response">
+                      <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 10v2a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"/></svg>
+                    </button>
+                    <button class="arch-action-btn arch-copy" title="Copy">
+                      <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    </button>
+                  </div>
+                </div>
               `;
-              streamBubble.querySelector('div[style]').appendChild(actionsDiv);
-              actionsDiv.querySelector('.arch-thumb-up').addEventListener('click', function() {
+              msgs.appendChild(wrap);
+              wrap.querySelector('.arch-thumb-up').addEventListener('click', function() {
                 this.classList.toggle('active');
-                actionsDiv.querySelector('.arch-thumb-down').classList.remove('active');
+                wrap.querySelector('.arch-thumb-down').classList.remove('active');
               });
-              actionsDiv.querySelector('.arch-thumb-down').addEventListener('click', function() {
+              wrap.querySelector('.arch-thumb-down').addEventListener('click', function() {
                 this.classList.toggle('active');
-                actionsDiv.querySelector('.arch-thumb-up').classList.remove('active');
+                wrap.querySelector('.arch-thumb-up').classList.remove('active');
               });
-              actionsDiv.querySelector('.arch-copy').addEventListener('click', function() {
+              wrap.querySelector('.arch-copy').addEventListener('click', function() {
                 navigator.clipboard.writeText(rawText);
                 this.innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
                 setTimeout(() => {
                   this.innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
                 }, 1500);
               });
+              scrollToBottom();
               streamBubble = null;
               streamBubbleContent = '';
             }
