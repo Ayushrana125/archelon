@@ -454,7 +454,12 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
             if (!streamingIdRef.current) {
               const sid = Date.now();
               streamingIdRef.current = sid;
-              setStreamingMsg({ id: sid, content: token, sources: [], streaming: true });
+              // For smalltalk, don't show streaming bubble — wait for done then typewrite
+              if (!thinkingId) {
+                setStreamingMsg({ id: sid, content: token, sources: [], streaming: true, hidden: true });
+              } else {
+                setStreamingMsg({ id: sid, content: token, sources: [], streaming: true });
+              }
             } else {
               setStreamingMsg(prev => prev ? { ...prev, content: prev.content + token } : prev);
             }
@@ -588,7 +593,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
             </div>
           )}
 
-          {streamingMsg && (
+          {streamingMsg && !streamingMsg.hidden && (
             <div className="flex justify-start">
               <div className="max-w-[80%] px-1">
                 <div className="text-[17px]">
@@ -597,6 +602,12 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
                 {streamingMsg.sources?.length > 0 && <SourceBadges sources={streamingMsg.sources} />}
                 <img src="/Archelon_logo.png" alt="" className={`block w-7 h-7 object-contain opacity-50 mt-2 ${streamingMsg.streaming ? 'animate-spin-slow' : ''}`} />
               </div>
+            </div>
+          )}
+
+          {streamingMsg?.hidden && (
+            <div className="flex justify-start px-1">
+              <img src="/Archelon_logo.png" alt="" className="w-7 h-7 object-contain opacity-50 animate-spin-slow" />
             </div>
           )}
 
