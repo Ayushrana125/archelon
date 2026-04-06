@@ -761,14 +761,17 @@
       });
 
       if (res.status === 429) {
+        if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); thinkingEl = null; }
         addBotMessage("You're sending messages too fast. Give it a moment.");
         isLoading = false; setInputEnabled(true); input.focus(); return;
       }
       if (res.status === 402) {
+        if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); thinkingEl = null; }
         addBotMessage('Our assistant is temporarily unavailable. Please try again later.');
         isLoading = false; setInputEnabled(true); input.focus(); return;
       }
       if (!res.ok) {
+        if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); thinkingEl = null; }
         addBotMessage('Something went wrong. Try again in a moment.');
         isLoading = false; setInputEnabled(true); input.focus(); return;
       }
