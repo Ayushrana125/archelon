@@ -731,25 +731,35 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
       </div>
       {showUpgradeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-8 shadow-2xl border border-gray-200 dark:border-gray-700 max-w-sm w-full mx-4 text-center">
+          <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-8 shadow-2xl border border-gray-200 dark:border-gray-700 max-w-sm w-full mx-4">
+            {/* Icon */}
             <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: '#00C9B115' }}>
-              <svg className="w-7 h-7" style={{ color: '#00C9B1' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+              <img src="/Archelon_logo.png" alt="" className="w-8 h-8 object-contain opacity-80" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">You've used all your tokens</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Upgrade your plan to keep chatting with Archelon and unlock more tokens.</p>
-            <button
-              className="w-full py-3 rounded-xl text-white text-sm font-medium mb-3"
+            {/* Heading */}
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 text-center">Keep chatting with Archelon</h2>
+            {/* Body */}
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 text-center leading-relaxed">
+              Your free tokens are up. Upgrade to keep chatting and keep your agents active for visitors.
+            </p>
+            {/* Contact button */}
+            <a
+              href={`https://mail.google.com/mail/?view=cm&to=aranixlabs@gmail.com&su=${encodeURIComponent('Archelon Enterprise Plan Inquiry')}&body=${encodeURIComponent('Hi Archelon Team,\n\nI am reaching out to inquire about Archelon\'s Enterprise plan options.\n\nWe are currently using Archelon to power AI agents for our platform and are looking to scale our usage. I would appreciate it if you could share details on Enterprise pricing, token limits, SLA, and any custom deployment options available.\n\nLooking forward to hearing from you.\n\nBest regards,')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white text-sm font-medium mb-3 transition-opacity hover:opacity-90"
               style={{ background: 'linear-gradient(135deg, #00C9B1, #1A73E8)' }}
             >
-              Upgrade Plan
-            </button>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Contact Archelon Team
+            </a>
             <button
               onClick={() => setShowUpgradeModal(false)}
-              className="w-full py-2 rounded-xl text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+              className="w-full py-2 rounded-xl text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
-              Maybe later
+              Dismiss
             </button>
           </div>
         </div>

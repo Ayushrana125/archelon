@@ -284,7 +284,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
             {mode === 'library' && <AgentsLibrary agents={savedAgents} setAgentData={setAgentData} setMode={setMode} />}
             {mode === 'settings' && <SettingsView theme={theme} setTheme={setTheme} onLogout={onLogout} />}
             {mode === 'dashboard' && <DashboardView />}
-            {mode === 'deployments' && <DeploymentsView savedAgents={savedAgents} focusAgentId={deployFocusId} />}
+            {mode === 'deployments' && <DeploymentsView savedAgents={savedAgents} focusAgentId={deployFocusId} embedStatuses={embedStatuses} onEmbedStatusChange={(agentId, status) => setEmbedStatuses(prev => ({ ...prev, [agentId]: status }))} user={user} />}
           </main>
           {showDocsPanel && agentData && (
             <DocsPanel

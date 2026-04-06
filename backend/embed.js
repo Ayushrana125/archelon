@@ -143,83 +143,52 @@
     #archelon-widget-root.dark #arch-scroll-down { background: rgba(30,30,30,0.8); border-color: #444; }
     #archelon-widget-root.dark #arch-scroll-down svg { color: #e5e7eb; }
 
-    /* ── Thinking steps above input ─────────────────────────────────────── */
-    #arch-steps-overlay {
-      padding: 8px 14px 4px; background: transparent;
-      display: none; flex-direction: column; gap: 4px;
-      flex-shrink: 0;
-    }
-    #arch-steps-overlay.visible { display: flex; }
-    .arch-step-row {
-      display: flex; align-items: center; gap: 8px;
-      opacity: 0; transform: translateY(6px);
+    /* ── Thinking step bubbles ─────────────────────────────────────────── */
+    .arch-step-bubble {
+      display: flex; gap: 8px; align-items: flex-end;
+      opacity: 0; transform: translateY(8px);
       transition: opacity 0.3s ease, transform 0.3s ease;
-      font-size: 12px; color: #6b7280;
     }
-    .arch-step-row.show { opacity: 1; transform: translateY(0); }
-    .arch-step-row.done { opacity: 0.4; }
-    .arch-step-row.active .arch-step-label {
-      background: linear-gradient(90deg, #6b7280 0%, #111827 40%, #6b7280 80%);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: arch-shimmer 1.8s linear infinite;
-      font-weight: 500;
+    .arch-step-bubble.show { opacity: 1; transform: translateY(0); }
+    .arch-step-bubble-inner {
+      max-width: 78%; padding: 9px 13px; border-radius: 18px 18px 18px 4px;
+      background: #fff; border: 1px solid #e5e7eb;
+      font-size: 13px; color: #6b7280; line-height: 1.5;
+      display: flex; align-items: center; gap: 8px;
     }
-    #archelon-widget-root.dark .arch-step-row.active .arch-step-label {
-      background: linear-gradient(90deg, #9ca3af 0%, #f3f4f6 40%, #9ca3af 80%);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: arch-shimmer 1.8s linear infinite;
-    }
-    @keyframes arch-shimmer {
-      0% { background-position: 200% center; }
-      100% { background-position: -200% center; }
-    }
+    #archelon-widget-root.dark .arch-step-bubble-inner { background: #2a2a2a; border-color: #333; color: #9ca3af; }
+    .arch-step-bubble-inner.active { color: #111827; font-weight: 500; }
+    #archelon-widget-root.dark .arch-step-bubble-inner.active { color: #f3f4f6; }
+    .arch-step-bubble-inner.done { color: #9ca3af; font-weight: 400; }
+    #archelon-widget-root.dark .arch-step-bubble-inner.done { color: #6b7280; }
     .arch-step-dot {
       width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
       background: #d1d5db; transition: background 0.3s;
     }
-    .arch-step-row.active .arch-step-dot { background: #22c55e; animation: arch-pulse 1s ease-in-out infinite; }
-    .arch-step-row.done .arch-step-dot { background: #22c55e; animation: none; }
+    .arch-step-bubble-inner.active .arch-step-dot { background: #22c55e; animation: arch-pulse 1s ease-in-out infinite; }
+    .arch-step-bubble-inner.done .arch-step-dot { background: #22c55e; animation: none; }
+    @keyframes arch-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
     .arch-step-dots {
       display: inline-flex; gap: 2px; margin-left: 2px;
     }
     .arch-step-dots span {
       width: 3px; height: 3px; border-radius: 50%; background: currentColor;
-      animation: arch-dot-fade 1.2s ease-in-out infinite;
-      display: inline-block;
+      animation: arch-dot-fade 1.2s ease-in-out infinite; display: inline-block;
     }
     .arch-step-dots span:nth-child(2) { animation-delay: 0.2s; }
     .arch-step-dots span:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes arch-dot-fade {
-      0%, 100% { opacity: 0.3; } 50% { opacity: 1; }
-    }
-    /* Send button ring animation when loading */
+    @keyframes arch-dot-fade { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+    /* Send button ring spinner when loading */
     #archelon-send.loading {
-      background: transparent;
+      background: transparent !important;
       border: 2.5px solid #e5e7eb;
       border-top-color: #111827;
       animation: arch-spin 0.7s linear infinite;
-      opacity: 1;
+      opacity: 1 !important;
     }
-    #archelon-widget-root.dark #archelon-send.loading {
-      border-color: #333;
-      border-top-color: #e5e7eb;
-    }
+    #archelon-send.loading svg { display: none; }
+    #archelon-widget-root.dark #archelon-send.loading { border-color: #444; border-top-color: #e5e7eb; }
     @keyframes arch-spin { to { transform: rotate(360deg); } }
-    /* Online indicator in header */
-    #archelon-header-online {
-      font-size: 10px; color: #22c55e; font-weight: 500;
-      display: flex; align-items: center; gap: 4px; margin-top: 1px;
-    }
-    #archelon-header-online::before {
-      content: ''; width: 6px; height: 6px; border-radius: 50%;
-      background: #22c55e; display: inline-block; flex-shrink: 0;
-    }
 
     #archelon-disclaimer {
       padding: 5px 16px; font-size: 10px; color: #9ca3af;
@@ -230,9 +199,9 @@
       display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0;
     }
     #archelon-input {
-      flex: 1; border: 1px solid #e5e7eb; border-radius: 12px;
-      padding: 11px 14px; font-size: 13px; resize: none; outline: none;
-      max-height: 120px; min-height: 52px; line-height: 1.5;
+      flex: 1; border: 1px solid #e5e7eb; border-radius: 14px;
+      padding: 13px 16px; font-size: 14px; resize: none; outline: none;
+      max-height: 140px; min-height: 62px; line-height: 1.6;
       font-family: inherit; color: #111827; background: #f9fafb;
       transition: border-color 0.15s;
     }
@@ -391,12 +360,11 @@
         </button>
       </div>
       <div id="archelon-disclaimer" style="display:none;">Can make mistakes. Verify important information.</div>
-      <div id="arch-steps-overlay"></div>
       <div id="archelon-input-area">
         <textarea id="archelon-input" placeholder="Ask a question..." rows="1"></textarea>
         <button id="archelon-send" aria-label="Send">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5M5 12l7-7 7 7"/>
           </svg>
         </button>
       </div>
@@ -464,51 +432,53 @@
     'Reviewing gathered information',
   ];
 
-  const stepsOverlay = document.getElementById('arch-steps-overlay');
   let stepsInterval = null;
-  let stepsRows = [];
+  let stepBubbles = [];
+
+  function addStepBubble(label, active) {
+    const wrap = document.createElement('div');
+    wrap.className = 'arch-step-bubble';
+    wrap.innerHTML = `
+      <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
+      <div class="arch-step-bubble-inner ${active ? 'active' : ''}">
+        <span class="arch-step-dot"></span>
+        <span>${label}${active ? '<span class="arch-step-dots"><span></span><span></span><span></span></span>' : ''}</span>
+      </div>
+    `;
+    msgs.appendChild(wrap);
+    msgs.scrollTop = msgs.scrollHeight;
+    setTimeout(() => wrap.classList.add('show'), 30);
+    return wrap;
+  }
 
   function showSteps(ragMode) {
     clearSteps();
-    const steps = ragMode ? STEPS_RAG : STEPS_SMALLTALK;
-    stepsOverlay.innerHTML = '';
-    stepsRows = steps.map((label, i) => {
-      const row = document.createElement('div');
-      row.className = 'arch-step-row';
-      row.innerHTML = `<span class="arch-step-dot"></span><span class="arch-step-label">${label}<span class="arch-step-dots"><span></span><span></span><span></span></span></span>`;
-      stepsOverlay.appendChild(row);
-      // Stagger entrance
-      setTimeout(() => row.classList.add('show'), i * 50);
-      return row;
-    });
-    stepsOverlay.classList.add('visible');
-    // Activate first step
-    stepsRows[0].classList.add('active');
-    // Send button ring
-    sendBtn.innerHTML = '';
     sendBtn.classList.add('loading');
-    sendBtn.classList.remove('active');
-    if (ragMode) {
-      let current = 0;
-      stepsInterval = setInterval(() => {
-        if (current < stepsRows.length - 1) {
-          stepsRows[current].classList.remove('active');
-          stepsRows[current].classList.add('done');
-          current++;
-          stepsRows[current].classList.add('active');
-        }
-      }, 900);
-    }
+    const firstBubble = addStepBubble(STEPS_RAG[0], true);
+    stepBubbles.push(firstBubble);
+    if (!ragMode) return;
+    let current = 0;
+    stepsInterval = setInterval(() => {
+      const inner = stepBubbles[current].querySelector('.arch-step-bubble-inner');
+      inner.classList.remove('active');
+      inner.classList.add('done');
+      inner.querySelector('.arch-step-dots')?.remove();
+      current++;
+      if (current < STEPS_RAG.length) {
+        const bubble = addStepBubble(STEPS_RAG[current], true);
+        stepBubbles.push(bubble);
+      } else {
+        clearInterval(stepsInterval);
+        stepsInterval = null;
+      }
+    }, 1100);
   }
 
   function clearSteps() {
     if (stepsInterval) { clearInterval(stepsInterval); stepsInterval = null; }
-    stepsOverlay.classList.remove('visible');
-    stepsOverlay.innerHTML = '';
-    stepsRows = [];
-    // Restore send button
+    stepBubbles.forEach(b => b.remove());
+    stepBubbles = [];
     sendBtn.classList.remove('loading');
-    sendBtn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>`;
   }
 
   // ── Fetch info + sample questions in parallel ────────────────────────────
