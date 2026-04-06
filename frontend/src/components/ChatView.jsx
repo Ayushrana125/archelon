@@ -259,6 +259,13 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
   const [agentTotalTokens, setAgentTotalTokens] = useState(0);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
+  // Auto-send greeting when agent chat opens for the first time
+  useEffect(() => {
+    if (agentData && messages.length === 0) {
+      handleSend('Hi', true);
+    }
+  }, [agentData?.id]);
+
   useEffect(() => {
     if (!agentData?.id) return;
     setSessionTokens(0);
@@ -283,7 +290,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
   const isArex = !agentData;
   const agentName = agentData ? agentData.name : 'Arex';
   const defaultPlaceholder = isArex ? 'Ask Arex...' : `Ask ${agentName}...`;
-  const isBusy = isTyping || !!streamingMsg || isProcessingDoc;
+  const isBusy = isTyping || !!streamingMsg || isProcessingDoc || isGreetingLoading;
   const { resetIdle } = useAnimatedPlaceholder(isArex && !input && !isBusy, textareaRef, defaultPlaceholder);
   const canUpload = agentData && !agentData.is_system;
 
@@ -362,7 +369,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
     setResumeFlow(null);
   };
 
-  const handleSend = async (directInput) => {
+  const handleSend = async (directInput, silent = false) => {
     const text = (typeof directInput === 'string' ? directInput : input).trim();
     if (!text) return;
     if (showUpgradeModal) return;
@@ -370,8 +377,10 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
     resetIdle();
     setUserScrolledUp(false);
 
-    const userMessage = { role: 'user', content: text, id: Date.now() };
-    setMessages(prev => [...prev, userMessage]);
+    if (!silent) {
+      const userMessage = { role: 'user', content: text, id: Date.now() };
+      setMessages(prev => [...prev, userMessage]);
+    }
 
     const resumeKeywords = ['resume', 'cv', 'send me your resume', 'share resume', 'share your resume', 'send resume', 'send your resume'];
     if (!resumeFlow && isArex && resumeKeywords.some(k => text.toLowerCase().includes(k))) {
@@ -645,7 +654,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
             <textarea
               ref={textareaRef}
               value={input}
-              disabled={showUpgradeModal}
+              disabled={showUpgradeModal || isBusy}
               onChange={(e) => {
                 setInput(e.target.value);
                 resetIdle();
@@ -655,7 +664,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
               onKeyPress={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
-                  if (!isProcessingDoc && !isTyping && !streamingMsg) handleSend();
+                  if (!isBusy) handleSend();
                 }
               }}
               placeholder={defaultPlaceholder}
@@ -682,7 +691,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
               </div>
               <button
                 onClick={() => handleSend()}
-                disabled={!input.trim() || isProcessingDoc || isTyping || !!streamingMsg}
+                disabled={!input.trim() || isBusy}
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

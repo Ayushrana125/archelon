@@ -126,35 +126,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
     // Auto-send "Hi" only if this agent has no chat history yet
     setChatHistories(prev => {
       if (prev[agent.id]) return prev; // already has history, skip
-      // Kick off the greeting fetch in the background
-      fetch(`${import.meta.env.VITE_API_URL}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({
-          message:            'Hi',
-          agent_id:           agent.id,
-          session_id:         'session_1',
-          agent_name:         agent.name ?? '',
-          agent_description:  agent.description ?? '',
-          agent_instructions: agent.instructions ?? '',
-        }),
-      })
-        .then(r => r.json())
-        .then(data => {
-          const reply = data.answer ?? `Hi! I'm ${agent.name}. How can I help you?`;
-          setChatHistories(h => ({
-            ...h,
-            [agent.id]: [{ role: 'assistant', content: reply, id: Date.now() }],
-          }));
-        })
-        .catch(() => {
-          setChatHistories(h => ({
-            ...h,
-            [agent.id]: [{ role: 'assistant', content: `Hi! I'm ${agent.name}. How can I help you?`, id: Date.now() }],
-          }));
-        });
-      // Return a loading placeholder immediately
-      return { ...prev, [agent.id]: [] };
+      return { ...prev, [agent.id]: [] }; // empty array triggers greeting in ChatView
     });
   };
 
