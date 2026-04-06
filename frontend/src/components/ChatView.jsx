@@ -50,17 +50,17 @@ function SourceBadges({ sources }) {
   );
 }
 
-function TypewriterMessage({ content, sources, onComplete }) {
-  const [displayed, setDisplayed] = useState('');
-  const [done, setDone] = useState(false);
+function TypewriterMessage({ content, sources, onComplete, skip }) {
+  const [displayed, setDisplayed] = useState(skip ? content : '');
+  const [done, setDone] = useState(!!skip);
   const idx = useRef(0);
 
   useEffect(() => {
+    if (skip) { setDisplayed(content); setDone(true); return; }
     idx.current = 0;
     setDisplayed('');
     setDone(false);
 
-    // Split by word to avoid breaking markdown mid-token (e.g. half a code fence)
     const words = content.split(' ');
     const interval = setInterval(() => {
       idx.current += 1;
@@ -73,7 +73,7 @@ function TypewriterMessage({ content, sources, onComplete }) {
     }, 38);
 
     return () => clearInterval(interval);
-  }, [content]);
+  }, [content, skip]);
 
   return (
     <div className="px-1">
@@ -290,7 +290,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
   const isArex = !agentData;
   const agentName = agentData ? agentData.name : 'Arex';
   const defaultPlaceholder = isArex ? 'Ask Arex...' : `Ask ${agentName}...`;
-  const isBusy = isTyping || !!streamingMsg || isProcessingDoc || isGreetingLoading;
+  const isBusy = isTyping || !!streamingMsg || isProcessingDoc;
   const { resetIdle } = useAnimatedPlaceholder(isArex && !input && !isBusy, textareaRef, defaultPlaceholder);
   const canUpload = agentData && !agentData.is_system;
 
@@ -494,7 +494,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
               setStreamingMsg(current => {
                 if (!current) return null;
                 const role = thinkingId ? 'assistant' : 'smalltalk';
-                setMessages(prev => [...prev, { role, content: current.content, sources: current.sources, id: current.id }]);
+                setMessages(prev => [...prev, { role, content: current.content, sources: current.sources, id: current.id, skipAnimation: false }]);
                 streamingIdRef.current = null;
                 resetIdle();
                 return null;
@@ -573,7 +573,8 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
                     key={msg.id}
                     content={msg.content}
                     sources={msg.sources}
-                    onComplete={() => {}}
+                    skip={msg.skipAnimation}
+                    onComplete={() => setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, skipAnimation: true } : m))}
                   />
                 ) : (
                   <div className="px-1">
@@ -589,12 +590,6 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
               </div>
             </div>
           ))}
-
-          {isGreetingLoading && (
-            <div className="flex justify-start px-1">
-              <img src="/Archelon_logo.png" alt="" className="w-7 h-7 object-contain opacity-50 animate-spin-slow" />
-            </div>
-          )}
 
           {isTyping && (
             <div className="flex justify-start px-1">
@@ -654,7 +649,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
             <textarea
               ref={textareaRef}
               value={input}
-              disabled={showUpgradeModal || isBusy}
+              disabled={showUpgradeModal}
               onChange={(e) => {
                 setInput(e.target.value);
                 resetIdle();
@@ -664,7 +659,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
               onKeyPress={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
-                  if (!isBusy) handleSend();
+                  if (!isBusy && input.trim()) handleSend();
                 }
               }}
               placeholder={defaultPlaceholder}
