@@ -62,13 +62,13 @@
     #archelon-window.open { transform: scale(1); opacity: 1; pointer-events: all; }
     #archelon-header {
       padding: 14px 16px; display: flex; align-items: center; gap: 10px;
-      background: linear-gradient(135deg, #0d0d0d, #1a1a1a); flex-shrink: 0;
+      background: #111827; flex-shrink: 0;
       display: none;
     }
     #archelon-header.visible { display: flex; }
     #archelon-avatar {
       width: 36px; height: 36px; border-radius: 50%; position: relative; flex-shrink: 0;
-      background: rgba(0,201,177,0.2); display: flex; align-items: center; justify-content: center;
+      background: #f3f4f6; display: flex; align-items: center; justify-content: center;
       overflow: hidden;
     }
     #archelon-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
@@ -104,7 +104,7 @@
     .arch-bubble b { font-weight: 600; }
     .arch-bot-avatar {
       width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
-      background: rgba(0,201,177,0.15); display: flex; align-items: center; justify-content: center;
+      background: #f3f4f6; display: flex; align-items: center; justify-content: center;
       overflow: hidden;
     }
     .arch-bot-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
@@ -134,7 +134,7 @@
       font-size: 12px; color: #6b7280;
       transition: color 0.3s;
     }
-    .arch-thinking-step.active { color: ${TEAL}; }
+    .arch-thinking-step.active { color: #374151; }
     .arch-thinking-step.done { color: #9ca3af; }
     .arch-step-icon {
       width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
