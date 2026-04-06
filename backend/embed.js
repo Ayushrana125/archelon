@@ -98,7 +98,7 @@
       border: 1px solid #e5e7eb;
     }
     .arch-msg.user .arch-bubble {
-      background: linear-gradient(135deg, ${TEAL}, ${BLUE});
+      background: #111827;
       color: #fff; border-radius: 18px 18px 4px 18px;
     }
     .arch-bubble b { font-weight: 600; }
@@ -175,11 +175,11 @@
       font-family: inherit; color: #111827; background: #f9fafb;
       transition: border-color 0.15s;
     }
-    #archelon-input:focus { border-color: ${TEAL}; background: #fff; }
+    #archelon-input:focus { border-color: #111827; background: #fff; }
     #archelon-input::placeholder { color: #9ca3af; }
     #archelon-send {
       width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
-      background: linear-gradient(135deg, ${TEAL}, ${BLUE});
+      background: #111827;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0; transition: opacity 0.15s; opacity: 0.4;
     }
@@ -191,7 +191,7 @@
       display: flex; align-items: center; justify-content: center; gap: 5px;
     }
     #archelon-footer a {
-      color: ${TEAL}; text-decoration: none; font-weight: 600;
+      color: #111827; text-decoration: none; font-weight: 600;
       display: flex; align-items: center; gap: 4px;
     }
     #archelon-footer a:hover { text-decoration: underline; }
