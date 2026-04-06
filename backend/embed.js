@@ -728,7 +728,9 @@
     setInputEnabled(false);
     addUserMessage(text);
 
-    let thinkingEl = null;
+    // Show dots immediately — before meta event arrives
+    let thinkingEl = showDots();
+    thinkingEl._showTime = Date.now();
     let streamBubble = null;
     let streamBubbleContent = '';
 
@@ -774,40 +776,94 @@
           try { event = JSON.parse(raw); } catch { continue; }
 
           if (event.type === 'meta') {
-            if (event.intent === 'smalltalk') {
-              // Dots only for smalltalk
-              thinkingEl = showDots();
-            } else {
-              // Real thinking steps for RAG
+            if (event.intent !== 'smalltalk') {
+              if (thinkingEl) { thinkingEl.remove(); }
               thinkingEl = showThinking();
             }
+            // smalltalk: keep dots, stamp show time for min-wait
+            thinkingEl._showTime = Date.now();
+            thinkingEl._isSmallTalk = (event.intent === 'smalltalk');
           }
 
           if (event.type === 'token') {
             const token = event.token;
             if (!streamBubble) {
-              // First token — remove thinking, create live bubble
-              if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); thinkingEl = null; }
-              streamBubble = document.createElement('div');
-              streamBubble.className = 'arch-msg bot';
-              streamBubble.innerHTML = `
-                <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
-                <div style="display:flex;flex-direction:column;max-width:78%;">
-                  <div class="arch-bubble arch-stream-bubble" style="max-width:100%;"></div>
-                </div>
-              `;
-              msgs.appendChild(streamBubble);
+              const showBubble = () => {
+                if (thinkingEl) { clearInterval(thinkingEl._interval); thinkingEl.remove(); thinkingEl = null; }
+                streamBubble = document.createElement('div');
+                streamBubble.className = 'arch-msg bot';
+                streamBubble.innerHTML = `
+                  <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
+                  <div style="display:flex;flex-direction:column;max-width:78%;">
+                    <div class="arch-bubble arch-stream-bubble" style="max-width:100%;"></div>
+                  </div>
+                `;
+                msgs.appendChild(streamBubble);
+                streamBubbleContent += token;
+                streamBubble.querySelector('.arch-stream-bubble').textContent = streamBubbleContent;
+                scrollToBottom();
+              };
+              // Smalltalk: keep dots visible min 600ms. RAG: show immediately on first token.
+              const isSmallTalk = thinkingEl && thinkingEl._isSmallTalk;
+              if (isSmallTalk) {
+                const elapsed = Date.now() - (thinkingEl._showTime || Date.now());
+                const minWait = 600;
+                if (elapsed < minWait) {
+                  setTimeout(showBubble, minWait - elapsed);
+                } else {
+                  showBubble();
+                }
+              } else {
+                showBubble();
+              }
+            } else {
+              streamBubbleContent += token;
+              if (streamBubble) {
+                streamBubble.querySelector('.arch-stream-bubble').textContent = streamBubbleContent;
+                scrollToBottom();
+              }
             }
-            streamBubbleContent += token;
-            streamBubble.querySelector('.arch-stream-bubble').textContent = streamBubbleContent;
-            scrollToBottom();
           }
 
           if (event.type === 'done') {
-            // Replace plain text bubble with fully parsed markdown + actions
-            if (streamBubble) { streamBubble.remove(); streamBubble = null; }
-            addBotMessage(streamBubbleContent);
-            streamBubbleContent = '';
+            // Swap plain-text stream bubble for fully parsed markdown + action buttons in place
+            if (streamBubble) {
+              const bubble = streamBubble.querySelector('.arch-stream-bubble');
+              if (bubble) bubble.innerHTML = parseMarkdown(streamBubbleContent);
+              // Add action buttons
+              const actionsDiv = document.createElement('div');
+              actionsDiv.className = 'arch-msg-actions';
+              const rawText = streamBubbleContent;
+              actionsDiv.innerHTML = `
+                <button class="arch-action-btn arch-thumb-up" title="Good response">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
+                </button>
+                <button class="arch-action-btn arch-thumb-down" title="Bad response">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 10v2a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"/></svg>
+                </button>
+                <button class="arch-action-btn arch-copy" title="Copy">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                </button>
+              `;
+              streamBubble.querySelector('div[style]').appendChild(actionsDiv);
+              actionsDiv.querySelector('.arch-thumb-up').addEventListener('click', function() {
+                this.classList.toggle('active');
+                actionsDiv.querySelector('.arch-thumb-down').classList.remove('active');
+              });
+              actionsDiv.querySelector('.arch-thumb-down').addEventListener('click', function() {
+                this.classList.toggle('active');
+                actionsDiv.querySelector('.arch-thumb-up').classList.remove('active');
+              });
+              actionsDiv.querySelector('.arch-copy').addEventListener('click', function() {
+                navigator.clipboard.writeText(rawText);
+                this.innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+                setTimeout(() => {
+                  this.innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
+                }, 1500);
+              });
+              streamBubble = null;
+              streamBubbleContent = '';
+            }
           }
         }
       }
