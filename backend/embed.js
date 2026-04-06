@@ -521,7 +521,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Archelon-Key': API_KEY },
         body: JSON.stringify({
-          message: 'Generate 3 sample questions users mostly ask from documents. Give in "","","" format',
+          message: 'Generate 3 short sample questions users mostly ask from these documents. Max 8 words each. Give only in "","","" format, nothing else.',
           agent_id: AGENT_ID,
         }),
       });
@@ -552,16 +552,13 @@
     } catch {}
   }
 
-  // Fire both in parallel — FAB shows only after both complete
-  let infoDone = false; let questionsDone = false;
-  function checkReady() { if (infoDone && questionsDone) fab.classList.add('ready'); }
-
+  // Fire both in parallel — FAB shows when info is ready, chips appear when questions are ready
   fetch(`${API_BASE}/api/public/info`, { headers: { 'X-Archelon-Key': API_KEY } })
     .then(r => r.ok ? r.json() : null)
-    .then(d => { applyInfo(d); infoDone = true; checkReady(); })
-    .catch(() => { applyInfo(null); infoDone = true; checkReady(); });
+    .then(d => { applyInfo(d); fab.classList.add('ready'); })
+    .catch(() => { applyInfo(null); fab.classList.add('ready'); });
 
-  fetchSampleQuestions().then(() => { questionsDone = true; checkReady(); });
+  fetchSampleQuestions();
 
   // ── Markdown parser ────────────────────────────────────────────────────────
   function parseMarkdown(text) {
