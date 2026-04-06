@@ -454,18 +454,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
             if (!streamingIdRef.current) {
               const sid = Date.now();
               streamingIdRef.current = sid;
-              // For smalltalk the full answer arrives as one token — animate word by word
-              if (!thinkingId) {
-                const words = token.split(' ');
-                let i = 0;
-                const iv = setInterval(() => {
-                  i++;
-                  setStreamingMsg({ id: sid, content: words.slice(0, i).join(' '), sources: [], isSmallTalk: true });
-                  if (i >= words.length) clearInterval(iv);
-                }, 38);
-              } else {
-                setStreamingMsg({ id: sid, content: token, sources: [] });
-              }
+              setStreamingMsg({ id: sid, content: token, sources: [], streaming: true });
             } else {
               setStreamingMsg(prev => prev ? { ...prev, content: prev.content + token } : prev);
             }
@@ -473,7 +462,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
 
           if (event.type === 'done') {
             const { sources, token_usage } = event;
-            setStreamingMsg(prev => prev ? { ...prev, sources } : prev);
+            setStreamingMsg(prev => prev ? { ...prev, sources, streaming: false } : prev);
             if (thinkingId) {
               setMessages(prev => prev.map(m => m.id === thinkingId ? { ...m, sources } : m));
             }
@@ -490,7 +479,8 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
             setTimeout(() => {
               setStreamingMsg(current => {
                 if (!current) return null;
-                setMessages(prev => [...prev, { role: 'assistant', content: current.content, sources: current.sources, id: current.id }]);
+                const role = thinkingId ? 'assistant' : 'smalltalk';
+                setMessages(prev => [...prev, { role, content: current.content, sources: current.sources, id: current.id }]);
                 streamingIdRef.current = null;
                 resetIdle();
                 return null;
@@ -564,6 +554,13 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
                     completed={!!msg.completed}
                     onComplete={handleProcessingComplete}
                   />
+                ) : msg.role === 'smalltalk' ? (
+                  <TypewriterMessage
+                    key={msg.id}
+                    content={msg.content}
+                    sources={msg.sources}
+                    onComplete={() => {}}
+                  />
                 ) : (
                   <div className="px-1">
                     <div className="text-[17px]">
@@ -598,7 +595,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{streamingMsg.content}</ReactMarkdown>
                 </div>
                 {streamingMsg.sources?.length > 0 && <SourceBadges sources={streamingMsg.sources} />}
-                <img src="/Archelon_logo.png" alt="" className="block w-7 h-7 object-contain opacity-50 mt-2 animate-spin-slow" />
+                <img src="/Archelon_logo.png" alt="" className={`block w-7 h-7 object-contain opacity-50 mt-2 ${streamingMsg.streaming ? 'animate-spin-slow' : ''}`} />
               </div>
             </div>
           )}
