@@ -516,7 +516,8 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
                     agentName={agentName}
                     sources={msg.sources}
                     isSmallTalk={msg.isSmallTalk}
-                    isHistorical={!streamingMsg && !messages.slice(msgIdx + 1).some(m => m.role === 'assistant')}
+                    isHistorical={!!messages.slice(msgIdx + 1).some(m => m.role === 'assistant')}
+                    collapseNow={!!streamingMsg}
                     onComplete={() => {}}
                   />
                 ) : msg.role === 'processing' ? (

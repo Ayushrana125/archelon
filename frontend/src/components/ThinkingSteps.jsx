@@ -27,12 +27,16 @@ function DotsLoader() {
   );
 }
 
-function ThinkingSteps({ query, searchThinking, agentName, sources, onComplete, isHistorical, isSmallTalk }) {
+function ThinkingSteps({ query, searchThinking, agentName, sources, onComplete, isHistorical, isSmallTalk, collapseNow }) {
   const [currentStep, setCurrentStep] = useState(isHistorical ? 2 : -1);
   const [done, setDone] = useState(isHistorical);
   const [expanded, setExpanded] = useState(!isHistorical);
   const [bubble1Done, setBubble1Done] = useState(isHistorical);
   const [bubble2Done, setBubble2Done] = useState(isHistorical);
+
+  useEffect(() => {
+    if (collapseNow) { setDone(true); setExpanded(false); }
+  }, [collapseNow]);
 
   const STEPS = [
     { sub: query || 'Reading your message...' },
