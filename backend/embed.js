@@ -27,19 +27,36 @@
       height: 52px; padding: 0 20px 0 8px;
       border-radius: 999px;
       background: #ffffff;
-      border: 1.5px solid #e5e7eb;
+      border: none;
       cursor: pointer;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.12), 0 1px 6px rgba(0,0,0,0.08);
       display: flex; align-items: center; gap: 10px;
-      transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+      transition: transform 0.2s, opacity 0.3s;
       opacity: 0; pointer-events: none; white-space: nowrap;
+      position: fixed;
+    }
+    #archelon-fab::before {
+      content: '';
+      position: absolute; inset: -2px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #8b5cf6, #6366f1, #a78bfa, #8b5cf6);
+      background-size: 300% 300%;
+      animation: arch-ai-border 4s ease infinite;
+      z-index: -1;
+    }
+    #archelon-fab::after {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: 999px;
+      background: #ffffff;
+      z-index: -1;
+    }
+    @keyframes arch-ai-border {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
     #archelon-fab.ready { opacity: 1; pointer-events: all; }
-    #archelon-fab:hover {
-      transform: scale(1.04);
-      box-shadow: 0 6px 28px rgba(0,0,0,0.16), 0 2px 10px rgba(0,0,0,0.1);
-      border-color: #d1d5db;
-    }
+    #archelon-fab:hover { transform: scale(1.04); }
     #archelon-fab-logo {
       width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
       overflow: hidden; display: flex; align-items: center; justify-content: center;
@@ -321,7 +338,8 @@
       0%, 100% { transform: translateY(0); opacity: 0.5; }
       50% { transform: translateY(-4px); opacity: 1; }
     }
-    /* Dark theme */
+    #archelon-widget-root.dark #archelon-fab::after { background: #111827; }
+    #archelon-widget-root.dark #archelon-fab-text { color: #f3f4f6; }
     #archelon-widget-root.dark #archelon-window { background: #1a1a1a; border-color: #2a2a2a; }
     #archelon-widget-root.dark #archelon-messages { background: #141414; }
     #archelon-widget-root.dark .arch-msg.bot .arch-bubble { background: #2a2a2a; color: #e5e7eb; border-color: #333; }
