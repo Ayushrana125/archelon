@@ -435,13 +435,13 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
           </div>
 
           <div className="relative max-w-3xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight mb-6 text-gray-900 dark:text-gray-100">
+            <h1 className="landing-heading text-4xl md:text-6xl font-bold tracking-tight leading-tight mb-6 text-gray-900 dark:text-gray-100">
               Built to carry<br />
               <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}>
                 your knowledge.
               </span>
             </h1>
-            <p className="text-lg text-gray-500 dark:text-gray-400 max-w-xl mx-auto mb-10 leading-relaxed">
+            <p className="landing-body text-xl text-gray-500 dark:text-gray-400 max-w-xl mx-auto mb-10 leading-relaxed">
               Archelon was the largest sea turtle that ever lived - up to 4.6 metres long, built to carry enormous weight across vast oceans. Archelon does the same for your documents.
             </p>
             {/* Button with ripple rings */}
@@ -483,7 +483,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
             {/* Section label */}
             <div className="mb-24">
               <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: TEAL }}>What Archelon does</p>
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100 max-w-2xl leading-tight">
+              <h2 className="landing-heading text-3xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100 max-w-2xl leading-tight">
                 Everything your documents<br />deserve to be
               </h2>
             </div>
@@ -492,8 +492,8 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
             <div className="grid md:grid-cols-[2fr_3fr] gap-16 items-center mb-28">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: TEAL }}>01</p>
-                <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 leading-tight">Documents that actually answer questions</h3>
-                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Upload PDFs, DOCX, or TXT files. Archelon processes them automatically - breaking content into meaningful pieces, understanding structure, and making every section instantly searchable. Your documents become a knowledge base your agent can reason over.</p>
+                <h3 className="landing-heading text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 leading-tight">Documents that actually answer questions</h3>
+                <p className="landing-body text-lg text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Upload PDFs, DOCX, or TXT files. Archelon processes them automatically - breaking content into meaningful pieces, understanding structure, and making every section instantly searchable. Your documents become a knowledge base your agent can reason over.</p>
                 <div className="space-y-2">
                   {['PDF, DOCX, TXT support', 'Instant indexing after upload', 'Searches meaning, not just keywords'].map(t => (
                     <div key={t} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
@@ -515,8 +515,8 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
               </div>
               <div className="order-1 md:order-2">
                 <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: BLUE }}>02</p>
-                <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 leading-tight">Agents that think before they answer</h3>
-                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Your agent doesn't just search - it understands what you're asking, finds the most relevant parts of your documents, and builds a precise answer grounded in your content. Users see the reasoning before the answer appears.</p>
+                <h3 className="landing-heading text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 leading-tight">Agents that think before they answer</h3>
+                <p className="landing-body text-lg text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Your agent doesn't just search - it understands what you're asking, finds the most relevant parts of your documents, and builds a precise answer grounded in your content. Users see the reasoning before the answer appears.</p>
                 <div className="space-y-2">
                   {['Understands what you\'re really asking', 'Finds the most relevant sections', 'Shows reasoning before answering'].map(t => (
                     <div key={t} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
@@ -532,8 +532,8 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
             <div className="grid md:grid-cols-[2fr_3fr] gap-16 items-center">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: TEAL }}>03</p>
-                <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 leading-tight">Deploy anywhere with one script tag</h3>
-                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Generate an API key, whitelist your domain, and paste one script tag. Your agent becomes a floating chat widget on any website - with token metering, rate limiting, and domain-level security built in.</p>
+                <h3 className="landing-heading text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 leading-tight">Deploy anywhere with one script tag</h3>
+                <p className="landing-body text-lg text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Generate an API key, whitelist your domain, and paste one script tag. Your agent becomes a floating chat widget on any website - with token metering, rate limiting, and domain-level security built in.</p>
                 <div className="space-y-2">
                   {['API key + domain whitelist', 'Token usage metering', 'One script tag deployment'].map(t => (
                     <div key={t} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
@@ -557,7 +557,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
           <div className="max-w-4xl mx-auto">
             <div className="mb-20">
               <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: BLUE }}>The process</p>
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100 leading-tight">
+              <h2 className="landing-heading text-3xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100 leading-tight">
                 From documents<br />to deployed - in minutes
               </h2>
             </div>
@@ -582,8 +582,8 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
                     </div>
                     {/* Content */}
                     <div className="pt-2 pb-2">
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">{step.title}</h3>
-                      <p className="text-gray-500 dark:text-gray-400 leading-relaxed max-w-lg">{step.body}</p>
+                      <h3 className="landing-heading text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">{step.title}</h3>
+                      <p className="landing-body text-lg text-gray-500 dark:text-gray-400 leading-relaxed max-w-lg">{step.body}</p>
                     </div>
                   </div>
                 ))}
@@ -597,7 +597,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
           <div className="max-w-6xl mx-auto">
             <div className="mb-20">
               <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: TEAL }}>Use cases</p>
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100 leading-tight max-w-2xl">
+              <h2 className="landing-heading text-3xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100 leading-tight max-w-2xl">
                 Any team with documents<br />has a use case
               </h2>
             </div>
@@ -621,9 +621,9 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">{uc.title}</h3>
+                    <h3 className="landing-heading text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">{uc.title}</h3>
                     <p className="text-xs text-gray-400 dark:text-gray-600 mb-3">{uc.industry}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{uc.body}</p>
+                    <p className="landing-body text-base text-gray-500 dark:text-gray-400 leading-relaxed">{uc.body}</p>
                   </div>
                   <div className="flex flex-wrap gap-2 md:justify-end md:pt-1">
                     {uc.tags.map(tag => (
@@ -651,8 +651,8 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
           </div>
           <div className="max-w-2xl mx-auto text-center">
             <img src="/Archelon_logo.png" className="w-12 h-12 object-contain mx-auto mb-6 opacity-80" alt="" />
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-gray-900 dark:text-gray-100">Ready to get started?</h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-8">Create your first agent in minutes. No setup required.</p>
+            <h2 className="landing-heading text-3xl md:text-4xl font-bold tracking-tight mb-4 text-gray-900 dark:text-gray-100">Ready to get started?</h2>
+            <p className="landing-body text-lg text-gray-500 dark:text-gray-400 mb-8">Create your first agent in minutes. No setup required.</p>
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <button onClick={openSignup} style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
                 className="px-6 py-3 text-white rounded-xl font-medium hover:opacity-90 transition-opacity text-sm shadow-lg shadow-teal-500/20">

@@ -1,3 +1,58 @@
+/* ── Fraunces ── */
+@font-face {
+  font-family: 'Fraunces';
+  src: url('./assets/fonts/Fruances/Fraunces_72pt-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('./assets/fonts/Fruances/Fraunces_72pt-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Boska ── */
+@font-face {
+  font-family: 'Boska';
+  src: url('./assets/fonts/Boska_Complete/Fonts/WEB/fonts/Boska-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Boska';
+  src: url('./assets/fonts/Boska_Complete/Fonts/WEB/fonts/Boska-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Boska';
+  src: url('./assets/fonts/Boska_Complete/Fonts/WEB/fonts/Boska-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Clash Display ── */
+@font-face {
+  font-family: 'ClashDisplay';
+  src: url('./assets/fonts/ClashDisplay_Complete/Fonts/WEB/fonts/ClashDisplay-Semibold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'ClashDisplay';
+  src: url('./assets/fonts/ClashDisplay_Complete/Fonts/WEB/fonts/ClashDisplay-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ── Satoshi ── */
 @font-face {
   font-family: 'Satoshi';
@@ -69,4 +124,14 @@ body {
   font-family: 'Zodiak', serif;
   font-weight: 700;
   letter-spacing: -0.02em;
+}
+
+/* ── Landing page headings & content ── */
+.landing-heading {
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+}
+.landing-body {
+  font-family: 'Fraunces', serif;
+  font-weight: 400;
 }
