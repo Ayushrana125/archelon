@@ -144,7 +144,22 @@
     #archelon-widget-root.dark #arch-scroll-down { background: rgba(30,30,30,0.8); border-color: #444; }
     #archelon-widget-root.dark #arch-scroll-down svg { color: #e5e7eb; }
 
-    /* ── Thinking step rows (in messages area) ────────────────────────── */
+    /* Timestamps */
+    .arch-chat-started {
+      text-align: center; font-size: 11px; color: #9ca3af;
+      padding: 4px 12px; margin: 4px auto;
+      background: #f3f4f6; border-radius: 999px;
+      width: fit-content; align-self: center;
+    }
+    #archelon-widget-root.dark .arch-chat-started { background: #2a2a2a; color: #6b7280; }
+    .arch-msg-time {
+      font-size: 10px; color: #9ca3af; margin-top: 3px;
+    }
+    .arch-msg.user .arch-msg-time { text-align: right; }
+    .arch-msg.bot .arch-msg-time { text-align: left; padding-left: 30px; }
+    #archelon-widget-root.dark .arch-msg-time { color: #6b7280; }
+
+    /* Thinking step rows (in messages area) ────────────────────────── */
     .arch-step-row {
       display: flex; align-items: center; gap: 8px;
       opacity: 0; transform: translateY(6px);
@@ -580,7 +595,35 @@
 
   fetchSampleQuestions();
 
-  // ── Markdown parser ────────────────────────────────────────────────────────
+  // ── Timestamp helpers ─────────────────────────────────────────────────────
+  function formatTime(date) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function formatChatStarted(date) {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const short = tz.split('/').pop().replace(/_/g, ' ');
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
+      + ', ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      + ' · ' + short;
+  }
+
+  function addTimestamp(text) {
+    const el = document.createElement('div');
+    el.className = 'arch-chat-started';
+    el.textContent = text;
+    msgs.appendChild(el);
+  }
+
+  function addMessageTime(container, date) {
+    const wrap = document.createElement('div');
+    wrap.className = 'arch-msg-time';
+    const timeStr = formatTime(date);
+    wrap.textContent = 'Just now';
+    container.appendChild(wrap);
+    setTimeout(() => { wrap.textContent = timeStr; }, 30000);
+  }
+
   function parseMarkdown(text) {
     // Escape HTML first
     let html = text
@@ -653,6 +696,7 @@
   `;
 
   function addBotMessage(text) {
+    const now = new Date();
     const wrap = document.createElement('div');
     wrap.className = 'arch-msg bot';
     const rawText = text;
@@ -660,35 +704,40 @@
       <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
       <div style="display:flex;flex-direction:column;max-width:78%;">
         <div class="arch-bubble" style="max-width:100%;"></div>
+        <div class="arch-msg-time">Just now</div>
         ${ACTION_BUTTONS_HTML}
       </div>
     `;
     const bubble = wrap.querySelector('.arch-bubble');
+    const timeEl = wrap.querySelector('.arch-msg-time');
+    const timeStr = formatTime(now);
+    setTimeout(() => { if (timeEl) timeEl.textContent = timeStr; }, 30000);
     msgs.appendChild(wrap);
-    // Scroll to top of this new message
     wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
     buildActionButtons(wrap, rawText);
-
     const words = text.split(' ');
     let i = 0;
     const tick = setInterval(() => {
       i++;
       const partial = words.slice(0, i).join(' ');
-      if (i >= words.length) {
-        bubble.innerHTML = parseMarkdown(partial);
-        clearInterval(tick);
-      } else {
-        bubble.textContent = partial;
-      }
+      if (i >= words.length) { bubble.innerHTML = parseMarkdown(partial); clearInterval(tick); }
+      else { bubble.textContent = partial; }
     }, 30);
   }
 
-  function addUserMessage(text) {
+  function addUserMessage(text, date) {
+    const now = date || new Date();
     const msg = document.createElement('div');
     msg.className = 'arch-msg user';
-    msg.innerHTML = `<div class="arch-bubble">${parseMarkdown(text)}</div>`;
+    msg.innerHTML = `<div style="display:flex;flex-direction:column;align-items:flex-end;">
+      <div class="arch-bubble">${parseMarkdown(text)}</div>
+      <div class="arch-msg-time">Just now</div>
+    </div>`;
+    const timeEl = msg.querySelector('.arch-msg-time');
+    const timeStr = formatTime(now);
+    setTimeout(() => { timeEl.textContent = timeStr; }, 30000);
     msgs.appendChild(msg);
-    scrollToBottom();
+    msg.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function scrollToBottom() {
@@ -772,20 +821,18 @@
     const text = input.value.trim();
     if (!text || isLoading) return;
 
-    // First message — transition from pre-chat to chat view
-    if (!chatStarted) {
-      chatStarted = true;
-      prechat.style.display = 'none';
-      header.classList.add('visible');
-      msgs.style.display = 'flex';
-      disclaimer.style.display = 'block';
-    }
-
     isLoading = true;
     input.value = '';
     input.style.height = 'auto';
     setInputEnabled(false);
-    addUserMessage(text);
+    const now = new Date();
+    if (!chatStarted) addTimestamp(formatChatStarted(now));
+    chatStarted = true;
+    prechat.style.display = 'none';
+    header.classList.add('visible');
+    msgs.style.display = 'flex';
+    disclaimer.style.display = 'block';
+    addUserMessage(text, now);
 
     // Show steps immediately above input
     showSteps(false);
@@ -848,6 +895,7 @@
           if (event.type === 'done') {
             clearSteps();
             if (streamBubbleContent) {
+              const doneNow = new Date();
               const wrap = document.createElement('div');
               wrap.className = 'arch-msg bot';
               const rawText = streamBubbleContent;
@@ -855,9 +903,13 @@
                 <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
                 <div style="display:flex;flex-direction:column;max-width:78%;">
                   <div class="arch-bubble" style="max-width:100%;">${parseMarkdown(rawText)}</div>
+                  <div class="arch-msg-time">Just now</div>
                   ${ACTION_BUTTONS_HTML}
                 </div>
               `;
+              const timeEl = wrap.querySelector('.arch-msg-time');
+              const timeStr = formatTime(doneNow);
+              setTimeout(() => { if (timeEl) timeEl.textContent = timeStr; }, 30000);
               msgs.appendChild(wrap);
               wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
               buildActionButtons(wrap, rawText);
