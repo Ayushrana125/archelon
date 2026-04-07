@@ -1,19 +1,24 @@
 import API_URL from './api';
 
 export async function signup({ firstName, lastName, username, email, password, companyName, website }) {
-  const res = await fetch(`${API_URL}/api/auth/signup`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      first_name: firstName,
-      last_name: lastName,
-      username,
-      email,
-      password,
-      company_name: companyName || null,
-      website: website || null,
-    }),
-  });
+  let res;
+  try {
+    res = await fetch(`${API_URL}/api/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        first_name: firstName,
+        last_name: lastName,
+        username,
+        email,
+        password,
+        company_name: companyName || null,
+        website: website || null,
+      }),
+    });
+  } catch {
+    throw new Error('Unable to connect. Please wait a moment and try again.');
+  }
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Signup failed');
   localStorage.setItem('archelon_token', data.token);
@@ -22,11 +27,16 @@ export async function signup({ firstName, lastName, username, email, password, c
 }
 
 export async function login(identifier, password) {
-  const res = await fetch(`${API_URL}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ identifier, password }),
-  });
+  let res;
+  try {
+    res = await fetch(`${API_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, password }),
+    });
+  } catch {
+    throw new Error('Unable to connect. Please wait a moment and try again.');
+  }
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Login failed');
   localStorage.setItem('archelon_token', data.token);
