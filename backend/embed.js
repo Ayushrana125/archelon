@@ -704,7 +704,7 @@
       <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
       <div style="display:flex;flex-direction:column;max-width:78%;min-width:0;">
         <div class="arch-bubble" style="width:fit-content;max-width:100%;"></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-top:6px;">
           <div class="arch-msg-time">Just now</div>
           ${ACTION_BUTTONS_HTML}
         </div>
@@ -919,7 +919,7 @@
                 <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
                 <div style="display:flex;flex-direction:column;max-width:78%;min-width:0;">
                   <div class="arch-bubble" style="width:fit-content;max-width:100%;">${parseMarkdown(rawText)}</div>
-                  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+                  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-top:6px;">
                     <div class="arch-msg-time">Just now</div>
                     ${ACTION_BUTTONS_HTML}
                   </div>
