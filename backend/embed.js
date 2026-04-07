@@ -363,14 +363,23 @@
   fabStyle.textContent = `
     #archelon-fab::before {
       content: '';
-      position: absolute;
-      inset: -3px;
+      position: absolute; inset: -2px;
       border-radius: 999px;
-      background: conic-gradient(from 0deg, transparent 60%, #a78bfa 75%, #8b5cf6 85%, #6366f1 95%, transparent 100%);
-      animation: arch-ai-spin 2s linear infinite;
+      background: linear-gradient(270deg, #8a2be2, #00bfff, #a78bfa, #6366f1);
+      background-size: 400% 400%;
+      animation: arch-ai-move 4s ease infinite;
       z-index: -1;
+      box-shadow: 0 0 12px rgba(0, 200, 255, 0.35);
     }
-    @keyframes arch-ai-spin { to { transform: rotate(360deg); } }
+    #archelon-fab:hover::before {
+      animation-duration: 1.5s;
+      box-shadow: 0 0 22px rgba(0, 200, 255, 0.65);
+    }
+    @keyframes arch-ai-move {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
   `;
   document.head.appendChild(fabStyle);
 
