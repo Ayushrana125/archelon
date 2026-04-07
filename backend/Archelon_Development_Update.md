@@ -197,7 +197,7 @@ routers/ingest.py
         → chunks_db.create_document(agent_id, filename, ext, file_size)
         → chunks_db.create_ingestion_job(document_id)
         → Save to tempfile
-        → background_tasks.add_task(run_ingestion, ...)
+        → background_tasks.add_task(run_ingestion, ....)
     4. Return immediately: { files: [{ job_id, document_id, filename, file_size }] }
 
 BackgroundTask: run_ingestion(agent_id, tmp_path, filename, job_id, document_id)
