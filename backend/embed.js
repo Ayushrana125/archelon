@@ -363,10 +363,11 @@
   fabStyle.textContent = `
     #archelon-fab::before {
       content: '';
-      position: absolute; inset: -2px;
+      position: absolute;
+      inset: -3px;
       border-radius: 999px;
-      background: conic-gradient(from 0deg, #8b5cf6, #6366f1, #a78bfa, #c4b5fd, #8b5cf6);
-      animation: arch-ai-spin 3s linear infinite;
+      background: conic-gradient(from 0deg, transparent 60%, #a78bfa 75%, #8b5cf6 85%, #6366f1 95%, transparent 100%);
+      animation: arch-ai-spin 2s linear infinite;
       z-index: -1;
     }
     @keyframes arch-ai-spin { to { transform: rotate(360deg); } }
