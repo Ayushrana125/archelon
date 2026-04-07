@@ -903,7 +903,9 @@
 
       if (res.status === 429) {
         clearSteps();
-        addBotMessage("You're sending messages too fast. Give it a moment.");
+        let msg = "You're sending messages too fast. Give it a moment.";
+        try { const d = await res.json(); if (d.detail) msg = d.detail; } catch {}
+        addBotMessage(msg);
         isLoading = false; setInputEnabled(true); input.focus(); return;
       }
       if (res.status === 402) {
