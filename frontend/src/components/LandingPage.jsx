@@ -360,7 +360,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
         </nav>
 
         {/* Hero */}
-        <section className="relative pt-40 pb-24 px-6 text-center overflow-hidden">
+        <section className="relative pt-40 pb-24 px-6 overflow-hidden">
 
           {/* Shell hex pattern */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
@@ -375,17 +375,17 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
             </svg>
           </div>
 
-          {/* Radial glow behind headline */}
+          {/* Radial glow */}
           <div className="absolute inset-0 pointer-events-none" aria-hidden>
             <div style={{
-              position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)',
+              position: 'absolute', top: '10%', left: '20%',
               width: '600px', height: '400px',
               background: `radial-gradient(ellipse at center, ${TEAL}12 0%, transparent 70%)`,
               filter: 'blur(40px)',
             }} />
           </div>
 
-          {/* Floating particles - varied size/speed for depth */}
+          {/* Floating particles */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
             {[
               { top: '18%', left: '8%',   r: 2,  dur: '22s', delay: '0s',   cls: 'particle',  op: 0.15 },
@@ -409,7 +409,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
             ))}
           </div>
 
-          {/* Slowly rotating large shell outline */}
+          {/* Slowly rotating shell outline */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
             <div className="shell-spin" style={{
               position: 'absolute', top: '42%', left: '50%',
@@ -423,7 +423,6 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
             </div>
           </div>
 
-
           {/* Depth lines */}
           <div className="absolute inset-0 pointer-events-none" aria-hidden>
             <svg width="100%" height="100%" preserveAspectRatio="none" style={{ opacity: 0.04 }}>
@@ -434,46 +433,46 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
             </svg>
           </div>
 
-          <div className="relative max-w-3xl mx-auto">
-            <h1 className="landing-heading text-4xl md:text-6xl font-bold tracking-tight leading-tight mb-6 text-gray-900 dark:text-gray-100">
-              Built to carry<br />
-              <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}>
-                your knowledge.
-              </span>
-            </h1>
-            <p className="landing-body text-xl text-gray-500 dark:text-gray-400 max-w-xl mx-auto mb-10 leading-relaxed">
-              Archelon was the largest sea turtle that ever lived - up to 4.6 metres long, built to carry enormous weight across vast oceans. Archelon does the same for your documents.
-            </p>
-            {/* Button with ripple rings */}
-            <div className="relative inline-block">
-              <div className="ripple-ring absolute inset-0 rounded-xl pointer-events-none" style={{ border: `1.5px solid ${TEAL}`, opacity: 0 }} />
-              <div className="ripple-ring-2 absolute inset-0 rounded-xl pointer-events-none" style={{ border: `1.5px solid ${TEAL}`, opacity: 0 }} />
-              <button onClick={openSignup} style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
-                className="relative px-7 py-3 text-white rounded-xl font-medium hover:opacity-90 transition-opacity text-sm shadow-lg">
-                Get started
-              </button>
-            </div>
-          </div>
+          {/* Left-aligned editorial layout */}
+          <div className="relative max-w-6xl mx-auto">
+            <div className="flex flex-col md:flex-row gap-16 items-center">
+              {/* Left — headline + text + button */}
+              <div className="flex-1 max-w-xl">
+                <h1 className="landing-heading text-4xl md:text-6xl font-bold tracking-tight leading-tight mb-8 text-gray-900 dark:text-gray-100">
+                  Built to carry<br />
+                  <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}>
+                    your knowledge.
+                  </span>
+                </h1>
+                <div className="w-12 h-px mb-8" style={{ background: TEAL }} />
+                <p className="landing-body text-xl text-gray-500 dark:text-gray-400 mb-10 leading-relaxed">
+                  Archelon was the largest sea turtle that ever lived — up to 4.6 metres long, built to carry enormous weight across vast oceans. Archelon does the same for your documents.
+                </p>
+                {/* Button with ripple rings */}
+                <div className="relative inline-block">
+                  <div className="ripple-ring absolute left-0 top-0 w-full h-full rounded-lg pointer-events-none" />
+                  <div className="ripple-ring-2 absolute left-0 top-0 w-full h-full rounded-lg pointer-events-none" />
 
-          {/* Hero screenshot */}
-          <div className="relative mt-16 max-w-5xl mx-auto px-4">
-            <div className="relative rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-2xl">
-              <img src="/dashboard.png" alt="Archelon Dashboard" className="w-full h-auto object-cover" />
-              <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none" style={{ background: 'linear-gradient(to top, #0d0d0d, transparent)' }} />
+                  <button
+                    onClick={openSignup}
+                    style={{ background: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}
+                    className="relative px-8 py-3.5 text-white rounded-lg font-medium hover:opacity-90 transition-opacity text-sm shadow-lg"
+                  >
+                    Get started
+                  </button>
+                </div>
+              </div>
+              {/* Right — dashboard screenshot */}
+              <div className="flex-[1.5] relative">
+                <div className="relative rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-2xl">
+                  <img src="/dashboard.png" alt="Archelon Dashboard" className="w-full h-auto object-cover" />
+                  <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none" style={{ background: 'linear-gradient(to top, #0d0d0d, transparent)' }} />
+                </div>
+                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-3/4 h-16 pointer-events-none" style={{ background: `radial-gradient(ellipse, ${TEAL}20 0%, transparent 70%)`, filter: 'blur(20px)' }} />
+              </div>
             </div>
-            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-3/4 h-16 pointer-events-none" style={{ background: `radial-gradient(ellipse, ${TEAL}20 0%, transparent 70%)`, filter: 'blur(20px)' }} />
           </div>
         </section>
-
-        {/* Shell-arc wave divider */}
-        <div className="relative overflow-hidden leading-none" style={{ height: 60, marginTop: -1 }} aria-hidden>
-          <svg viewBox="0 0 1200 60" preserveAspectRatio="none" style={{ width: '100%', height: '100%' }}>
-            <path d="M0,55 C150,55 200,5 600,5 C1000,5 1050,55 1200,55 L1200,60 L0,60 Z"
-              fill="currentColor" className="text-gray-50 dark:text-[#111111]" />
-            <path d="M0,58 C180,58 250,18 600,18 C950,18 1020,58 1200,58 L1200,60 L0,60 Z"
-              fill="currentColor" className="text-gray-50 dark:text-[#111111]" style={{ opacity: 0.5 }} />
-          </svg>
-        </div>
 
         {/* Features - alternating asymmetric rows */}
         <section id="features" className="relative py-32 px-6 bg-gray-50 dark:bg-[#111111] transition-colors duration-300 overflow-hidden">
