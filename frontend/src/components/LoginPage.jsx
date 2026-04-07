@@ -71,13 +71,13 @@ function LoginPage({ onLogin, theme }) {
             <img src="/Archelon_logo.png" alt="Archelon" className="h-8 w-auto object-contain" />
             <span className="brand-name text-xl tracking-tight text-white">Archelon</span>
           </button>
-          <h2 className="text-4xl font-bold text-white leading-tight mb-5">
+          <h2 className="landing-heading text-3xl md:text-5xl font-bold text-white leading-tight mb-5">
             Welcome back to<br />
             <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(135deg, ${TEAL}, ${BLUE})` }}>
               Archelon
             </span>
           </h2>
-          <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
+          <p className="landing-body text-lg text-gray-400 leading-relaxed max-w-sm">
             Log in to access your agents, documents, and knowledge bases.
           </p>
         </div>
@@ -110,7 +110,7 @@ function LoginPage({ onLogin, theme }) {
         </div>
 
         <div className="flex-1 flex flex-col justify-center px-8 md:px-16 lg:px-20 py-10 max-w-md mx-auto w-full">
-          <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">Welcome back</h3>
+          <h3 className="landing-heading text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">Welcome back</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-10">
             Don't have an account?{' '}
             <button onClick={() => navigate('/signup')} className="text-[#00C9B1] hover:underline font-medium">Create one</button>
