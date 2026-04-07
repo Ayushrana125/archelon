@@ -46,7 +46,7 @@ _ip_rate_store_min: dict[str, list[float]] = defaultdict(list)
 _ip_rate_store_day: dict[str, list[float]] = defaultdict(list)
 
 IP_LIMIT_PER_MIN = 5
-IP_LIMIT_PER_DAY = 25  # TEST VALUE — raise before production
+IP_LIMIT_PER_DAY = 3  # TEST VALUE — raise before production
 
 def check_ip_rate_limit(ip: str):
     now = time.time()
