@@ -46,7 +46,7 @@ _ip_rate_store_min: dict[str, list[float]] = defaultdict(list)
 _ip_rate_store_day: dict[str, list[float]] = defaultdict(list)
 
 IP_LIMIT_PER_MIN = 5
-IP_LIMIT_PER_DAY = 3  # TEST VALUE — raise before production
+IP_LIMIT_PER_DAY = 25  # TEST VALUE — raise before production
 
 def check_ip_rate_limit(ip: str):
     now = time.time()
@@ -57,7 +57,7 @@ def check_ip_rate_limit(ip: str):
     # Per day
     _ip_rate_store_day[ip] = [t for t in _ip_rate_store_day[ip] if now - t < 86400]
     if len(_ip_rate_store_day[ip]) >= IP_LIMIT_PER_DAY:
-        raise HTTPException(status_code=429, detail="Daily message limit reached. Please try again tomorrow.")
+        raise HTTPException(status_code=429, detail="You've reached today's message limit. Come back tomorrow.")
     # Record
     _ip_rate_store_min[ip].append(now)
     _ip_rate_store_day[ip].append(now)
