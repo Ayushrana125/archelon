@@ -156,7 +156,7 @@
       font-size: 10px; color: #9ca3af; margin-top: 3px;
     }
     .arch-msg.user .arch-msg-time { text-align: right; }
-    .arch-msg.bot .arch-msg-time { text-align: left; padding-left: 30px; }
+    .arch-msg.bot .arch-msg-time { text-align: left; }
     #archelon-widget-root.dark .arch-msg-time { color: #6b7280; }
 
     /* Thinking step rows (in messages area) ────────────────────────── */
@@ -704,8 +704,8 @@
       <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
       <div style="display:flex;flex-direction:column;max-width:78%;">
         <div class="arch-bubble" style="max-width:100%;"></div>
-        <div class="arch-msg-time">Just now</div>
         ${ACTION_BUTTONS_HTML}
+        <div class="arch-msg-time" style="margin-top:2px;">Just now</div>
       </div>
     `;
     const bubble = wrap.querySelector('.arch-bubble');
@@ -729,10 +729,11 @@
     const now = date || new Date();
     const msg = document.createElement('div');
     msg.className = 'arch-msg user';
-    msg.innerHTML = `<div style="display:flex;flex-direction:column;align-items:flex-end;">
-      <div class="arch-bubble">${parseMarkdown(text)}</div>
-      <div class="arch-msg-time">Just now</div>
-    </div>`;
+    msg.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:flex-end;max-width:78%;">
+        <div class="arch-bubble">${parseMarkdown(text)}</div>
+        <div class="arch-msg-time" style="margin-top:3px;">Just now</div>
+      </div>`;
     const timeEl = msg.querySelector('.arch-msg-time');
     const timeStr = formatTime(now);
     setTimeout(() => { timeEl.textContent = timeStr; }, 30000);
@@ -916,8 +917,8 @@
                 <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
                 <div style="display:flex;flex-direction:column;max-width:78%;">
                   <div class="arch-bubble" style="max-width:100%;">${parseMarkdown(rawText)}</div>
-                  <div class="arch-msg-time">Just now</div>
                   ${ACTION_BUTTONS_HTML}
+                  <div class="arch-msg-time" style="margin-top:2px;">Just now</div>
                 </div>
               `;
               const timeEl = wrap.querySelector('.arch-msg-time');
