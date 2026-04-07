@@ -705,7 +705,7 @@
       <div style="display:flex;flex-direction:column;max-width:78%;min-width:0;">
         <div class="arch-bubble" style="width:fit-content;max-width:100%;"></div>
         ${ACTION_BUTTONS_HTML}
-        <div class="arch-msg-time" style="margin-top:2px;">Just now</div>
+        <div class="arch-msg-time" style="margin-top:2px;text-align:right;">Just now</div>
       </div>
     `;
     const bubble = wrap.querySelector('.arch-bubble');
@@ -918,7 +918,7 @@
                 <div style="display:flex;flex-direction:column;max-width:78%;min-width:0;">
                   <div class="arch-bubble" style="width:fit-content;max-width:100%;">${parseMarkdown(rawText)}</div>
                   ${ACTION_BUTTONS_HTML}
-                  <div class="arch-msg-time" style="margin-top:2px;">Just now</div>
+                  <div class="arch-msg-time" style="margin-top:2px;text-align:right;">Just now</div>
                 </div>
               `;
               const timeEl = wrap.querySelector('.arch-msg-time');
