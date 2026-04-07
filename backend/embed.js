@@ -60,6 +60,12 @@
     #archelon-fab-logo {
       width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
       overflow: hidden; display: flex; align-items: center; justify-content: center;
+      max-width: 0; opacity: 0;
+      transition: max-width 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease, margin-right 0.4s ease;
+      margin-right: 0;
+    }
+    #archelon-fab-logo.loaded {
+      max-width: 36px; opacity: 1; margin-right: 0;
     }
     #archelon-fab-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     #archelon-fab-text {
@@ -567,14 +573,15 @@
       headerName.textContent = NAME;
     }
     if (d && d.logo_url) LOGO = d.logo_url;
-    fabLogo.innerHTML = `<img src="${LOGO}" alt="" />`;
+    fabLogo.innerHTML = `<img src="${LOGO}" alt="" onload="this.parentElement.classList.add('loaded')" onerror="this.parentElement.classList.add('loaded')" />`;
     fabText.textContent = `Ask ${NAME}`;
+    fab.classList.add('ready');
     const avatarImg = document.getElementById('archelon-avatar-img');
     if (avatarImg) { avatarImg.src = LOGO; avatarImg.onload = () => { avatarImg.style.opacity = '1'; }; avatarImg.onerror = () => { avatarImg.style.opacity = '1'; }; }
     prechatName.textContent = NAME;
     prechatLogoImg.src = LOGO;
-    prechatLogoImg.onload = () => { prechatLogoImg.style.opacity = '1'; fab.classList.add('ready'); };
-    prechatLogoImg.onerror = () => { prechatLogoImg.style.opacity = '1'; fab.classList.add('ready'); };
+    prechatLogoImg.onload = () => { prechatLogoImg.style.opacity = '1'; fab.classList.add('ready'); fabLogo.classList.add('loaded'); };
+    prechatLogoImg.onerror = () => { prechatLogoImg.style.opacity = '1'; fab.classList.add('ready'); fabLogo.classList.add('loaded'); };
     setRandomGreeting();
     if (d && d.theme === 'dark') { THEME = 'dark'; root.classList.add('dark'); themeIconMoon.style.display = 'none'; themeIconSun.style.display = 'block'; }
   }
