@@ -438,7 +438,6 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
 
           if (event.type === 'meta') {
             setIsTyping(false);
-            onRequestBusy?.(false);
             const { intent, thinking, search_thinking, search_queries } = event;
             if (intent === 'single' || intent === 'multi') {
               thinkingId = Date.now();
@@ -471,6 +470,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
 
           if (event.type === 'done') {
             const { sources, token_usage } = event;
+            onRequestBusy?.(false);
             setStreamingMsg(prev => prev ? { ...prev, sources, streaming: false } : prev);
             if (thinkingId) {
               setMessages(prev => prev.map(m => m.id === thinkingId ? { ...m, sources } : m));
