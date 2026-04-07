@@ -113,7 +113,7 @@ function TopNav({ agentName, agentData, documents = [], collapsed, onDocsClick, 
               <span className="text-gray-500 dark:text-gray-400">Free Plan ·</span>
               <span className="text-gray-500 dark:text-gray-400">Tokens:</span>
               <span className="font-medium" style={{ color: '#00C9B1' }}>
-                {tokenBalance ? Math.max(0, (tokenBalance.token_limit ?? 25000) - (tokenBalance.tokens_used ?? 0)).toLocaleString() : '...'}
+                {tokenBalance ? Math.max(0, (tokenBalance.token_limit ?? 50000) - (tokenBalance.tokens_used ?? 0)).toLocaleString() : '...'}
               </span>
             </div>
           {user?.is_developer && !agentData && agentName !== 'Dashboard' && (
