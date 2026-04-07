@@ -493,7 +493,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: TEAL }}>01</p>
                 <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 leading-tight">Documents that actually answer questions</h3>
-                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Upload PDFs, DOCX, or TXT files. Archelon parses them using a parent-child chunking strategy — child chunks for precise matching, parent chunks for rich context. Your documents become queryable knowledge.</p>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Upload PDFs, DOCX, or TXT files. Archelon processes them automatically — breaking content into meaningful pieces, understanding structure, and making every section instantly searchable. Your documents become a knowledge base your agent can reason over.</p>
                 <div className="space-y-2">
                   {['PDF, DOCX, TXT support', 'Instant indexing after upload', 'Searches meaning, not just keywords'].map(t => (
                     <div key={t} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
@@ -516,7 +516,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
               <div className="order-1 md:order-2">
                 <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: BLUE }}>02</p>
                 <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 leading-tight">Agents that think before they answer</h3>
-                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Every query goes through intent classification, query analysis, parallel vector search, gap detection reranking, and grounded synthesis. Users see the thinking steps — what was searched, what was found, before the answer appears.</p>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Your agent doesn't just search — it understands what you're asking, finds the most relevant parts of your documents, and builds a precise answer grounded in your content. Users see the reasoning before the answer appears.</p>
                 <div className="space-y-2">
                   {['Understands what you\'re really asking', 'Finds the most relevant sections', 'Shows reasoning before answering'].map(t => (
                     <div key={t} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
@@ -569,8 +569,8 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
               <div className="space-y-0">
                 {[
                   { num: '01', title: 'Create an agent', body: 'Name your agent, write system instructions, define its purpose. Each agent is isolated — its knowledge never bleeds into others.', color: TEAL },
-                  { num: '02', title: 'Upload your documents', body: 'Add PDFs, DOCX, or TXT files. Archelon parses, chunks, embeds, and indexes them automatically. You see every step of the pipeline in real time.', color: BLUE },
-                  { num: '03', title: 'Chat with your agent', body: 'Ask questions. The agent classifies intent, searches your documents, reranks results, and synthesizes a grounded answer — showing its thinking at every step.', color: TEAL },
+                  { num: '02', title: 'Upload your documents', body: 'Add PDFs, DOCX, or TXT files. Archelon processes them automatically and makes every section searchable. You see the progress in real time.', color: BLUE },
+                  { num: '03', title: 'Chat with your agent', body: 'Ask questions in plain language. Your agent understands what you mean, finds the right answers from your documents, and explains its reasoning before responding.', color: TEAL },
                   { num: '04', title: 'Embed on your website', body: 'Enable the widget, generate an API key, whitelist your domain, paste one script tag. Your agent is live as a floating chat widget on any website.', color: BLUE },
                 ].map((step, i) => (
                   <div key={i} className="relative flex gap-10 md:gap-16 pb-16 last:pb-0">
