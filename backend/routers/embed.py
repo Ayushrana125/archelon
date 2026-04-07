@@ -33,12 +33,34 @@ router = APIRouter()
 # ── Rate limiter for public endpoint — 10 req/min per API key ────────────────
 _public_rate_store: dict[str, list[float]] = defaultdict(list)
 
-def check_public_rate_limit(key_id: str, limit: int = 10, window: int = 60):
+def check_public_rate_limit(key_id: str, limit: int = 30, window: int = 60):
     now = time.time()
     _public_rate_store[key_id] = [t for t in _public_rate_store[key_id] if now - t < window]
     if len(_public_rate_store[key_id]) >= limit:
         raise HTTPException(status_code=429, detail="Too many requests.")
     _public_rate_store[key_id].append(now)
+
+
+# ── Rate limiter per visitor IP ───────────────────────────────────────────────
+_ip_rate_store_min: dict[str, list[float]] = defaultdict(list)
+_ip_rate_store_day: dict[str, list[float]] = defaultdict(list)
+
+IP_LIMIT_PER_MIN = 5
+IP_LIMIT_PER_DAY = 10  # TEST VALUE — raise before production
+
+def check_ip_rate_limit(ip: str):
+    now = time.time()
+    # Per minute
+    _ip_rate_store_min[ip] = [t for t in _ip_rate_store_min[ip] if now - t < 60]
+    if len(_ip_rate_store_min[ip]) >= IP_LIMIT_PER_MIN:
+        raise HTTPException(status_code=429, detail="Too many requests. Please slow down.")
+    # Per day
+    _ip_rate_store_day[ip] = [t for t in _ip_rate_store_day[ip] if now - t < 86400]
+    if len(_ip_rate_store_day[ip]) >= IP_LIMIT_PER_DAY:
+        raise HTTPException(status_code=429, detail="Daily message limit reached. Please try again tomorrow.")
+    # Record
+    _ip_rate_store_min[ip].append(now)
+    _ip_rate_store_day[ip].append(now)
 
 
 # ── Private endpoints ─────────────────────────────────────────────────────────
@@ -160,6 +182,9 @@ async def _validate_public_request(request: Request, body: PublicChatRequest):
             raise HTTPException(status_code=403, detail="Origin not allowed.")
 
     check_public_rate_limit(key_record["id"])
+
+    ip = request.client.host if request.client else "unknown"
+    check_ip_rate_limit(ip)
 
     balance = await get_user_token_balance(key_record["user_id"])
     if balance["tokens_remaining"] <= 0:
