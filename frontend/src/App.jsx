@@ -86,6 +86,11 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
   const currentMessages = chatHistories[currentChatKey] ?? [];
   const isGreetingLoading = !!(activeAgentId && (chatHistories[activeAgentId] === undefined || chatHistories[activeAgentId]?.length === 0));
 
+  useEffect(() => {
+    if (isGreetingLoading) setChatBusy(true);
+    else if (!isGreetingLoading && chatHistories[activeAgentId]?.length > 0) setChatBusy(false);
+  }, [isGreetingLoading]);
+
   const setCurrentMessages = (updater) => {
     setChatHistories(prev => ({
       ...prev,
