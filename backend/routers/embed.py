@@ -46,7 +46,7 @@ _ip_rate_store_min: dict[str, list[float]] = defaultdict(list)
 _ip_rate_store_day: dict[str, list[float]] = defaultdict(list)
 
 IP_LIMIT_PER_MIN = 5
-IP_LIMIT_PER_DAY = 10  # TEST VALUE — raise before production
+IP_LIMIT_PER_DAY = 3  # TEST VALUE — raise before production
 
 def check_ip_rate_limit(ip: str):
     now = time.time()
@@ -183,7 +183,7 @@ async def _validate_public_request(request: Request, body: PublicChatRequest):
 
     check_public_rate_limit(key_record["id"])
 
-    ip = request.client.host if request.client else "unknown"
+    ip = request.headers.get("X-Forwarded-For", request.client.host if request.client else "unknown").split(",")[0].strip()
     check_ip_rate_limit(ip)
 
     balance = await get_user_token_balance(key_record["user_id"])
