@@ -232,7 +232,7 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-white dark:bg-[#141414] w-full h-full md:rounded-3xl md:w-[88vw] md:h-[90vh] overflow-hidden relative border-0 md:border border-gray-100 dark:border-gray-800 flex shadow-2xl">
 
-        {/* Left — branding when disabled, widget preview when enabled */}
+        {/* Left - branding when disabled, widget preview when enabled */}
         <div
           className="hidden md:flex flex-col w-[34%] relative overflow-hidden flex-shrink-0"
           style={{ background: enabled ? '#0f0f0f' : 'linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%)' }}
@@ -269,7 +269,7 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
                   </span>
                 </h2>
                 <p className="text-gray-400 text-sm leading-relaxed mb-8">
-                  Embed <span style={{ color: TEAL }}>{agentName}</span> as a chat widget on any website. Your visitors get instant answers — powered by your documents.
+                  Embed <span style={{ color: TEAL }}>{agentName}</span> as a chat widget on any website. Your visitors get instant answers - powered by your documents.
                 </p>
                 <div className="space-y-5">
                   {[
@@ -301,7 +301,7 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
               <div className="px-6 pt-6 pb-3 flex items-center justify-between">
                 <div>
                   <p className="text-xs font-medium uppercase tracking-widest" style={{ color: TEAL }}>Live Preview</p>
-                  <p className="text-xs text-gray-600 mt-0.5">Actual widget — test before deploying</p>
+                  <p className="text-xs text-gray-600 mt-0.5">Actual widget - test before deploying</p>
                 </div>
               </div>
               <div className="flex-1 mx-6 mb-6 rounded-2xl overflow-hidden border border-gray-800">
@@ -335,7 +335,7 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
           )}
         </div>
 
-        {/* Right — setup, scrollable */}
+        {/* Right - setup, scrollable */}
         <div className="flex-1 flex flex-col overflow-y-auto bg-white dark:bg-[#0d0d0d]">
           <button onClick={onClose} className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors z-10">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -349,7 +349,7 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
               <p className="text-sm text-gray-500 dark:text-gray-400">Enable the widget, configure it, then copy the script to deploy.</p>
             </div>
 
-            {/* Enable toggle — always visible */}
+            {/* Enable toggle - always visible */}
             <div className="flex items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1a1a1a]">
               <div>
                 <div className="text-sm font-medium text-gray-900 dark:text-gray-100">Enable embed</div>
@@ -374,7 +374,7 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
               </div>
             </div>
 
-            {/* All config — only when enabled, state persists via useState (not reset on toggle) */}
+            {/* All config - only when enabled, state persists via useState (not reset on toggle) */}
             {enabled && (
               <>
                 {/* Edit mode header */}
@@ -391,7 +391,7 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
                     </button>
                   )}
                 </div>
-                {/* Agent ID + API Key — read only info */}
+                {/* Agent ID + API Key - read only info */}
                 <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                   <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4">
                     <div>
@@ -513,7 +513,7 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-400">No domains — all origins allowed</p>
+                      <p className="text-xs text-gray-400">No domains - all origins allowed</p>
                     )}
                   </div>
 
@@ -562,7 +562,7 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
                   </div>
                   <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#141414] overflow-hidden">
                     <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                      <span className="text-xs text-gray-400 font-mono">JS — place before &lt;/body&gt;</span>
+                      <span className="text-xs text-gray-400 font-mono">JS - place before &lt;/body&gt;</span>
                     </div>
                     <pre className="px-4 py-4 text-xs font-mono text-gray-700 dark:text-gray-300 overflow-x-auto leading-relaxed whitespace-pre">{scriptSnippet}</pre>
                   </div>
@@ -602,7 +602,7 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
                         'Add the HTML container div where you want the widget to appear on your page.',
                         'Paste the script tag before the closing </body> tag.',
                         'Replace arch_live_YOUR_KEY_HERE with your generated API key.',
-                        'Deploy your website — the chat widget will appear automatically.',
+                        'Deploy your website - the chat widget will appear automatically.',
                         'Visitors get instant answers powered by your agent\'s documents.',
                       ].map((step, i) => (
                         <div key={i} className="flex items-start gap-3">
@@ -659,7 +659,7 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
         </div>
       )}
 
-      {/* API Key reveal — blocking overlay inside modal */}
+      {/* API Key reveal - blocking overlay inside modal */}
       {keyJustGenerated && (
         <div className="absolute inset-0 z-10 flex items-center justify-center rounded-3xl" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
           <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-8 shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-md mx-6">
@@ -671,7 +671,7 @@ function EmbedModal({ agentId, agentName, onClose, user, prefetchedStatus, onSta
               </div>
               <div>
                 <div className="text-base font-semibold text-gray-900 dark:text-gray-100">Your API Key</div>
-                <div className="text-xs text-gray-400 mt-0.5">Copy it now — this is the only time it will be shown</div>
+                <div className="text-xs text-gray-400 mt-0.5">Copy it now - this is the only time it will be shown</div>
               </div>
             </div>
 

@@ -17,13 +17,13 @@ function AuthModal({ defaultTab = 'signup', onClose, onLogin }) {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    // await signup({ firstName, lastName, username, email, password, companyName, website }); — wire when backend auth is ready
+    // await signup({ firstName, lastName, username, email, password, companyName, website }); - wire when backend auth is ready
     onLogin();
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    // await login(email, password); — wire when backend auth is ready
+    // await login(email, password); - wire when backend auth is ready
     onLogin();
   };
 
@@ -45,7 +45,7 @@ function AuthModal({ defaultTab = 'signup', onClose, onLogin }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-white dark:bg-[#141414] w-full h-full overflow-hidden relative border-0 flex">
 
-        {/* Left panel — branding */}
+        {/* Left panel - branding */}
         <div className="hidden md:flex flex-col justify-between w-[40%] p-12 relative overflow-hidden flex-shrink-0"
           style={{ background: 'linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%)' }}>
           <div className="absolute inset-0 pointer-events-none" aria-hidden>
@@ -81,7 +81,7 @@ function AuthModal({ defaultTab = 'signup', onClose, onLogin }) {
           </div>
           <div className="relative space-y-4">
             {[
-              { icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', text: 'Upload any document — PDF, DOCX, TXT' },
+              { icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', text: 'Upload any document - PDF, DOCX, TXT' },
               { icon: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', text: 'Create purpose-built AI agents' },
               { icon: 'M13 10V3L4 14h7v7l9-11h-7z', text: 'Agentic RAG pipeline for precise answers' },
             ].map((f, i) => (
@@ -97,7 +97,7 @@ function AuthModal({ defaultTab = 'signup', onClose, onLogin }) {
           </div>
         </div>
 
-        {/* Right panel — form */}
+        {/* Right panel - form */}
         <div className="flex-1 flex flex-col overflow-y-auto">
           <button onClick={onClose} className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors z-10">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,11 +264,11 @@ function ResumeModal({ onClose }) {
 
 const FEATURES = [
   { title: 'Document Intelligence', desc: 'Upload PDFs, DOCX, and TXT files. Archelon parses, chunks, and embeds them using a parent-child strategy for precise retrieval.', path: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-  { title: 'Custom AI Agents', desc: 'Create purpose-built agents with custom names, descriptions, and system instructions — each grounded in its own isolated knowledge base.', path: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
+  { title: 'Custom AI Agents', desc: 'Create purpose-built agents with custom names, descriptions, and system instructions - each grounded in its own isolated knowledge base.', path: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
   { title: 'Agentic RAG Pipeline', desc: 'Multi-step pipeline: intent classification → query analysis → parallel vector search → gap detection reranking → grounded synthesis.', path: 'M13 10V3L4 14h7v7l9-11h-7z' },
-  { title: 'Thinking Steps', desc: 'Transparent reasoning — users see what the agent is thinking, what it searched, and which documents it found before answering.', path: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
+  { title: 'Thinking Steps', desc: 'Transparent reasoning - users see what the agent is thinking, what it searched, and which documents it found before answering.', path: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
   { title: 'Embed on Any Website', desc: 'Generate an API key, whitelist your domain, and paste one script tag. Your agent becomes a floating chat widget on any website.', path: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4' },
-  { title: 'Token Usage Tracking', desc: 'Every query and document upload is metered. See session tokens, agent totals, and remaining quota — all in real time.', path: 'M13 10V3L4 14h7v7l9-11h-7z' },
+  { title: 'Token Usage Tracking', desc: 'Every query and document upload is metered. See session tokens, agent totals, and remaining quota - all in real time.', path: 'M13 10V3L4 14h7v7l9-11h-7z' },
   { title: 'Model Selection', desc: 'Choose from Mistral Large, Mistral Small, or Codestral per agent. Archelon models coming soon for full infrastructure independence.', path: 'M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z' },
   { title: 'Secure & Isolated', desc: 'Each agent knowledge base is fully isolated. JWT auth, token quotas, domain whitelisting, and rate limiting protect every endpoint.', path: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
 ];
@@ -385,7 +385,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
             }} />
           </div>
 
-          {/* Floating particles — varied size/speed for depth */}
+          {/* Floating particles - varied size/speed for depth */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
             {[
               { top: '18%', left: '8%',   r: 2,  dur: '22s', delay: '0s',   cls: 'particle',  op: 0.15 },
@@ -442,7 +442,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
               </span>
             </h1>
             <p className="text-lg text-gray-500 dark:text-gray-400 max-w-xl mx-auto mb-10 leading-relaxed">
-              Archelon was the largest sea turtle that ever lived — up to 4.6 metres long, built to carry enormous weight across vast oceans. Archelon does the same for your documents.
+              Archelon was the largest sea turtle that ever lived - up to 4.6 metres long, built to carry enormous weight across vast oceans. Archelon does the same for your documents.
             </p>
             {/* Button with ripple rings */}
             <div className="relative inline-block">
@@ -475,7 +475,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
           </svg>
         </div>
 
-        {/* Features — alternating asymmetric rows */}
+        {/* Features - alternating asymmetric rows */}
         <section id="features" className="relative py-32 px-6 bg-gray-50 dark:bg-[#111111] transition-colors duration-300 overflow-hidden">
           <div className="absolute inset-0 pointer-events-none" aria-hidden style={{ background: `linear-gradient(to bottom, ${TEAL}06 0%, transparent 40%)` }} />
           <div className="max-w-6xl mx-auto">
@@ -488,12 +488,12 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
               </h2>
             </div>
 
-            {/* Row 1 — text left, visual right */}
+            {/* Row 1 - text left, visual right */}
             <div className="grid md:grid-cols-[2fr_3fr] gap-16 items-center mb-28">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: TEAL }}>01</p>
                 <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 leading-tight">Documents that actually answer questions</h3>
-                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Upload PDFs, DOCX, or TXT files. Archelon processes them automatically — breaking content into meaningful pieces, understanding structure, and making every section instantly searchable. Your documents become a knowledge base your agent can reason over.</p>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Upload PDFs, DOCX, or TXT files. Archelon processes them automatically - breaking content into meaningful pieces, understanding structure, and making every section instantly searchable. Your documents become a knowledge base your agent can reason over.</p>
                 <div className="space-y-2">
                   {['PDF, DOCX, TXT support', 'Instant indexing after upload', 'Searches meaning, not just keywords'].map(t => (
                     <div key={t} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
@@ -508,7 +508,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
               </div>
             </div>
 
-            {/* Row 2 — visual left, text right */}
+            {/* Row 2 - visual left, text right */}
             <div className="grid md:grid-cols-[3fr_2fr] gap-16 items-center mb-28">
               <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-xl order-2 md:order-1">
                 <img src="/chat-view.png" alt="Agent Chat" className="w-full h-auto object-contain" />
@@ -516,7 +516,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
               <div className="order-1 md:order-2">
                 <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: BLUE }}>02</p>
                 <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 leading-tight">Agents that think before they answer</h3>
-                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Your agent doesn't just search — it understands what you're asking, finds the most relevant parts of your documents, and builds a precise answer grounded in your content. Users see the reasoning before the answer appears.</p>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Your agent doesn't just search - it understands what you're asking, finds the most relevant parts of your documents, and builds a precise answer grounded in your content. Users see the reasoning before the answer appears.</p>
                 <div className="space-y-2">
                   {['Understands what you\'re really asking', 'Finds the most relevant sections', 'Shows reasoning before answering'].map(t => (
                     <div key={t} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
@@ -528,12 +528,12 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
               </div>
             </div>
 
-            {/* Row 3 — text left, visual right */}
+            {/* Row 3 - text left, visual right */}
             <div className="grid md:grid-cols-[2fr_3fr] gap-16 items-center">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: TEAL }}>03</p>
                 <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 leading-tight">Deploy anywhere with one script tag</h3>
-                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Generate an API key, whitelist your domain, and paste one script tag. Your agent becomes a floating chat widget on any website — with token metering, rate limiting, and domain-level security built in.</p>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">Generate an API key, whitelist your domain, and paste one script tag. Your agent becomes a floating chat widget on any website - with token metering, rate limiting, and domain-level security built in.</p>
                 <div className="space-y-2">
                   {['API key + domain whitelist', 'Token usage metering', 'One script tag deployment'].map(t => (
                     <div key={t} className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
@@ -551,14 +551,14 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
           </div>
         </section>
 
-        {/* How it works — vertical timeline */}
+        {/* How it works - vertical timeline */}
         <section id="how-it-works" className="relative py-32 px-6 bg-white dark:bg-[#0d0d0d] transition-colors duration-300 overflow-hidden">
           <div className="absolute inset-0 pointer-events-none" aria-hidden style={{ background: `linear-gradient(to bottom, ${BLUE}04 0%, transparent 50%)` }} />
           <div className="max-w-4xl mx-auto">
             <div className="mb-20">
               <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: BLUE }}>The process</p>
               <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100 leading-tight">
-                From documents<br />to deployed — in minutes
+                From documents<br />to deployed - in minutes
               </h2>
             </div>
 
@@ -568,7 +568,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
 
               <div className="space-y-0">
                 {[
-                  { num: '01', title: 'Create an agent', body: 'Name your agent, write system instructions, define its purpose. Each agent is isolated — its knowledge never bleeds into others.', color: TEAL },
+                  { num: '01', title: 'Create an agent', body: 'Name your agent, write system instructions, define its purpose. Each agent is isolated - its knowledge never bleeds into others.', color: TEAL },
                   { num: '02', title: 'Upload your documents', body: 'Add PDFs, DOCX, or TXT files. Archelon processes them automatically and makes every section searchable. You see the progress in real time.', color: BLUE },
                   { num: '03', title: 'Chat with your agent', body: 'Ask questions in plain language. Your agent understands what you mean, finds the right answers from your documents, and explains its reasoning before responding.', color: TEAL },
                   { num: '04', title: 'Embed on your website', body: 'Enable the widget, generate an API key, whitelist your domain, paste one script tag. Your agent is live as a floating chat widget on any website.', color: BLUE },
@@ -592,7 +592,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
           </div>
         </section>
 
-        {/* Use cases — large statement layout */}
+        {/* Use cases - large statement layout */}
         <section id="use-cases" className="relative py-32 px-6 bg-gray-50 dark:bg-[#111111] transition-colors duration-300 overflow-hidden">
           <div className="max-w-6xl mx-auto">
             <div className="mb-20">
@@ -602,15 +602,15 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
               </h2>
             </div>
 
-            {/* Large list — each use case is a full-width row */}
+            {/* Large list - each use case is a full-width row */}
             <div className="divide-y divide-gray-100 dark:divide-gray-800">
               {[
                 { num: '01', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', title: 'Customer Support', industry: 'SaaS · E-commerce · Fintech', body: 'Upload product docs, FAQs, and policies. Your agent answers support questions grounded in your documentation, reducing repetitive ticket load.', tags: ['FAQ automation', 'Policy lookup', 'Ticket deflection'] },
                 { num: '02', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', title: 'Internal Knowledge Base', industry: 'Enterprise · Startups · Agencies', body: 'Upload SOPs, onboarding guides, and internal wikis. Teams get answers from your documents without digging through folders or pinging colleagues.', tags: ['Onboarding', 'SOP lookup', 'HR policies'] },
                 { num: '03', icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4', title: 'Product Documentation', industry: 'Developer Tools · APIs · Platforms', body: 'Turn technical docs, API references, and changelogs into a conversational agent. Users find answers faster directly from your documentation.', tags: ['API docs', 'Changelogs', 'Integration guides'] },
-                { num: '04', icon: 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3', title: 'Legal & Compliance', industry: 'Law Firms · Finance · Healthcare', body: 'Upload contracts, compliance guidelines, and regulatory documents. Get answers grounded in the source — always verify critical information independently.', tags: ['Contract review', 'Compliance Q&A', 'Policy search'] },
+                { num: '04', icon: 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3', title: 'Legal & Compliance', industry: 'Law Firms · Finance · Healthcare', body: 'Upload contracts, compliance guidelines, and regulatory documents. Get answers grounded in the source - always verify critical information independently.', tags: ['Contract review', 'Compliance Q&A', 'Policy search'] },
                 { num: '05', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', title: 'Education & Training', industry: 'EdTech · Corporates · Universities', body: 'Upload course material, training manuals, and study guides. Learners ask questions and get answers drawn from the content they are studying.', tags: ['Course Q&A', 'Training manuals', 'Study guides'] },
-                { num: '06', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', title: 'Healthcare & Research', industry: 'Clinics · Research Labs · Pharma', body: 'Upload research papers, clinical guidelines, and protocols. Query complex documents conversationally — always verify with qualified professionals.', tags: ['Research papers', 'Clinical protocols', 'Drug references'] },
+                { num: '06', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', title: 'Healthcare & Research', industry: 'Clinics · Research Labs · Pharma', body: 'Upload research papers, clinical guidelines, and protocols. Query complex documents conversationally - always verify with qualified professionals.', tags: ['Research papers', 'Clinical protocols', 'Drug references'] },
               ].map((uc, i) => (
                 <div key={i} className="py-10 grid md:grid-cols-[100px_1fr_1fr] gap-6 md:gap-10 items-start">
                   <div className="flex items-start">
@@ -670,7 +670,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-400 dark:text-gray-600">
             <div className="flex items-center gap-2">
               <img src="/Archelon_logo.png" className="h-5 w-auto object-contain opacity-50" alt="" />
-              <span>Archelon — Agentic RAG Platform</span>
+              <span>Archelon - Agentic RAG Platform</span>
             </div>
             <div>© {new Date().getFullYear()} Archelon. All rights reserved.</div>
           </div>
