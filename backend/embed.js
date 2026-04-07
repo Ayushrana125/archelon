@@ -116,7 +116,7 @@
     .arch-bot-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     /* Message actions */
     .arch-msg-actions {
-      display: flex; align-items: center; gap: 8px; margin-top: 8px;
+      display: flex; align-items: center; gap: 8px;
     }
     .arch-action-btn {
       background: none; border: 1px solid #e5e7eb; cursor: pointer; padding: 4px 7px;
@@ -704,8 +704,10 @@
       <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
       <div style="display:flex;flex-direction:column;max-width:78%;min-width:0;">
         <div class="arch-bubble" style="width:fit-content;max-width:100%;"></div>
-        ${ACTION_BUTTONS_HTML}
-        <div class="arch-msg-time" style="margin-top:2px;text-align:right;">Just now</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+          <div class="arch-msg-time">Just now</div>
+          ${ACTION_BUTTONS_HTML}
+        </div>
       </div>
     `;
     const bubble = wrap.querySelector('.arch-bubble');
@@ -917,8 +919,10 @@
                 <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
                 <div style="display:flex;flex-direction:column;max-width:78%;min-width:0;">
                   <div class="arch-bubble" style="width:fit-content;max-width:100%;">${parseMarkdown(rawText)}</div>
-                  ${ACTION_BUTTONS_HTML}
-                  <div class="arch-msg-time" style="margin-top:2px;text-align:right;">Just now</div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+                    <div class="arch-msg-time">Just now</div>
+                    ${ACTION_BUTTONS_HTML}
+                  </div>
                 </div>
               `;
               const timeEl = wrap.querySelector('.arch-msg-time');
