@@ -358,6 +358,21 @@
   `;
   document.head.appendChild(style);
 
+  // Inject FAB animated border separately (conic-gradient rotation)
+  const fabStyle = document.createElement('style');
+  fabStyle.textContent = `
+    #archelon-fab::before {
+      content: '';
+      position: absolute; inset: -2px;
+      border-radius: 999px;
+      background: conic-gradient(from 0deg, #8b5cf6, #6366f1, #a78bfa, #c4b5fd, #8b5cf6);
+      animation: arch-ai-spin 3s linear infinite;
+      z-index: -1;
+    }
+    @keyframes arch-ai-spin { to { transform: rotate(360deg); } }
+  `;
+  document.head.appendChild(fabStyle);
+
   // ── HTML ──────────────────────────────────────────────────────────────────
   const root = document.createElement('div');
   root.id = 'archelon-widget-root';
