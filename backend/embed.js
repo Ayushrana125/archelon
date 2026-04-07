@@ -884,7 +884,20 @@
 
           if (event.type === 'meta') {
             if (event.intent !== 'smalltalk') {
-              showSteps(true);
+              // Upgrade to RAG mode — keep existing first step, just start the interval from step 1
+              sendBtn.classList.add('loading');
+              let current = 0;
+              if (stepsInterval) { clearInterval(stepsInterval); stepsInterval = null; }
+              stepsInterval = setInterval(() => {
+                if (current < STEPS_RAG.length - 1) {
+                  stepRows[current].classList.remove('active');
+                  stepRows[current].classList.add('done');
+                  stepRows[current].querySelector('.arch-step-dots')?.remove();
+                  current++;
+                  const row = addStepRow(STEPS_RAG[current], true);
+                  stepRows.push(row);
+                }
+              }, 1500);
             }
           }
 
