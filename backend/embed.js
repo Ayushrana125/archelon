@@ -94,7 +94,7 @@
     .arch-msg { display: flex; gap: 8px; align-items: flex-end; }
     .arch-msg.user { flex-direction: row-reverse; }
     .arch-bubble {
-      max-width: 78%; padding: 10px 13px; border-radius: 18px;
+      padding: 10px 13px; border-radius: 18px;
       font-size: 13px; line-height: 1.6; word-break: break-word;
     }
     .arch-msg.bot .arch-bubble {
@@ -702,8 +702,8 @@
     const rawText = text;
     wrap.innerHTML = `
       <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
-      <div style="display:flex;flex-direction:column;max-width:78%;">
-        <div class="arch-bubble" style="max-width:100%;"></div>
+      <div style="display:flex;flex-direction:column;max-width:78%;min-width:0;">
+        <div class="arch-bubble" style="width:fit-content;max-width:100%;"></div>
         ${ACTION_BUTTONS_HTML}
         <div class="arch-msg-time" style="margin-top:2px;">Just now</div>
       </div>
@@ -731,8 +731,8 @@
     msg.className = 'arch-msg user';
     msg.innerHTML = `
       <div style="display:flex;flex-direction:column;align-items:flex-end;max-width:78%;">
-        <div class="arch-bubble">${parseMarkdown(text)}</div>
-        <div class="arch-msg-time" style="margin-top:3px;">Just now</div>
+        <div class="arch-bubble" style="width:fit-content;">${parseMarkdown(text)}</div>
+        <div class="arch-msg-time" style="margin-top:3px;text-align:right;">Just now</div>
       </div>`;
     const timeEl = msg.querySelector('.arch-msg-time');
     const timeStr = formatTime(now);
@@ -915,8 +915,8 @@
               const rawText = streamBubbleContent;
               wrap.innerHTML = `
                 <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
-                <div style="display:flex;flex-direction:column;max-width:78%;">
-                  <div class="arch-bubble" style="max-width:100%;">${parseMarkdown(rawText)}</div>
+                <div style="display:flex;flex-direction:column;max-width:78%;min-width:0;">
+                  <div class="arch-bubble" style="width:fit-content;max-width:100%;">${parseMarkdown(rawText)}</div>
                   ${ACTION_BUTTONS_HTML}
                   <div class="arch-msg-time" style="margin-top:2px;">Just now</div>
                 </div>
