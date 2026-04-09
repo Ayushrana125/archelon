@@ -107,6 +107,30 @@ Optimized for demo reliability and real-world constraints such as API limits, co
 
 ---
 
+## Known Limitations & Evolution Path
+
+This version of Archelon represents a fully working V1 system. The current system reflects real-world constraints across model behavior, retrieval design, and infrastructure.
+
+**Internal (System Design)**
+- Retrieval quality depends on chunking, reranking, and query strategies  
+- Context memory and long-session coherence are not yet implemented  
+- Further improvements possible in multi-query handling and grounding  
+
+**External (Model & Infrastructure Constraints)**
+- Response quality depends on underlying LLM behavior (hallucinations, temperature sensitivity)  
+- Rate limits and latency vary across model providers (Mistral, Gemini, etc.)  
+- Serverless infrastructure introduces cold starts and resource limits  
+
+**Evolution Direction (V2 Thinking)**
+- Improve retrieval robustness and grounding accuracy  
+- Introduce memory + tool-calling capabilities  
+- Move toward more stable infrastructure (queues, VPS, async pipelines)  
+- Evaluate multiple models for quality, latency, and cost tradeoffs  
+
+This reflects a typical progression from a working agentic RAG system to a more production-grade AI platform.
+
+---
+
 ## Documentation
 
 See detailed system design and architecture:
