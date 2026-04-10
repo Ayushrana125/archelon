@@ -141,6 +141,6 @@ See detailed system design and architecture:
 
 ## Notes
 
-This project focuses on building a production-oriented AI system with real-world constraints — not just a demo chatbot.
+This project focuses on building a production-oriented AI system with real-world constraints - not just a demo chatbot.
 
 ---
