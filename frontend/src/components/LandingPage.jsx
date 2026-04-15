@@ -446,7 +446,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
                 </h1>
                 <div className="w-12 h-px mb-8" style={{ background: TEAL }} />
                 <p className="landing-body text-xl text-gray-500 dark:text-gray-400 mb-10 leading-relaxed">
-                  Archelon was the largest sea turtle that ever lived — up to 4.6 metres long, built to carry enormous weight across vast oceans. Archelon does the same for your documents.
+                  Archelon was the largest sea turtle that ever lived - up to 4.6 metres long, built to carry enormous weight across vast oceans. Archelon does the same for your documents.
                 </p>
                 {/* Button with ripple rings */}
                 <div className="relative inline-block">
