@@ -156,7 +156,7 @@
     #archelon-widget-root.dark .arch-action-btn:hover { background: #2a2a2a; color: #e5e7eb; }
     /* Scroll to bottom button */
     #arch-scroll-down {
-      position: absolute; bottom: 80px; right: 16px;
+      position: fixed;
       width: 28px; height: 28px; border-radius: 50%; border: 1px solid #e5e7eb;
       background: rgba(255,255,255,0.9); backdrop-filter: blur(4px);
       cursor: pointer; display: none; align-items: center; justify-content: center;
@@ -277,16 +277,9 @@
     .arch-step-dots span:nth-child(3) { animation-delay: 0.4s; }
     @keyframes arch-dot-fade { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
     #archelon-suggested {
-      position: absolute;
-      bottom: 100%;
-      left: 0; right: 0;
-      padding: 8px 14px;
-      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 4px 0 8px 30px; display: flex; flex-wrap: wrap; gap: 6px;
       background: transparent;
-      pointer-events: all;
-      z-index: 10;
     }
-    #archelon-widget-root.dark #archelon-suggested { background: transparent; }
     .arch-sq-chip {
       background: #fff;
       border: 1px solid #e5e7eb;
@@ -916,17 +909,26 @@
       });
       suggestedDiv.appendChild(btn);
     });
+    msgs.appendChild(suggestedDiv);
     suggestedDiv.style.display = 'flex';
+    msgs.scrollTop = msgs.scrollHeight;
   }
 
   function clearSuggestedQuestions() {
     suggestedDiv.innerHTML = '';
     suggestedDiv.style.display = 'none';
+    if (suggestedDiv.parentNode === msgs) msgs.removeChild(suggestedDiv);
     currentSuggestedQuestions = [];
   }
   msgs.addEventListener('scroll', () => {
     const distFromBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight;
-    scrollDownBtn.classList.toggle('visible', distFromBottom > 80);
+    const visible = distFromBottom > 150;
+    scrollDownBtn.classList.toggle('visible', visible);
+    if (visible) {
+      const rect = msgs.getBoundingClientRect();
+      scrollDownBtn.style.top  = (rect.bottom - 44) + 'px';
+      scrollDownBtn.style.left = (rect.right - 44) + 'px';
+    }
   });
   scrollDownBtn.addEventListener('click', () => {
     msgs.scrollTop = msgs.scrollHeight;
