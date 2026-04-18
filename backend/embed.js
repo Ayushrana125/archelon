@@ -277,26 +277,39 @@
     .arch-step-dots span:nth-child(3) { animation-delay: 0.4s; }
     @keyframes arch-dot-fade { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
     #archelon-suggested {
-      padding: 4px 0 8px 30px; display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 4px 0 8px 30px; display: flex; flex-direction: column; gap: 6px;
       background: transparent;
     }
     .arch-sq-chip {
       background: #fff;
       border: 1px solid #e5e7eb;
-      border-radius: 999px;
-      padding: 6px 13px;
-      font-size: 11.5px;
+      border-left: 3px solid #00C9B1;
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 12px;
       color: #111827;
       cursor: pointer;
       font-family: inherit;
-      line-height: 1.3;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+      line-height: 1.4;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
       text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      max-width: 260px;
     }
-    .arch-sq-chip:hover { background: #f9fafb; border-color: #00C9B1; box-shadow: 0 2px 12px rgba(0,201,177,0.15); }
-    #archelon-widget-root.dark .arch-sq-chip { background: #2a2a2a; border-color: #444; color: #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-    #archelon-widget-root.dark .arch-sq-chip:hover { background: #333; border-color: #00C9B1; }
+    .arch-sq-chip::after {
+      content: '↗';
+      font-size: 11px;
+      color: #00C9B1;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+    .arch-sq-chip:hover { background: #f0fdfb; box-shadow: 0 2px 8px rgba(0,201,177,0.12); transform: translateX(2px); }
+    #archelon-widget-root.dark .arch-sq-chip { background: #1e1e1e; border-color: #333; border-left-color: #00C9B1; color: #e5e7eb; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+    #archelon-widget-root.dark .arch-sq-chip:hover { background: #252525; box-shadow: 0 2px 8px rgba(0,201,177,0.15); }
     /* Send button ring spinner when loading */
     #archelon-send.loading {
       background: transparent !important;
@@ -1088,7 +1101,6 @@
 
           if (event.type === 'done') {
             clearSteps();
-            if (event.suggested_questions?.length) renderSuggestedQuestions(event.suggested_questions);
             if (streamBubbleContent) {
               const doneNow = new Date();
               const wrap = document.createElement('div');
@@ -1112,6 +1124,7 @@
               buildActionButtons(wrap, rawText);
               streamBubbleContent = '';
             }
+            if (event.suggested_questions?.length) renderSuggestedQuestions(event.suggested_questions);
           }
         }
       }
