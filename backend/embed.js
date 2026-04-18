@@ -156,11 +156,11 @@
     #archelon-widget-root.dark .arch-action-btn:hover { background: #2a2a2a; color: #e5e7eb; }
     /* Scroll to bottom button */
     #arch-scroll-down {
-      position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
-      width: 32px; height: 32px; border-radius: 50%; border: 1px solid #e5e7eb;
-      background: rgba(255,255,255,0.8); backdrop-filter: blur(4px);
+      position: absolute; bottom: 80px; right: 16px;
+      width: 28px; height: 28px; border-radius: 50%; border: 1px solid #e5e7eb;
+      background: rgba(255,255,255,0.9); backdrop-filter: blur(4px);
       cursor: pointer; display: none; align-items: center; justify-content: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12); z-index: 20;
     }
     #arch-scroll-down.visible { display: flex; }
     #arch-scroll-down svg { width: 14px; height: 14px; color: #374151; }
@@ -511,10 +511,10 @@
         <div id="archelon-prechat-chips"></div>
       </div>
       <div id="archelon-messages" style="display:none;position:relative;">
-        <button id="arch-scroll-down" aria-label="Scroll to bottom">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
       </div>
+      <button id="arch-scroll-down" aria-label="Scroll to bottom">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>
       <div id="archelon-disclaimer" style="display:none;">Can make mistakes. Verify important information.</div>
       <div id="archelon-input-area">
         <div id="archelon-suggested" style="display:none;"></div>
