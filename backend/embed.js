@@ -277,20 +277,33 @@
     .arch-step-dots span:nth-child(3) { animation-delay: 0.4s; }
     @keyframes arch-dot-fade { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
     #archelon-suggested {
-      padding: 0 14px 8px; display: flex; flex-wrap: wrap; gap: 6px;
-      background: #fff; flex-shrink: 0;
+      position: absolute;
+      bottom: 100%;
+      left: 0; right: 0;
+      padding: 8px 14px;
+      display: flex; flex-wrap: wrap; gap: 6px;
+      background: transparent;
+      pointer-events: all;
+      z-index: 10;
     }
-    #archelon-widget-root.dark #archelon-suggested { background: #1a1a1a; }
+    #archelon-widget-root.dark #archelon-suggested { background: transparent; }
     .arch-sq-chip {
-      background: none; border: 1px solid #e5e7eb; border-radius: 999px;
-      padding: 5px 11px; font-size: 11.5px; color: #374151;
-      cursor: pointer; font-family: inherit; line-height: 1.3;
-      transition: background 0.15s, border-color 0.15s;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      padding: 6px 13px;
+      font-size: 11.5px;
+      color: #111827;
+      cursor: pointer;
+      font-family: inherit;
+      line-height: 1.3;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
       text-align: left;
     }
-    .arch-sq-chip:hover { background: #f9fafb; border-color: #d1d5db; }
-    #archelon-widget-root.dark .arch-sq-chip { border-color: #333; color: #d1d5db; }
-    #archelon-widget-root.dark .arch-sq-chip:hover { background: #2a2a2a; border-color: #444; }
+    .arch-sq-chip:hover { background: #f9fafb; border-color: #00C9B1; box-shadow: 0 2px 12px rgba(0,201,177,0.15); }
+    #archelon-widget-root.dark .arch-sq-chip { background: #2a2a2a; border-color: #444; color: #e5e7eb; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    #archelon-widget-root.dark .arch-sq-chip:hover { background: #333; border-color: #00C9B1; }
     /* Send button ring spinner when loading */
     #archelon-send.loading {
       background: transparent !important;
@@ -309,7 +322,7 @@
     }
     #archelon-input-area {
       padding: 10px 14px 12px; background: #fff; border-top: 1px solid #f3f4f6;
-      flex-shrink: 0;
+      flex-shrink: 0; position: relative;
     }
     #arch-input-row {
       position: relative;
@@ -502,9 +515,9 @@
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
       </div>
-      <div id="archelon-suggested" style="display:none;"></div>
       <div id="archelon-disclaimer" style="display:none;">Can make mistakes. Verify important information.</div>
       <div id="archelon-input-area">
+        <div id="archelon-suggested" style="display:none;"></div>
         <div id="arch-input-row">
           <textarea id="archelon-input" placeholder="Ask a question..." rows="1"></textarea>
           <button id="archelon-send" aria-label="Send">
@@ -895,7 +908,8 @@
       const btn = document.createElement('button');
       btn.className = 'arch-sq-chip';
       btn.textContent = q;
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         clearSuggestedQuestions();
         input.value = q;
         sendMessage();
@@ -1077,7 +1091,7 @@
               const doneNow = new Date();
               const wrap = document.createElement('div');
               wrap.className = 'arch-msg bot';
-              const rawText = streamBubbleContent;
+              const rawText = streamBubbleContent.replace(/\s*SQArchelon\s*\[.*?\]\s*$/s, '').trim();
               wrap.innerHTML = `
                 <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
                 <div style="display:flex;flex-direction:column;max-width:78%;min-width:0;">
