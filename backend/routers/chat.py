@@ -254,7 +254,7 @@ async def chat_stream(body: ChatRequest, current_user: dict = Depends(verify_tok
                     user_message=safe_message,
                     agent_response=full_response,
                 )
-                yield f"data: {json.dumps({'type': 'done', 'sources': final_event['sources'], 'token_usage': token_usage})}\n\n"
+                yield f"data: {json.dumps({'type': 'done', 'sources': final_event['sources'], 'suggested_questions': final_event.get('suggested_questions', []), 'token_usage': token_usage})}\n\n"
             else:
                 parsed = json.loads(raw)
                 token  = parsed.get("token", "")

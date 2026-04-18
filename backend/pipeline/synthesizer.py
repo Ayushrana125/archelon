@@ -14,10 +14,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def _estimate_tokens(text: str) -> int:
+    return max(1, len(text) // 4)
+
+
 def _parse_suggested_questions(text: str) -> tuple[str, list[str]]:
     """Split SUGGESTED_QUESTIONS block from answer. Returns (clean_answer, questions)."""
     import json as _json
-    marker = "SUGGESTED_QUESTIONS:"
+    marker = "SQArchelon"
     if marker not in text:
         return text.strip(), []
     answer_part, sq_part = text.rsplit(marker, 1)
@@ -28,9 +32,6 @@ def _parse_suggested_questions(text: str) -> tuple[str, list[str]]:
     except Exception:
         pass
     return answer_part.strip(), []
-
-
-    return max(1, len(text) // 4)
 
 
 def _build_context(chunks: list[dict]) -> str:
@@ -95,10 +96,12 @@ async def synthesize_stream(
             if token:
                 full_response += token
                 import json
+                import json
                 yield f"data: {json.dumps({'token': token})}\n\n"
 
         output_tokens = _estimate_tokens(full_response)
         clean_answer, suggested_questions = _parse_suggested_questions(full_response)
+        print(f"[synthesizer] suggested_questions={suggested_questions}")
         import json
         yield f"data: [DONE] {json.dumps({'sources': sources, 'suggested_questions': suggested_questions, 'token_usage': {'input_tokens': input_tokens, 'output_tokens': output_tokens, 'total': input_tokens + output_tokens}})}\n\n"
 
@@ -146,7 +149,7 @@ CONTEXT BLOCK — answer only from what is written here:
 {context_text}"""
     if search_hint:
         prompt += f"\n\nSearch focus: {search_hint}"
-    prompt += "\n\nAfter your answer, append exactly this on a new line — no extra text before or after:\nSUGGESTED_QUESTIONS: [\"question one?\", \"question two?\", \"question three?\"]\nReplace the 3 questions with short (max 8 words), distinct follow-up questions a user might ask next, based only on the context block. Never repeat the current question."
+    prompt += '\n\nAfter your answer, you MUST always append this block on a new line, even if the answer is short or user asks in short or 1 line:\nSQArchelon ["question one?", "question two?", "question three?"]\nReplace the 3 questions with short (max 8 words), distinct follow-up questions a user might ask next, based only on the context block. Never repeat the current question.'
     return prompt
 
 

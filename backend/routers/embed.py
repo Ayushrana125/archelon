@@ -271,7 +271,7 @@ async def public_chat_stream(request: Request, body: PublicChatRequest):
                     user_message=message,
                     agent_response=full_response,
                 )
-                yield f"data: {json.dumps({'type': 'done', 'sources': final_event['sources'], 'token_usage': token_usage})}\n\n"
+                yield f"data: {json.dumps({'type': 'done', 'sources': final_event['sources'], 'suggested_questions': final_event.get('suggested_questions', []), 'token_usage': token_usage})}\n\n"
             else:
                 parsed = json.loads(raw)
                 token  = parsed.get("token", "")

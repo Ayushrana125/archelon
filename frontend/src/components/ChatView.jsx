@@ -436,7 +436,11 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
           const raw = line.slice(6).trim();
           if (!raw) continue;
           let event;
-          try { event = JSON.parse(raw); } catch { continue; }
+          if (raw.startsWith('[DONE]')) {
+            try { event = { type: 'done', ...JSON.parse(raw.slice(7).trim()) }; } catch { continue; }
+          } else {
+            try { event = JSON.parse(raw); } catch { continue; }
+          }
 
           if (event.type === 'meta') {
             setIsTyping(false);
@@ -472,12 +476,12 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
 
           if (event.type === 'done') {
             const { sources, token_usage, suggested_questions } = event;
+            const sqToSet = suggested_questions || [];
             onRequestBusy?.(false);
             setStreamingMsg(prev => prev ? { ...prev, sources, streaming: false } : prev);
             if (thinkingId) {
               setMessages(prev => prev.map(m => m.id === thinkingId ? { ...m, sources } : m));
             }
-            if (suggested_questions?.length) setSuggestedQuestions(suggested_questions);
             const inputTokens  = token_usage?.input_tokens ?? 0;
             const outputTokens = token_usage?.output_tokens ?? 0;
             if (inputTokens + outputTokens > 0) {
@@ -487,18 +491,22 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
               setAgentTotalTokens(prev => prev + inputTokens + outputTokens);
               onTokensUsed?.();
             }
-            // Commit streaming bubble to messages after a short delay so final render settles
             setTimeout(() => {
               setStreamingMsg(current => {
                 if (!current) return null;
                 const role = thinkingId ? 'assistant' : 'smalltalk';
-                const committed = { role, content: current.content, sources: current.sources, id: current.id, skipAnimation: false };
+                const cleanContent = current.content.replace(/\s*SQArchelon\s*\[.*?\]\s*$/s, '').trim();
+                const committed = { role, content: cleanContent, sources: current.sources, id: current.id, skipAnimation: false };
                 streamingIdRef.current = null;
                 setTimeout(() => {
                   setMessages(prev => {
                     if (prev.some(m => m.id === committed.id)) return prev;
                     return [...prev, committed];
                   });
+                  if (sqToSet.length) {
+                    console.log('[ChatView] setting suggested questions:', sqToSet);
+                    setSuggestedQuestions(sqToSet);
+                  }
                   resetIdle();
                 }, 0);
                 return null;
@@ -650,7 +658,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
 
       <div className="bg-white dark:bg-[#212121] px-6 pb-6 pt-3">
         <div className="max-w-4xl mx-auto">
-          {suggestedQuestions.length > 0 && !isBusy && (
+          {suggestedQuestions.length > 0 && !streamingMsg && (
             <div className="flex gap-2 flex-wrap mb-3">
               {suggestedQuestions.map((q, i) => (
                 <button
