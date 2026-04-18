@@ -130,6 +130,7 @@ CONTEXT BLOCK — answer only from what is written here:
 {context_text}"""
     if search_hint:
         prompt += f"\n\nSearch focus: {search_hint}"
+    prompt += "\n\nAfter your answer, append exactly this on a new line — no extra text before or after:\nSUGGESTED_QUESTIONS: [\"question one?\", \"question two?\", \"question three?\"]\nReplace the 3 questions with short (max 8 words), distinct follow-up questions a user might ask next, based only on the context block. Never repeat the current question."
     return prompt
 
 

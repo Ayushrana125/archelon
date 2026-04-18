@@ -225,9 +225,19 @@
       animation: arch-spin 0.7s linear infinite;
     }
     .arch-step-row.done .arch-step-dot {
-      background: #22c55e;
-      border-color: #22c55e;
+      background: transparent;
+      border-color: transparent;
       animation: none;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .arch-step-row.done .arch-step-dot::after {
+      content: '';
+      display: block;
+      width: 10px; height: 10px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
     }
     @keyframes arch-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
     /* Skeleton bubble */
