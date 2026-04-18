@@ -14,7 +14,22 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def _estimate_tokens(text: str) -> int:
+def _parse_suggested_questions(text: str) -> tuple[str, list[str]]:
+    """Split SUGGESTED_QUESTIONS block from answer. Returns (clean_answer, questions)."""
+    import json as _json
+    marker = "SUGGESTED_QUESTIONS:"
+    if marker not in text:
+        return text.strip(), []
+    answer_part, sq_part = text.rsplit(marker, 1)
+    try:
+        questions = _json.loads(sq_part.strip())
+        if isinstance(questions, list):
+            return answer_part.strip(), questions[:3]
+    except Exception:
+        pass
+    return answer_part.strip(), []
+
+
     return max(1, len(text) // 4)
 
 
@@ -83,8 +98,9 @@ async def synthesize_stream(
                 yield f"data: {json.dumps({'token': token})}\n\n"
 
         output_tokens = _estimate_tokens(full_response)
+        clean_answer, suggested_questions = _parse_suggested_questions(full_response)
         import json
-        yield f"data: [DONE] {json.dumps({'sources': sources, 'token_usage': {'input_tokens': input_tokens, 'output_tokens': output_tokens, 'total': input_tokens + output_tokens}})}\n\n"
+        yield f"data: [DONE] {json.dumps({'sources': sources, 'suggested_questions': suggested_questions, 'token_usage': {'input_tokens': input_tokens, 'output_tokens': output_tokens, 'total': input_tokens + output_tokens}})}\n\n"
 
     except Exception as e:
         print(f"[synthesizer_stream] ERROR: {e}")

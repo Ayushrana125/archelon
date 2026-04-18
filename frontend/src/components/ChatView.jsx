@@ -260,6 +260,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
   const [sessionOutputTokens, setSessionOutputTokens] = useState(0);
   const [agentTotalTokens, setAgentTotalTokens] = useState(0);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [suggestedQuestions, setSuggestedQuestions] = useState([]);
 
   useEffect(() => {
     if (!agentData?.id) return;
@@ -371,6 +372,7 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
     setInput('');
     resetIdle();
     setUserScrolledUp(false);
+    setSuggestedQuestions([]);
 
     if (!silent) {
       const userMessage = { role: 'user', content: text, id: Date.now() };
@@ -469,12 +471,13 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
           }
 
           if (event.type === 'done') {
-            const { sources, token_usage } = event;
+            const { sources, token_usage, suggested_questions } = event;
             onRequestBusy?.(false);
             setStreamingMsg(prev => prev ? { ...prev, sources, streaming: false } : prev);
             if (thinkingId) {
               setMessages(prev => prev.map(m => m.id === thinkingId ? { ...m, sources } : m));
             }
+            if (suggested_questions?.length) setSuggestedQuestions(suggested_questions);
             const inputTokens  = token_usage?.input_tokens ?? 0;
             const outputTokens = token_usage?.output_tokens ?? 0;
             if (inputTokens + outputTokens > 0) {
@@ -647,6 +650,19 @@ function ChatView({ agentData, onAddFile, messages, setMessages, isGreetingLoadi
 
       <div className="bg-white dark:bg-[#212121] px-6 pb-6 pt-3">
         <div className="max-w-4xl mx-auto">
+          {suggestedQuestions.length > 0 && !isBusy && (
+            <div className="flex gap-2 flex-wrap mb-3">
+              {suggestedQuestions.map((q, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSend(q)}
+                  className="px-3 py-1.5 rounded-xl text-xs border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a2a2a] text-gray-600 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-[#333] transition-all"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="relative bg-gray-100 dark:bg-[#2a2a2a] border border-gray-300 dark:border-transparent rounded-3xl px-5 pt-3 pb-2 focus-within:ring-2 focus-within:ring-blue-400 dark:focus-within:ring-gray-600 focus-within:border-transparent transition-all">
             {isUploading && (
               <div className="flex items-center gap-2 mb-2 text-xs text-gray-400">

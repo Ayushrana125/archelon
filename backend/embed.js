@@ -276,6 +276,21 @@
     .arch-step-dots span:nth-child(2) { animation-delay: 0.2s; }
     .arch-step-dots span:nth-child(3) { animation-delay: 0.4s; }
     @keyframes arch-dot-fade { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+    #archelon-suggested {
+      padding: 0 14px 8px; display: flex; flex-wrap: wrap; gap: 6px;
+      background: #fff; flex-shrink: 0;
+    }
+    #archelon-widget-root.dark #archelon-suggested { background: #1a1a1a; }
+    .arch-sq-chip {
+      background: none; border: 1px solid #e5e7eb; border-radius: 999px;
+      padding: 5px 11px; font-size: 11.5px; color: #374151;
+      cursor: pointer; font-family: inherit; line-height: 1.3;
+      transition: background 0.15s, border-color 0.15s;
+      text-align: left;
+    }
+    .arch-sq-chip:hover { background: #f9fafb; border-color: #d1d5db; }
+    #archelon-widget-root.dark .arch-sq-chip { border-color: #333; color: #d1d5db; }
+    #archelon-widget-root.dark .arch-sq-chip:hover { background: #2a2a2a; border-color: #444; }
     /* Send button ring spinner when loading */
     #archelon-send.loading {
       background: transparent !important;
@@ -487,6 +502,7 @@
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
       </div>
+      <div id="archelon-suggested" style="display:none;"></div>
       <div id="archelon-disclaimer" style="display:none;">Can make mistakes. Verify important information.</div>
       <div id="archelon-input-area">
         <div id="arch-input-row">
@@ -540,6 +556,7 @@
   let isLoading = false;
   let greeted   = false;
   let chatStarted = false;
+  let currentSuggestedQuestions = [];
 
   // ── Rotating greetings ────────────────────────────────────────────────────
   const GREETINGS = [
@@ -869,6 +886,30 @@
   }
 
   const scrollDownBtn = document.getElementById('arch-scroll-down');
+  const suggestedDiv  = document.getElementById('archelon-suggested');
+
+  function renderSuggestedQuestions(questions) {
+    if (!questions?.length) return;
+    suggestedDiv.innerHTML = '';
+    questions.forEach(q => {
+      const btn = document.createElement('button');
+      btn.className = 'arch-sq-chip';
+      btn.textContent = q;
+      btn.addEventListener('click', () => {
+        clearSuggestedQuestions();
+        input.value = q;
+        sendMessage();
+      });
+      suggestedDiv.appendChild(btn);
+    });
+    suggestedDiv.style.display = 'flex';
+  }
+
+  function clearSuggestedQuestions() {
+    suggestedDiv.innerHTML = '';
+    suggestedDiv.style.display = 'none';
+    currentSuggestedQuestions = [];
+  }
   msgs.addEventListener('scroll', () => {
     const distFromBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight;
     scrollDownBtn.classList.toggle('visible', distFromBottom > 80);
@@ -945,6 +986,7 @@
     input.value = '';
     input.style.height = 'auto';
     setInputEnabled(false);
+    clearSuggestedQuestions();
     const now = new Date();
     if (!chatStarted) addTimestamp(formatChatStarted(now));
     chatStarted = true;
@@ -1030,6 +1072,7 @@
 
           if (event.type === 'done') {
             clearSteps();
+            if (event.suggested_questions?.length) renderSuggestedQuestions(event.suggested_questions);
             if (streamBubbleContent) {
               const doneNow = new Date();
               const wrap = document.createElement('div');
@@ -1088,6 +1131,7 @@
   });
 
   input.addEventListener('input', () => {
+    if (input.value.trim().length > 0) clearSuggestedQuestions();
     input.style.height = 'auto';
     input.style.height = Math.min(input.scrollHeight, 100) + 'px';
     sendBtn.classList.toggle('active', input.value.trim().length > 0 && !isLoading);
