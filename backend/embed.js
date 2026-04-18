@@ -214,12 +214,48 @@
     .arch-step-row.done .arch-step-label { color: #d1d5db; }
     #archelon-widget-root.dark .arch-step-row.done .arch-step-label { color: #4b5563; }
     .arch-step-dot {
-      width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
-      background: #d1d5db; transition: background 0.3s;
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+      background: transparent;
+      border: 2px solid #d1d5db;
+      transition: border-color 0.3s;
     }
-    .arch-step-row.active .arch-step-dot { background: #22c55e; animation: arch-pulse 1s ease-in-out infinite; }
-    .arch-step-row.done .arch-step-dot { background: #22c55e; animation: none; }
+    .arch-step-row.active .arch-step-dot {
+      border-color: transparent;
+      border-top-color: #00C9B1;
+      animation: arch-spin 0.7s linear infinite;
+    }
+    .arch-step-row.done .arch-step-dot {
+      background: #22c55e;
+      border-color: #22c55e;
+      animation: none;
+    }
     @keyframes arch-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    /* Skeleton bubble */
+    .arch-skeleton-msg {
+      display: flex; gap: 8px; align-items: flex-end;
+    }
+    .arch-skeleton-bubble {
+      display: flex; flex-direction: column; gap: 8px;
+      padding: 12px 14px; border-radius: 18px 18px 18px 4px;
+      background: #fff; border: 1px solid #e5e7eb;
+      width: 220px;
+    }
+    .arch-skeleton-line {
+      height: 10px; border-radius: 6px;
+      background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+      background-size: 200% 100%;
+      animation: arch-skel-sweep 1.4s ease-in-out infinite;
+    }
+    @keyframes arch-skel-sweep {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    #archelon-widget-root.dark .arch-skeleton-bubble { background: #2a2a2a; border-color: #333; }
+    #archelon-widget-root.dark .arch-skeleton-line {
+      background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
+      background-size: 200% 100%;
+      animation: arch-skel-sweep 1.4s ease-in-out infinite;
+    }
     .arch-step-dots {
       display: inline-flex; gap: 2px; margin-left: 2px;
     }
@@ -518,6 +554,7 @@
 
   let stepsInterval = null;
   let stepRows = [];
+  let skeletonEl = null;
 
   function addStepRow(label, active) {
     const row = document.createElement('div');
@@ -533,11 +570,28 @@
     return row;
   }
 
+  function addSkeletonBubble() {
+    const el = document.createElement('div');
+    el.className = 'arch-skeleton-msg';
+    el.innerHTML = `
+      <div class="arch-bot-avatar"><img src="${LOGO}" alt="" /></div>
+      <div class="arch-skeleton-bubble">
+        <div class="arch-skeleton-line" style="width:85%;"></div>
+        <div class="arch-skeleton-line" style="width:65%;"></div>
+        <div class="arch-skeleton-line" style="width:75%;"></div>
+      </div>
+    `;
+    msgs.appendChild(el);
+    msgs.scrollTop = msgs.scrollHeight;
+    return el;
+  }
+
   function showSteps(ragMode) {
     clearSteps();
     sendBtn.classList.add('loading');
     const firstRow = addStepRow(STEPS_RAG[0], true);
     stepRows.push(firstRow);
+    skeletonEl = addSkeletonBubble();
     if (!ragMode) return;
     let current = 0;
     stepsInterval = setInterval(() => {
@@ -548,8 +602,10 @@
         current++;
         const row = addStepRow(STEPS_RAG[current], true);
         stepRows.push(row);
+        // keep skeleton always last
+        msgs.appendChild(skeletonEl);
+        msgs.scrollTop = msgs.scrollHeight;
       }
-      // last step stays active forever until clearSteps() is called
     }, 1500);
   }
 
@@ -557,6 +613,7 @@
     if (stepsInterval) { clearInterval(stepsInterval); stepsInterval = null; }
     stepRows.forEach(r => r.remove());
     stepRows = [];
+    if (skeletonEl) { skeletonEl.remove(); skeletonEl = null; }
     sendBtn.classList.remove('loading');
   }
 
@@ -951,6 +1008,7 @@
                   current++;
                   const row = addStepRow(STEPS_RAG[current], true);
                   stepRows.push(row);
+                  if (skeletonEl) { msgs.appendChild(skeletonEl); msgs.scrollTop = msgs.scrollHeight; }
                 }
               }, 1500);
             }
