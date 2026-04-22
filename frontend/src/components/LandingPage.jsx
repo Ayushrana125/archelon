@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { signup, login } from '../services/auth_service';
 import RoadmapView from './RoadmapView';
 
@@ -43,7 +44,7 @@ function AuthModal({ defaultTab = 'signup', onClose, onLogin }) {
   );
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm" style={{ top: 56, left: 0, right: 0, bottom: 0 }}>
       <div className="bg-white dark:bg-[#141414] w-full h-full overflow-hidden relative border-0 flex">
 
         {/* Left panel - branding */}
@@ -291,7 +292,8 @@ const PIPELINE = [
   { label: 'Agent Ready', sub: 'Agent is ready to answer questions', done: false },
 ];
 
-function AnnouncementBar({ open, setOpen, onRoadmap }) {
+export function AnnouncementBar({ open, setOpen, onRoadmap }) {
+  const handleRoadmap = onRoadmap || (() => window.location.href = '/?roadmap=1');
   return (
     <div className="fixed top-0 left-0 right-0 z-50">
       <div
@@ -318,7 +320,7 @@ function AnnouncementBar({ open, setOpen, onRoadmap }) {
             </span>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
-            <button onClick={onRoadmap} className="text-sm text-white font-semibold bg-white/20 hover:bg-white/30 transition-colors px-3.5 py-1 rounded-full whitespace-nowrap">
+            <button onClick={handleRoadmap} className="text-sm text-white font-semibold bg-white/20 hover:bg-white/30 transition-colors px-3.5 py-1 rounded-full whitespace-nowrap">
               View Roadmap &rarr;
             </button>
             <button onClick={() => setOpen(false)} className="text-white/70 hover:text-white transition-colors">
@@ -351,6 +353,13 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [barOpen, setBarOpen] = useState(true);
   const [showRoadmap, setShowRoadmap] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get('roadmap') === '1') {
+      setShowRoadmap(true);
+    }
+  }, [location.search]);
   const dark = theme === 'dark';
   const barH = 56;
   const navTop = barOpen ? barH : 0;
@@ -741,7 +750,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
         {showResume && <ResumeModal onClose={() => setShowResume(false)} />}
         {showRoadmap && (
           <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-[#0d0d0d] rounded-2xl w-full max-w-5xl max-h-[88vh] overflow-hidden flex flex-col border border-gray-200 dark:border-gray-800 shadow-2xl">
+            <div className="bg-white dark:bg-[#0d0d0d] rounded-2xl w-[90vw] max-h-[90vh] overflow-hidden flex flex-col border border-gray-200 dark:border-gray-800 shadow-2xl">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
                 <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">Product Roadmap</span>
                 <button onClick={() => setShowRoadmap(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">

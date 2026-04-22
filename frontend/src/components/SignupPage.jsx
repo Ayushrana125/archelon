@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signup } from '../services/auth_service';
+import { AnnouncementBar } from './LandingPage';
 
 const TEAL = '#00C9B1';
 const BLUE = '#1A73E8';
@@ -52,6 +53,7 @@ function SignupPage({ onLogin, theme }) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [barOpen, setBarOpen] = useState(true);
 
   const usernameTaken = username.length > 2 && TAKEN_USERNAMES.includes(username.toLowerCase());
   const usernameAvailable = username.length > 2 && !usernameTaken;
@@ -83,7 +85,9 @@ function SignupPage({ onLogin, theme }) {
   };
 
   return (
-    <div className={`${theme} min-h-screen flex bg-white dark:bg-[#0d0d0d] items-start`}>
+    <div className={`${theme} min-h-screen flex flex-col bg-white dark:bg-[#0d0d0d] items-start`}>
+      <AnnouncementBar open={barOpen} setOpen={setBarOpen} />
+      <div className="flex w-full" style={{ paddingTop: barOpen ? 56 : 0, transition: 'padding-top 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
 
       {/* Left — branding */}
       <div className="hidden lg:flex flex-col justify-start w-[42%] p-14 relative overflow-hidden flex-shrink-0 self-stretch sticky top-0 h-screen"
@@ -300,6 +304,7 @@ function SignupPage({ onLogin, theme }) {
             )}
           </form>
         </div>
+      </div>
       </div>
     </div>
   );

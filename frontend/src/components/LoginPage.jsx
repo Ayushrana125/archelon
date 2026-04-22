@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../services/auth_service';
+import { AnnouncementBar } from './LandingPage';
 
 const TEAL = '#00C9B1';
 const BLUE = '#1A73E8';
@@ -23,6 +24,7 @@ function LoginPage({ onLogin, theme }) {
   const navigate = useNavigate();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [barOpen, setBarOpen] = useState(true);
 
   const isEmail = identifier.includes('@');
 
@@ -45,6 +47,8 @@ function LoginPage({ onLogin, theme }) {
 
   return (
     <div className={`${theme} min-h-screen flex bg-white dark:bg-[#0d0d0d]`}>
+      <AnnouncementBar open={barOpen} setOpen={setBarOpen} />
+      <div className="flex w-full" style={{ paddingTop: barOpen ? 56 : 0, transition: 'padding-top 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
 
       {/* Left — branding */}
       <div className="hidden lg:flex flex-col justify-start w-[42%] p-14 relative overflow-hidden flex-shrink-0"
@@ -173,6 +177,7 @@ function LoginPage({ onLogin, theme }) {
             </button>
           </form>
         </div>
+      </div>
       </div>
     </div>
   );

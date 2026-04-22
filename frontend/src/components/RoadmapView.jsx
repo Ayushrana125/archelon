@@ -52,8 +52,7 @@ const PHASES = [
 
 function RoadmapView() {
   return (
-    <div className="h-[calc(100vh-57px)] overflow-y-auto">
-      <div className="relative min-h-full">
+    <div className="relative">
 
         {/* Marine background */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
@@ -81,17 +80,19 @@ function RoadmapView() {
           <div className="mb-8">
             <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: TEAL }}>Product Roadmap</p>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">The Archelon Voyage</h1>
-            <p className="text-base text-gray-500 dark:text-gray-400">Three destinations. One journey. Click an island to explore.</p>
+            <p className="text-base text-gray-500 dark:text-gray-400">Three destinations. One journey.</p>
           </div>
 
           {/* ── Alternating detail rows ── */}
-          <div className="space-y-16">
+          <div className="space-y-0">
             {PHASES.map((p, i) => {
-              const isRight = i % 2 === 0; // 01 detail right, 02 detail left, 03 detail right
+              const isRight = i % 2 === 0;
               const isHorizon = p.status === 'horizon';
+              const nextPhase = PHASES[i + 1];
 
               return (
-                <div key={i} className={`flex gap-10 items-start ${isRight ? 'flex-row' : 'flex-row-reverse'}`}>
+                <div key={i}>
+                  <div className={`flex gap-10 items-center ${isRight ? 'flex-row' : 'flex-row-reverse'}`}>
 
                   {/* Island visual side */}
                   <div className="flex-shrink-0 flex flex-col items-center gap-3" style={{ width: 200 }}>
@@ -160,6 +161,27 @@ function RoadmapView() {
                       ))}
                     </div>
                   </div>
+                  </div>
+
+                  {/* Treasure map winding route connector */}
+                  {nextPhase && (
+                    <div className="flex items-center justify-center">
+                      <svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                          d={i === 0
+                            ? 'M 100 0 C 140 20, 160 40, 130 60 C 100 80, 60 85, 80 110 C 95 130, 120 135, 100 150'
+                            : 'M 100 0 C 60 20, 40 40, 70 60 C 100 80, 140 85, 120 110 C 105 130, 80 135, 100 150'
+                          }
+                          stroke={nextPhase.color}
+                          strokeWidth="2.5"
+                          strokeDasharray="8 6"
+                          strokeLinecap="round"
+                          fill="none"
+                          opacity="0.6"
+                        />
+                      </svg>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -169,7 +191,6 @@ function RoadmapView() {
             Roadmap reflects current direction and is subject to change based on user feedback and infrastructure priorities.
           </p>
         </div>
-      </div>
     </div>
   );
 }
