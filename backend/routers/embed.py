@@ -88,6 +88,11 @@ async def generate_key(agent_id: str, body: GenerateKeyRequest, current_user: di
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
 
+    if not body.allowed_origins or len(body.allowed_origins) == 0:
+        raise HTTPException(status_code=400, detail="At least 1 allowed domain is required.")
+    if len(body.allowed_origins) > 3:
+        raise HTTPException(status_code=400, detail="Maximum 3 allowed domains.")
+
     result = await generate_api_key(
         user_id=current_user["user_id"],
         agent_id=agent_id,
@@ -105,6 +110,11 @@ async def update_settings(agent_id: str, body: UpdateSettingsRequest, current_us
     agent = await agents_db.get_agent_by_id(agent_id, current_user["user_id"])
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
+    if body.allowed_origins is not None:
+        if len(body.allowed_origins) == 0:
+            raise HTTPException(status_code=400, detail="At least 1 allowed domain is required.")
+        if len(body.allowed_origins) > 3:
+            raise HTTPException(status_code=400, detail="Maximum 3 allowed domains.")
     await update_key_settings(agent_id, body.widget_name, body.allowed_origins, theme=body.theme, max_input_chars=body.max_input_chars, max_output_tokens=body.max_output_tokens)
     return {"ok": True}
 
