@@ -9,6 +9,7 @@ app = FastAPI()
 
 ALLOWED_ORIGINS = [
     "https://archelon.cloud",
+    "https://www.archelon.cloud",
     "https://dev.archelon.cloud",
     "http://localhost:5173",
     "http://localhost:5174",
