@@ -244,7 +244,7 @@ These are documented openly as part of V1. They represent the gap between a work
 
 **IP spoofing on embed rate limit.** The per-IP rate limit reads from the `X-Forwarded-For` header, which a client can forge. Cloudflare in front of the Railway domain would overwrite this header with the verified real IP.
 
-**No audit log.** There is no record of access events — logins, document reads, configuration changes, API key generation. If a security review required knowing who accessed what and when, the current system cannot answer that question beyond what is in `token_usage`.
+**No audit log.** There is no record of access events — logins, document reads, configuration changes, API key generation. If a security review required knowing who accessed what and when, the current system cannot answer that question beyond what is in `token_usage`..
 
 **Chat messages stored in plain text.** User messages and agent responses are stored in the `token_usage` table as plain text. This is used for future conversation memory features. Clients with sensitive conversation content should be aware of this.
 
