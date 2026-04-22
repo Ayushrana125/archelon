@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { signup, login } from '../services/auth_service';
+import RoadmapView from './RoadmapView';
 
 const WEBHOOK_URL = 'https://n8n.aranixlabs.cloud/webhook/c6f0b2d8-c320-4ab7-9028-e24932938b54';
 const TEAL = '#00C9B1';
@@ -42,7 +43,7 @@ function AuthModal({ defaultTab = 'signup', onClose, onLogin }) {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="bg-white dark:bg-[#141414] w-full h-full overflow-hidden relative border-0 flex">
 
         {/* Left panel - branding */}
@@ -290,10 +291,70 @@ const PIPELINE = [
   { label: 'Agent Ready', sub: 'Agent is ready to answer questions', done: false },
 ];
 
+function AnnouncementBar({ open, setOpen, onRoadmap }) {
+  return (
+    <div className="fixed top-0 left-0 right-0 z-50">
+      <div
+        style={{
+          background: 'linear-gradient(90deg, #00C9B1, #1A73E8, #00C9B1)',
+          backgroundSize: '200% 100%',
+          animation: 'shimmer 4s linear infinite',
+          maxHeight: open ? '56px' : '0px',
+          opacity: open ? 1 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease',
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 text-white min-w-0">
+            <span className="text-[11px] font-bold uppercase tracking-widest bg-white/20 px-2.5 py-1 rounded-full flex-shrink-0">Coming Soon</span>
+            <span className="text-sm font-medium opacity-95 truncate">
+              <span className="font-bold">Gmail & WhatsApp Agents</span>
+              <span className="opacity-50 mx-2">&middot;</span>
+              <span className="font-bold">Multi-Agent Teams</span>
+              <span className="opacity-50 mx-2">&middot;</span>
+              <span className="font-bold">Tool-Calling Automation</span>
+              <span className="opacity-70 ml-2">- the next era of Archelon is being built.</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <button onClick={onRoadmap} className="text-sm text-white font-semibold bg-white/20 hover:bg-white/30 transition-colors px-3.5 py-1 rounded-full whitespace-nowrap">
+              View Roadmap &rarr;
+            </button>
+            <button onClick={() => setOpen(false)} className="text-white/70 hover:text-white transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" /></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className="flex justify-center pl-96" style={{ pointerEvents: open ? 'none' : 'auto' }}>
+        <button
+          onClick={() => setOpen(true)}
+          className="text-xs font-bold text-white px-4 py-1 rounded-b-lg flex items-center gap-1.5 hover:opacity-90 transition-all"
+          style={{
+            background: 'linear-gradient(90deg, #00C9B1, #1A73E8)',
+            opacity: open ? 0 : 1,
+            transform: open ? 'translateY(-100%)' : 'translateY(0)',
+            transition: 'opacity 0.3s ease, transform 0.4s cubic-bezier(0.4,0,0.2,1)',
+          }}
+        >
+          What's coming next
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
   const [showResume, setShowResume] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [barOpen, setBarOpen] = useState(true);
+  const [showRoadmap, setShowRoadmap] = useState(false);
   const dark = theme === 'dark';
+  const barH = 56;
+  const navTop = barOpen ? barH : 0;
+  const heroTop = barOpen ? 48 + 64 + barH : 48 + 64;
 
   const openSignup = () => onSignup?.();
   const openLogin = () => onLoginPage?.();
@@ -301,8 +362,10 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
   return (
     <div className="min-h-screen bg-white dark:bg-[#0d0d0d] text-gray-900 dark:text-gray-100 transition-colors duration-300">
 
+        <AnnouncementBar open={barOpen} setOpen={setBarOpen} onRoadmap={() => setShowRoadmap(true)} />
+
         {/* Navbar */}
-        <nav className="fixed top-0 left-0 right-0 z-40 bg-white/90 dark:bg-[#0d0d0d]/90 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 transition-colors duration-300">
+        <nav style={{ top: navTop, transition: 'top 0.4s cubic-bezier(0.4,0,0.2,1)' }} className="fixed left-0 right-0 z-40 bg-white/90 dark:bg-[#0d0d0d]/90 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 transition-colors duration-300">
           <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <img src="/Archelon_logo.png" alt="Archelon" className="h-7 w-auto object-contain" />
@@ -360,7 +423,7 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
         </nav>
 
         {/* Hero */}
-        <section className="relative pt-40 pb-24 px-6 overflow-hidden">
+        <section style={{ paddingTop: heroTop, transition: 'padding-top 0.4s cubic-bezier(0.4,0,0.2,1)' }} className="relative pb-24 px-6 overflow-hidden">
 
           {/* Shell hex pattern */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
@@ -676,6 +739,21 @@ function LandingPage({ onLogin, onSignup, onLoginPage, theme, setTheme }) {
         </footer>
 
         {showResume && <ResumeModal onClose={() => setShowResume(false)} />}
+        {showRoadmap && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-[#0d0d0d] rounded-2xl w-full max-w-5xl max-h-[88vh] overflow-hidden flex flex-col border border-gray-200 dark:border-gray-800 shadow-2xl">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">Product Roadmap</span>
+                <button onClick={() => setShowRoadmap(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+              <div className="overflow-y-auto flex-1">
+                <RoadmapView />
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 }

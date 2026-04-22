@@ -11,6 +11,7 @@ import DocsPanel from './components/DocsPanel';
 import HomePage from './components/HomePage';
 import DashboardView from './components/DashboardView';
 import DeploymentsView from './components/DeploymentsView';
+import RoadmapView from './components/RoadmapView';
 import { fetchAgents } from './services/agent_service';
 import { fetchDocuments, invalidateDocuments, getCachedDocuments } from './services/document_service';
 import { authHeaders } from './services/auth_service';
@@ -297,6 +298,7 @@ function App({ externalTheme, externalSetTheme, onLogout, user }) {
             {mode === 'settings' && <SettingsView theme={theme} setTheme={setTheme} onLogout={onLogout} />}
             {mode === 'dashboard' && <DashboardView />}
             {mode === 'deployments' && <DeploymentsView savedAgents={savedAgents} focusAgentId={deployFocusId} embedStatuses={embedStatuses} onEmbedStatusChange={(agentId, status) => setEmbedStatuses(prev => ({ ...prev, [agentId]: status }))} user={user} />}
+            {mode === 'roadmap' && <RoadmapView />}
           </main>
           {showDocsPanel && agentData && (
             <DocsPanel
