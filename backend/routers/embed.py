@@ -45,8 +45,8 @@ def check_public_rate_limit(key_id: str, limit: int = 30, window: int = 60):
 _ip_rate_store_min: dict[str, list[float]] = defaultdict(list)
 _ip_rate_store_day: dict[str, list[float]] = defaultdict(list)
 
-IP_LIMIT_PER_MIN = 5
-IP_LIMIT_PER_DAY = 25  # TEST VALUE — raise before production
+IP_LIMIT_PER_MIN = 20
+IP_LIMIT_PER_DAY = 200  # TEST VALUE — raise before production #Changed for Demo in Cybersec Event
 
 def check_ip_rate_limit(ip: str):
     now = time.time()
