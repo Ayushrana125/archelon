@@ -1,7 +1,7 @@
 # Archelon
 
 Live Demo: https://archelon.cloud
-Example: IRCTC assistant (on the website)
+Example: IRCTC assistant or Traves AI (on the website)
 
 Archelon is an **Agentic RAG platform** where users can create AI agents, upload documents, and deploy them as embeddable chat widgets.
 
