@@ -232,7 +232,6 @@ All three use an in-memory sliding window counter stored in the FastAPI process.
 
 These are documented openly as part of V1. They represent the gap between a working production system and a hardened enterprise system.
 
-**CORS policy is permissive.** `main.py` currently sets `allow_origins=["*"]`, meaning any website can make requests to the backend. For authenticated endpoints this is mitigated by JWT requirements, but it is not best practice. The correct configuration is to restrict to known frontend domains.
 
 **Rate limiting is not persistent.** In-memory counters reset on server restart and do not work correctly across multiple backend instances. Redis would solve both issues.
 
