@@ -33,7 +33,7 @@ router = APIRouter()
 # ── Rate limiter for public endpoint — 10 req/min per API key ────────────────
 _public_rate_store: dict[str, list[float]] = defaultdict(list)
 
-def check_public_rate_limit(key_id: str, limit: int = 30, window: int = 60):
+def check_public_rate_limit(key_id: str, limit: int = 60, window: int = 60):
     now = time.time()
     _public_rate_store[key_id] = [t for t in _public_rate_store[key_id] if now - t < window]
     if len(_public_rate_store[key_id]) >= limit:
@@ -45,8 +45,8 @@ def check_public_rate_limit(key_id: str, limit: int = 30, window: int = 60):
 _ip_rate_store_min: dict[str, list[float]] = defaultdict(list)
 _ip_rate_store_day: dict[str, list[float]] = defaultdict(list)
 
-IP_LIMIT_PER_MIN = 20
-IP_LIMIT_PER_DAY = 200  # TEST VALUE — raise before production #Changed for Demo in Cybersec Event
+IP_LIMIT_PER_MIN = 30
+IP_LIMIT_PER_DAY = 500  # TEST VALUE — raise before production #Changed for Demo in Cybersec Event
 
 def check_ip_rate_limit(ip: str):
     now = time.time()
